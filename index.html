@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Neon Strata">
+  <meta name="theme-color" content="#05060f">
+  <meta name="description" content="A Terraria-inspired 2D sandbox survival game set in a hyper-technological far future.">
+  <title>Neon Strata</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="hud" class="hidden">
+    <div id="bars">
+      <div class="bar life"><div class="fill"></div><span></span></div>
+      <div class="bar energy"><div class="fill"></div><span></span></div>
+      <div id="credits"></div>
+      <div id="buffs"></div>
+    </div>
+    <div id="hotbar"></div>
+    <div id="topright">
+      <div id="minimap-wrap"><canvas id="minimap" width="140" height="88"></canvas><div id="info"></div></div>
+      <div id="menu-buttons">
+        <button class="hb" id="btn-inv" title="Inventory (E)">&#9638;</button>
+        <button class="hb" id="btn-map" title="Map (M)">&#9673;</button>
+        <button class="hb" id="btn-pause" title="Menu">&#9776;</button>
+      </div>
+    </div>
+    <div id="bossbar" class="hidden"><div class="name"></div><div class="track"><div class="fill"></div></div></div>
+    <div id="eventbar" class="hidden"></div>
+    <div id="toasts"></div>
+    <div id="death" class="hidden"><div class="title">INTEGRITY LOST</div><div class="sub"></div></div>
+  </div>
+
+  <div id="touch" class="hidden">
+    <div id="joyzone"><div id="joybase"><div id="joyknob"></div></div></div>
+    <div id="actions">
+      <button class="act" id="act-jump">JUMP</button>
+      <button class="act small" id="act-hook">HOOK</button>
+      <button class="act small" id="act-heal">STIM</button>
+      <button class="act small" id="act-energy">CELL</button>
+      <button class="act small hidden" id="act-dash">DASH</button>
+    </div>
+  </div>
+
+  <div id="panel" class="hidden"></div>
+  <div id="mapview" class="hidden"><canvas id="mapcanvas"></canvas><div class="mapbar"><button id="map-in">+</button><button id="map-out">&minus;</button><button id="map-center">&#8982;</button><button id="map-close">Close</button></div></div>
+  <div id="menu"></div>
+  <div id="rotate-hint" class="hidden">Rotate your device to landscape for the best experience</div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
