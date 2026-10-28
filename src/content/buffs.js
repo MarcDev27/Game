@@ -31,6 +31,8 @@ export const BUFFS = {
   well_fed: { name: 'Well Fed', color: '#ffb070', stats: { defense: 2, allDmg: 0.05, crit: 2, lifeRegen: 0.5, moveSpeed: 0.05 }, desc: 'Minor improvements to all stats' },
   calm: { name: 'Signal Dampener', color: '#8fb8ff', stats: { spawnRate: -0.5 }, desc: 'Fewer hostiles' },
   battle: { name: 'Signal Beacon', color: '#ff8fa8', stats: { spawnRate: 1.0 }, desc: 'More hostiles' },
+  sonar: { name: 'Sonar', color: '#4ad9ff', stats: { sonar: 1 }, desc: 'See what is biting' },
+  angler: { name: 'Angler', color: '#66ccff', stats: { fishingPower: 15 }, desc: '+15 fishing power' },
   heart_lantern: { name: 'Pod Resonance', color: '#ff5a8a', stats: { lifeRegen: 1 }, desc: 'Regenerating near a Rest Pod' },
   campfire: { name: 'Warm Glow', color: '#ffb12e', stats: { lifeRegen: 1 }, desc: 'Regenerating near a plasma torch' },
 };

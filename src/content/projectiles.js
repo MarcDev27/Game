@@ -23,6 +23,8 @@ p('shuriken', { w: 8, h: 8, sprite: 'shuriken', color: '#c0d0e0', gravity: 0.08,
 p('purifier_dust', { w: 16, h: 16, sprite: 'dust', color: '#6cffd8', life: 40, tileCollide: false, pierce: 99, convert: 'pure', light: [0.1, 0.4, 0.3] });
 p('purifier_spray', { w: 12, h: 12, sprite: 'dust', color: '#6cffd8', life: 50, tileCollide: false, pierce: 99, convert: 'pure', light: [0.1, 0.4, 0.3] });
 
+p('bobber', { w: 6, h: 6, sprite: 'bobber', ai: 'bobber', gravity: 0.25, life: 1e9, color: '#ff3355', bounce: 0.2 });
+
 // ----- player melee / thrown -----
 p('ion_boomerang', { w: 14, h: 14, sprite: 'boomerang', ai: 'boomerang', color: '#66ccff', pierce: 99, life: 600, light: [0.2, 0.4, 0.6], returnAfter: 30 });
 p('plasma_boomerang', { w: 14, h: 14, sprite: 'boomerang', ai: 'boomerang', color: '#ff5ab0', pierce: 99, life: 600, light: [0.5, 0.1, 0.3], returnAfter: 40, onHit: { buff: 'burn', time: 180 } });

@@ -89,7 +89,7 @@ function exitToMenu(skipSave) {
 }
 
 function resize() {
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = Math.min(window.devicePixelRatio || 1, settings.resolution || 2);
   renderer.resize(window.innerWidth, window.innerHeight, dpr, settings.zoom);
   if (game) { const v = renderer.viewSize(); game.view.w = v.w; game.view.h = v.h; }
   document.getElementById('rotate-hint').classList.toggle('hidden', !(input.isTouch && window.innerHeight > window.innerWidth && state === 'game'));

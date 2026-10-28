@@ -161,8 +161,7 @@ export class Events {
     vein(T.neutronium_ore, Math.floor(90 * M), L.rock, L.core - 5, 2);
     vein(T.chronite_ore, Math.floor(70 * M), L.cavern - 40, L.core - 5, 2);
     vein(T.aetherium_ore, Math.floor(50 * M), L.cavern, L.core - 5, 1);
-    for (const l of w.listeners) l(0, 0);
-    g.mapDirty.add(-1);
+    for (const l of w.listeners) l(-1, -1);
   }
 }
 

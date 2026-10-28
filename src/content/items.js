@@ -379,3 +379,45 @@ for (const it of ITEM_LIST) {
 }
 
 export function itemDef(k) { return ITEMS[k]; }
+
+// ---------------- fishing ----------------
+const rod = (key, name, power, color, value, rarity, extra = {}) => item(key, Object.assign({ name, type: 'tool', useStyle: 'shoot', useTime: 12, fishing: power, shoot: 'bobber', shootSpeed: 8, icon: { s: 'rod', c: color }, value, rarity, tip: `${power}% fishing power. Needs bait. Tap again to reel in when the bobber dips.` }, extra));
+rod('fiber_rod', 'Fiber Rod', 10, '#a88f72', 300, 0);
+rod('ferrite_rod', 'Ferrite Rod', 20, '#aeb7c2', 1500, 1);
+rod('titanite_rod', 'Titanite Rod', 30, '#f2dd7a', 4000, 2);
+rod('lumen_rod', 'Lumen Rod', 40, '#a46bff', 8000, 3);
+rod('cryo_rod', 'Cryo Rod', 50, '#7ff0ff', 15000, 4);
+rod('plasmite_rod', 'Plasmite Rod', 60, '#ff3fa4', 25000, 5, { plasmaFishing: true, tip: '60% fishing power. Can fish in plasma.' });
+rod('aether_rod', 'Aether Rod', 75, '#fff1a8', 60000, 8, { plasmaFishing: true, tip: '75% fishing power. Can fish in plasma.' });
+const bait = (key, name, power, color, value, rarity = 0) => item(key, { name, type: 'material', bait: power, icon: { s: 'grub', c: color }, value, rarity, stack: 999, tip: `${power}% bait power` });
+bait('bio_worm', 'Bio Worm', 15, '#ff8fa8', 50);
+bait('glow_grub', 'Glow Grub', 30, '#9dff3d', 150, 1);
+bait('nano_larva', 'Nano Larva', 50, '#ffcc33', 400, 2);
+export const FISH = [
+  // key, name, color, value, rarity, where: { biomes, layers, liquid, minPower, hard, night }
+  ['coolant_carp', 'Coolant Carp', '#4ad9ff', 120, 0, {}],
+  ['neon_tetra', 'Neon Tetra', '#2ef2ff', 250, 1, { biomes: ['plains', 'jungle'] }],
+  ['ripple_bass', 'Ripple Bass', '#5a9a6a', 200, 0, { layers: ['surface'] }],
+  ['chrome_tuna', 'Chrome Tuna', '#aeb7c2', 400, 1, { biomes: ['ocean'] }],
+  ['abyssal_ray', 'Abyssal Ray', '#3a2a6f', 2500, 3, { biomes: ['ocean'], minPower: 40 }],
+  ['dune_eel', 'Dune Eel', '#c7854f', 350, 1, { biomes: ['desert'] }],
+  ['frost_trout', 'Frost Trout', '#bde6ff', 350, 1, { biomes: ['snow'] }],
+  ['spore_pike', 'Spore Pike', '#a8ff3a', 450, 1, { biomes: ['jungle'] }],
+  ['glitch_fish', 'Glitch Fish', '#b06bff', 600, 2, { biomes: ['blight'] }],
+  ['prism_koi', 'Prism Koi', '#ff9ee8', 1500, 3, { biomes: ['prism'], hard: true }],
+  ['cave_lumen', 'Cave Lumenfish', '#3ff0ff', 500, 1, { layers: ['underground', 'cavern'] }],
+  ['void_angler', 'Void Angler', '#5a4a8a', 1800, 3, { layers: ['cavern'], minPower: 35 }],
+  ['data_shark', 'Data Shark', '#66ccff', 6000, 5, { biomes: ['ocean'], minPower: 60, hard: true }],
+  ['magma_eel', 'Magma Eel', '#ff5a2a', 2000, 4, { liquid: 'plasma' }],
+  ['core_kraken', 'Core Kraken Larva', '#ff3fa4', 8000, 6, { liquid: 'plasma', minPower: 70, hard: true }],
+  ['moon_minnow', 'Moon Minnow', '#e8e0ff', 900, 2, { night: true }],
+];
+for (const [k, n, c, v, r] of FISH) item(k, { name: n, icon: { s: 'fish', c }, value: v, rarity: r, tip: 'A fish. Sell it, or process it at a Synth Vat.' });
+cons('supply_crate', 'Supply Crate', { crate: 1 }, { s: 'crate', c: '#8a6b55', c2: '#aeb7c2' }, 1000, 1, 'Use to open', { stack: 99 });
+cons('ferrite_crate', 'Ferrite Crate', { crate: 2 }, { s: 'crate', c: '#aeb7c2', c2: '#59616c' }, 3000, 2, 'Use to open', { stack: 99 });
+cons('titanite_crate', 'Titanite Crate', { crate: 3 }, { s: 'crate', c: '#f2dd7a', c2: '#8f7a2a' }, 8000, 3, 'Use to open', { stack: 99 });
+cons('fish_ration', 'Fish Ration', { buff: 'well_fed', time: 60 * 60 * 15 }, { s: 'fish', c: '#ffb070' }, 300, 0, 'Minor improvements to all stats');
+cons('sonar_inj', 'Sonar Injector', { buff: 'sonar', time: 60 * 60 * 6 }, { s: 'injector', c: '#4ad9ff' }, 500, 1, 'Shows what is biting');
+cons('fishing_inj', 'Angler Injector', { buff: 'angler', time: 60 * 60 * 8 }, { s: 'injector', c: '#66ccff' }, 500, 1, '+15 fishing power');
+acc('tackle_box', 'Tackle Box', { baitSave: 0.5 }, { s: 'crate', c: '#5a6b8a', c2: '#ffcc33' }, 15000, 2, '50% chance to keep bait');
+acc('angler_band', 'Angler Band', { fishingPower: 10 }, { s: 'band', c: '#4ad9ff', c2: '#2ef2ff' }, 15000, 2, '+10 fishing power');

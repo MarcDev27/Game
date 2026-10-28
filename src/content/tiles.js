@@ -48,9 +48,9 @@ tile('aerogel', { name: 'Aerogel', tex: { style: 'cloud', c: '#e9f2ff' }, map: '
 tile('swarmcomb', { name: 'Swarm Comb', hp: 1.2, tex: { style: 'hex', c: '#c29a2a' }, map: '#c29a2a', biome: 'hive' });
 tile('derelict_hull', { name: 'Derelict Hull', hp: 4, minPick: 65, tex: { style: 'plate', c: '#44607e' }, map: '#44607e', biome: 'dungeon' });
 tile('derelict_hull_g', { name: 'Derelict Hull (Green)', hp: 4, minPick: 65, tex: { style: 'plate', c: '#3f6e57' }, map: '#3f6e57', biome: 'dungeon', drop: 'derelict_hull' });
-tile('temple_brick', { name: 'Ancient Alloy Brick', hp: 5, minPick: 210, tex: { style: 'brick', c: '#8a6a2e' }, map: '#8a6a2e', biome: 'temple' });
+tile('temple_brick', { name: 'Ancient Alloy Brick', hp: 5, minPick: 200, tex: { style: 'brick', c: '#8a6a2e' }, map: '#8a6a2e', biome: 'temple' });
 tile('laser_grid', { name: 'Laser Grid', hp: 3, minPick: 65, tex: { style: 'grid', c: '#30404a', glow: '#ff3355' }, map: '#ff3355', damage: 30, light: [0.35, 0.04, 0.06], biome: 'dungeon' });
-tile('temple_spikes', { name: 'Ancient Spikes', drop: null, hp: 5, minPick: 210, tex: { style: 'grid', c: '#5a4520', glow: '#ffcc33' }, map: '#ffaa22', damage: 60, light: [0.3, 0.2, 0.02], biome: 'temple' });
+tile('temple_spikes', { name: 'Ancient Spikes', drop: null, hp: 5, minPick: 200, tex: { style: 'grid', c: '#5a4520', glow: '#ffcc33' }, map: '#ffaa22', damage: 60, light: [0.3, 0.2, 0.02], biome: 'temple' });
 
 // ---------- ores ----------
 for (const m of METALS) {

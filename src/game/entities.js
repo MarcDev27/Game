@@ -5,6 +5,7 @@ import { PROJ } from '../content/projectiles.js';
 import { ITEMS } from '../content/items.js';
 import { moveEntity } from './physics.js';
 import { addItem, canFit } from './inventory.js';
+import { updateBobber } from './fishing.js';
 
 let NEXT_ID = 1;
 
@@ -112,7 +113,7 @@ function nearestMonster(game, x, y, range, needLOS = false) {
 export function updateProjectile(p, game) {
   const d = p.def, world = game.world, pl = game.player;
   p.t++;
-  if (d.ai !== 'minion') p.life--;
+  if (d.ai !== 'minion' && d.ai !== 'bobber') p.life--;
   if (p.life <= 0) { killProjectile(p, game); return; }
   switch (d.ai) {
     case 'homing': {
@@ -136,6 +137,7 @@ export function updateProjectile(p, game) {
       break;
     }
     case 'minion': return updateMinion(p, game);
+    case 'bobber': return updateBobber(p, game);
     case 'sentry': {
       p.vy = Math.min(p.vy + 0.3, 8); p.vx = 0;
       moveEntity(world, p, { platforms: true });

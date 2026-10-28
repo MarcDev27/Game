@@ -106,7 +106,7 @@ export function deserializeWorld(o) {
 }
 
 const SETTINGS_KEY = 'neon-strata-settings';
-export const DEFAULT_SETTINGS = { sfx: 0.6, music: 0.35, zoom: 1, lightQuality: 2, smoothLight: true, minimap: true, leftHanded: false, showFps: false, autoPause: true, controlScale: 1 };
+export const DEFAULT_SETTINGS = { resolution: 2, sfx: 0.6, music: 0.35, zoom: 1, lightQuality: 2, smoothLight: true, minimap: true, leftHanded: false, showFps: false, autoPause: true, controlScale: 1 };
 export function loadSettings() {
   try { return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); }
   catch (e) { return { ...DEFAULT_SETTINGS }; }

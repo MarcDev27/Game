@@ -16,7 +16,7 @@ export const COLONISTS = {
   trader: {
     title: 'Trader', names: ['Mirt', 'Sol', 'Dex', 'Pryce'], look: { chassis: '#e8d0b0', suit: '#8a5a3a', visor: '#ffcc33', hair: '#5a3a2a', style: 0 },
     cond: (g) => g.player.credits >= 1500,
-    shop: (g) => ['glowstick', 'cable', 'micro_stim', 'charge_cell', 'kinetic_round', 'seed_pod', 'grenade', 'nano_shuriken', 'recall_inj', 'depth_meter', 'tool_belt', ...(g.world.flags.hardmode ? ['stim_pack', 'magnet_module'] : [])],
+    shop: (g) => ['glowstick', 'cable', 'fiber_rod', 'bio_worm', 'micro_stim', 'charge_cell', 'kinetic_round', 'seed_pod', 'grenade', 'nano_shuriken', 'recall_inj', 'depth_meter', 'tool_belt', ...(g.world.flags.hardmode ? ['stim_pack', 'magnet_module', 'nano_larva'] : [])],
     lines: ['Credits talk. Everything else walks.', 'Fresh glowsticks, barely used!', 'I buy anything shiny. At a discount, of course.'],
   },
   medic: {
@@ -34,7 +34,7 @@ export const COLONISTS = {
   botanist: {
     title: 'Botanist', names: ['Fern', 'Moss', 'Ivy', 'Sylva'], look: { chassis: '#b4ff4a', suit: '#3a8a2a', visor: '#ffffff', hair: '#7dff5a', style: 2 },
     cond: (g) => Object.keys(g.world.flags.bosses).length > 0,
-    shop: (g) => ['seed_pod', 'grass_seeds', 'glowmoss_seeds', 'nano_purifier', 'glowcap', ...(g.world.flags.hardmode ? ['purifier_cannon'] : [])],
+    shop: (g) => ['seed_pod', 'grass_seeds', 'glowmoss_seeds', 'nano_purifier', 'glowcap', 'bio_worm', 'glow_grub', ...(g.world.flags.hardmode ? ['purifier_cannon'] : [])],
     lines: ['The Blight is a self-replicating error. Purify it.', 'Plant seed pods on synthgrass and watch them grow.'],
     hint: (g) => g.world.flags.hardmode ? 'Blight and Prism now spread on their own. My Purifier Cannon can push them back.' : 'There are ' + (g.world.flags.nodesSmashed || 0) + ' Blight Nodes smashed. Every third one wakes the Data Wyrm.',
   },
@@ -150,8 +150,12 @@ export class Town {
     return null;
   }
 
-  validRoom(sx, sy) {
+  validRoom(sx, sy) { return this.roomIssue(sx, sy) === null; }
+
+  // Explains why the room containing (sx, sy) is not a valid house (null when valid).
+  roomIssue(sx, sy, needChair = false) {
     const w = this.game.world;
+    let chair = false;
     const seen = new Set(), stack = [[sx, sy]];
     let light = false, table = false, entrance = false, cells = 0;
     while (stack.length) {
@@ -159,19 +163,35 @@ export class Town {
       const k = y * w.w + x;
       if (seen.has(k)) continue;
       seen.add(k);
-      if (!w.inb(x, y)) return false;
+      if (!w.inb(x, y)) return 'The room is not enclosed.';
       const id = w.get(x, y), t = TILES[id];
       if (t && t.door) { entrance = true; continue; }
       if (t && t.platform) { entrance = true; continue; }
       if (t && t.solid) continue;
       cells++;
-      if (cells > 750) return false;
-      if (!w.getWall(x, y)) return false;
+      if (cells > 750) return 'Too big or not enclosed (max 750 tiles).';
+      if (!w.getWall(x, y)) return 'Missing background wall at some spot.';
       if (t && (LIGHT_R[id] > 0.3 || LIGHT_G[id] > 0.3)) light = true;
       if (t && t.table) table = true;
+      if (t && t.chair) chair = true;
       stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
     }
-    return cells >= 50 && light && table && entrance;
+    if (cells < 50) return 'Too small (needs at least 50 tiles inside).';
+    if (!light) return 'Needs a light source (lamp or glowstick).';
+    if (!table) return 'Needs a table or bench.';
+    if (needChair && !chair) return 'Needs a chair.';
+    if (!entrance) return 'Needs a door or platform as an entrance.';
+    return null;
+  }
+
+  diagnose() {
+    const p = this.game.player, w = this.game.world;
+    const x = Math.floor(p.cx / TILE), y = Math.floor((p.y + p.h - 2) / TILE);
+    if (w.solidAt(x, y)) return 'Stand inside the room to check it.';
+    const issue = this.roomIssue(x, y, true);
+    if (issue) return 'Not valid housing: ' + issue;
+    const taken = this.npcs.some((n) => n.home && Math.abs(n.home[0] - x) < 12 && Math.abs(n.home[1] - y) < 8);
+    return taken ? 'Valid housing (occupied).' : 'Valid housing! A colonist can move in when their conditions are met.';
   }
 
   update() {
@@ -241,7 +261,7 @@ export class Town {
     if (!discovered('plasmite_ore')) return 'The Derelict Station holds Access Keys and loot. Then dig to the Reactor Core at the bottom of the world for Plasmite (needs a Cryonite Pick).';
     if (!f.core_warden) return 'Plasmite gear will protect you in the Core. ' + BOSS_INFO.core_warden.hint + ' Build a long bridge first!';
     if (!f.twin_lancers || !f.leviathan || !f.prime_archon) return 'The Singularity has begun. Smash new Neutronium ore with a Plasmite Pick. Mechanical bosses await: Mechanical Optic, Worm Chip and Skull (Photon/Void Cores from Prism/Blight caves).';
-    if (!f.bloom_titan) return 'Exalted Alloy from the mechanical bosses unlocks Chronite mining. ' + BOSS_INFO.bloom_titan.hint;
+    if (!f.bloom_titan) return 'Forge Exalted gear from the mechanical bosses, and mine Chronite with a Neutronium Drill. ' + BOSS_INFO.bloom_titan.hint;
     if (!f.gravity_golem) return 'The Ancient Key opens the Temple door in the Overgrowth caverns. ' + BOSS_INFO.gravity_golem.hint;
     if (!f.architect) return BOSS_INFO.architect.hint + ' Craft a Quantum Assembler and an Architect Sigil.';
     return 'You have defeated the Architect. Craft Singularity gear, collect everything, and build a city worthy of the stars.';

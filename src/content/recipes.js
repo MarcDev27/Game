@@ -5,8 +5,9 @@ import { ITEMS } from './items.js';
 export const GROUPS = {
   any_wood: ['fiber', 'rustwood', 'cryowood', 'glowwood', 'graywood', 'prismwood'],
   any_sand: ['silica', 'rustsand', 'graysand', 'prismsand'],
+  any_fish: ['coolant_carp', 'neon_tetra', 'ripple_bass', 'chrome_tuna', 'dune_eel', 'frost_trout', 'spore_pike', 'glitch_fish', 'cave_lumen', 'moon_minnow'],
 };
-export const GROUP_NAMES = { any_wood: 'Any Wood', any_sand: 'Any Sand' };
+export const GROUP_NAMES = { any_wood: 'Any Wood', any_sand: 'Any Sand', any_fish: 'Any Fish' };
 
 // Stations that also count as other stations.
 export const STATION_PROVIDES = {
@@ -213,9 +214,31 @@ r('nanoweave_body', 1, [['nanoweave', 20], ['star_shard', 3]], 'printer');
 r('nanoweave_legs', 1, [['nanoweave', 15], ['star_shard', 2]], 'printer');
 r('tool_belt', 1, [['synth_leather', 6], ['ferrite_bar', 2]], 'printer');
 
+// ---- fishing ----
+r('fiber_rod', 1, [['fiber', 8], ['cable', 5]], 'bench');
+r('ferrite_rod', 1, [['ferrite_bar', 8], ['cable', 10]], 'fabricator');
+r('titanite_rod', 1, [['titanite_bar', 10], ['cable', 10]], 'fabricator');
+r('lumen_rod', 1, [['lumenite_bar', 10], ['nano_filament', 10]], 'fabricator');
+r('cryo_rod', 1, [['cryonite_bar', 12], ['cryo_essence', 2]], 'lathe');
+r('plasmite_rod', 1, [['plasmite_bar', 12], ['magma_eel', 1]], 'fabricator');
+r('aether_rod', 1, [['aetherium_bar', 12], ['data_shark', 1]], 'nanoforge');
+r('fish_ration', 1, [['any_fish', 2]], 'vat');
+r('sonar_inj', 1, [['glass', 1], ['coolant_carp', 1], ['glowcap', 1]], 'vat');
+r('fishing_inj', 1, [['glass', 1], ['neon_tetra', 1], ['voltleaf', 1]], 'vat');
+r('sonar_inj', 1, [['glass', 1], ['chrome_tuna', 1]], 'vat');
+r('swift_inj', 1, [['glass', 1], ['dune_eel', 1]], 'vat');
+r('plating_inj', 1, [['glass', 1], ['chrome_tuna', 1], ['ferrite_ore', 1]], 'vat');
+r('endurance_inj', 1, [['glass', 1], ['frost_trout', 1], ['frostbloom', 1]], 'vat');
+r('plasma_ward_inj', 1, [['glass', 1], ['magma_eel', 1]], 'vat');
+r('wrath_inj', 1, [['glass', 1], ['glitch_fish', 1]], 'vat');
+r('optic_inj', 1, [['glass', 1], ['cave_lumen', 1]], 'vat');
+r('lifeforce_inj', 1, [['glass', 1], ['prism_koi', 1]], 'vat');
+r('regen_inj', 1, [['glass', 1], ['spore_pike', 1]], 'vat');
+r('glow_grub', 3, [['bio_worm', 3], ['glowcap', 1]], 'vat');
+
 // ---- boss and event summons ----
-r('optic_lure', 1, [['optic_lens', 6], ['battery', 1]], 'fabricator');
-r('gel_beacon', 1, [['nanogel', 30], ['battery', 1]], 'fabricator');
+r('optic_lure', 1, [['optic_lens', 6], ['scrap', 3]], 'fabricator');
+r('gel_beacon', 1, [['nanogel', 30], ['scrap', 5]], 'fabricator');
 r('corrupt_datachip', 1, [['blight_shard', 15], ['circuitry', 1]], 'fabricator');
 r('pheromone_chip', 1, [['nano_stinger', 10], ['bio_spore', 5], ['circuitry', 1]], 'fabricator');
 r('archon_key', 1, [['bone_alloy', 10], ['circuitry', 5], ['lumenite_bar', 3]], 'fabricator');

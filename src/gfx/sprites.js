@@ -424,6 +424,8 @@ export function drawProjectile(ctx, p, t) {
     case 'sentry':
       ctx.fillStyle = '#59616c'; ctx.fillRect(-8, 0, 16, 10); ctx.fillStyle = c; ctx.fillRect(-6, -8, 12, 9);
       ctx.rotate(p.aim || 0); ctx.fillStyle = '#333'; ctx.fillRect(0, -2, 12, 4); break;
+    case 'bobber':
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(-3, -3, 6, 3); ctx.fillStyle = c; ctx.fillRect(-3, 0, 6, 3); ctx.fillStyle = '#222'; ctx.fillRect(-1, -5, 2, 2); break;
     case 'skull':
       ctx.fillStyle = c; ctx.fillRect(-7, -7, 14, 12); ctx.fillStyle = '#111'; ctx.fillRect(-5, -3, 4, 4); ctx.fillRect(1, -3, 4, 4); break;
     default:

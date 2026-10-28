@@ -7,6 +7,7 @@ import { PREFIXES } from '../content/prefixes.js';
 import { moveEntity, liquidAt, rectSolid } from './physics.js';
 import { addItem, removeItem, countItem, INV_SIZE } from './inventory.js';
 import { LIQ, DOOR_OPEN } from '../world/world.js';
+import { findBait, reelIn, fishingPower } from './fishing.js';
 
 export const PLAYER_W = 20, PLAYER_H = 42;
 
@@ -27,6 +28,7 @@ export class Player {
     this.data = data;
     Object.assign(this, data);
     this.discovered = new Set(data.discovered);
+    this.achievements = new Set(data.achievements || []);
     this.x = 0; this.y = 0; this.w = PLAYER_W; this.h = PLAYER_H; this.vx = 0; this.vy = 0;
     this.dir = 1; this.onGround = false; this.anim = 0;
     this.sel = 0;
@@ -43,6 +45,7 @@ export class Player {
     const d = this.data;
     for (const k of ['name', 'look', 'mode', 'inv', 'trash', 'equip', 'maxLife', 'maxEnergy', 'life', 'energy', 'credits', 'accSlots', 'spawns', 'playTime', 'created', 'id', 'stats']) d[k] = this[k];
     d.discovered = [...this.discovered];
+    d.achievements = [...this.achievements];
     return d;
   }
 
@@ -65,7 +68,7 @@ export class Player {
       maxLife: this.maxLife, maxEnergy: this.maxEnergy, energyCost: 0, minions: 1, mineSpeed: 0, reach: 0, magnet: 0, light: 0, dash: 0,
       wallClimb: 0, waterWalk: 0, swim: 0, plasmaImmune: 0, coldImmune: 0, burnImmune: 0, thorns: 0, lifesteal: 0, dodge: 0, damageReduce: 0,
       maxLifePct: 0, nightVision: 0, featherFall: 0, scanner: 0, hunter: 0, placeSpeed: 0, spawnRate: 0, immuneTime: 0, berserk: 0,
-      stimCooldown: 0, plasmaWard: 0, swarmRetaliate: 0, meleeKnock: 0, plasmaResist: 0, info: new Set(), setBonus: null, noRegen: false,
+      stimCooldown: 0, plasmaWard: 0, fishingPower: 0, baitSave: 0, sonar: 0, swarmRetaliate: 0, meleeKnock: 0, plasmaResist: 0, info: new Set(), setBonus: null, noRegen: false,
     };
     const addStats = (st) => {
       if (!st) return;
@@ -437,6 +440,7 @@ export class Player {
         if (!used) return;
       }
     }
+    if (it.fishing) { used = this.fire(game, it, slot, aim); if (!used) return; }
     if (it.recall) used = true;
     if (!used) return;
     this.useKey = it.key;
@@ -467,6 +471,17 @@ export class Player {
 
   fire(game, it, slot, aim) {
     const s = this.s;
+    if (it.fishing) {
+      const cur = game.projectiles.find((q) => q.def.ai === 'bobber' && !q.dead);
+      if (cur) { reelIn(game, cur); return true; }
+      const bi = findBait(this);
+      if (bi < 0) { game.fx.text(this.cx, this.y - 6, 'Needs bait', '#ffcc33'); return false; }
+      const a = Math.atan2(aim.y - (this.y + 16), aim.x - this.cx);
+      const b = game.spawnProjectile('bobber', this.cx, this.y + 12, Math.cos(a) * it.shootSpeed, Math.sin(a) * it.shootSpeed - 1, 0, 0, 'player');
+      b.power = fishingPower(this, it, this.inv[bi].k);
+      game.audio.play('throw');
+      return true;
+    }
     if (it.energyCost) {
       const cost = Math.max(1, Math.round(it.energyCost * (1 + s.energyCost)));
       if (this.energy < cost) {

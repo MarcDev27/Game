@@ -126,6 +126,10 @@ function drawIcon(ctx, it) {
     case 'drone': circle(8, 9, 4, c); R(c2, 3, 4, 10, 1); R('#aeb7c2', 7, 4, 2, 2); R('#ffffff', 7, 8, 2, 2); break;
     case 'magnet': R(c, 3, 3, 3, 9); R(c, 10, 3, 3, 9); R(c, 3, 10, 10, 3); R(c2, 3, 3, 3, 2); R(c2, 10, 3, 3, 2); break;
     case 'emblem': circle(8, 8, 6, c2); circle(8, 8, 4, c); R(shade(c, 1.6), 7, 4, 2, 8); R(shade(c, 1.6), 4, 7, 8, 2); break;
+    case 'rod': for (let i = 0; i < 12; i++) R(i < 3 ? '#6e5148' : c, 2 + i, 14 - i); R('#e8e8e8', 14, 2, 1, 9); R('#ff3355', 13, 11, 3, 2); R('#aeb7c2', 4, 11, 2, 2); break;
+    case 'grub': for (let i = 0; i < 4; i++) R(i % 2 ? c : dk, 3 + i * 3, 8 + (i % 2), 3, 4); R('#111', 13, 9, 1, 1); break;
+    case 'fish': R(c, 3, 6, 9, 5); R(c, 11, 5, 2, 7); R(c, 13, 4, 2, 2); R(c, 13, 11, 2, 2); R(hi, 4, 6, 7, 1); R(dk, 3, 10, 9, 1); R('#111', 5, 7, 1, 1); R(dk, 7, 4, 3, 2); break;
+    case 'crate': R(dk, 2, 3, 12, 11); R(c, 3, 4, 10, 9); R(c2, 3, 8, 10, 1); R(c2, 7, 4, 2, 9); R(hi, 3, 4, 10, 1); break;
     default: R(c, 3, 3, 10, 10); R(hi, 3, 3, 10, 1);
   }
 }

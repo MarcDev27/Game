@@ -10,6 +10,7 @@ import { itemTooltip, sellPrice } from './tooltip.js';
 import { addItem, countItem, removeItem, sortInventory, maxStack, HOTBAR } from '../game/inventory.js';
 import { COLONISTS } from '../game/town.js';
 import { WorldMap } from './map.js';
+import { ACHIEVEMENTS } from '../content/achievements.js';
 import { formatCredits, TILE, rng } from '../core/util.js';
 
 const $ = (s) => document.querySelector(s);
@@ -228,6 +229,7 @@ export class UI {
     else if (this.panel === 'pause') this.renderPause();
     else if (this.panel === 'settings') this.renderSettings();
     else if (this.panel === 'help') this.renderHelp();
+    else if (this.panel === 'ach') this.renderAchievements();
   }
 
   // slot access by (src, i)
@@ -379,13 +381,13 @@ export class UI {
       const it = ITEMS[sel.k];
       if (this.pick.src === 'eq') acts += '<button data-act="unequip">Unequip</button>';
       else if (['armor', 'accessory', 'hook'].includes(it.type)) acts += '<button class="primary" data-act="equip">Equip</button>';
-      if (it.type === 'consumable' && (it.consume.heal || it.consume.energy || it.consume.buff || it.consume.maxLife || it.consume.maxEnergy || it.consume.accSlot || it.consume.recall)) acts += '<button data-act="use">Use</button>';
+      if (it.type === 'consumable' && (it.consume.heal || it.consume.energy || it.consume.buff || it.consume.maxLife || it.consume.maxEnergy || it.consume.accSlot || it.consume.recall || it.consume.crate)) acts += '<button data-act="use">Use</button>';
       if (this.pick.src !== 'eq' && !(this.pick.src === 'inv' && this.pick.i < HOTBAR)) acts += '<button data-act="hotbar">To hotbar</button>';
       if (sel.n > 1) acts += '<button data-act="split">Split</button>';
       acts += '<button data-act="drop">Drop</button><button class="danger" data-act="trash">Trash</button>';
     }
     const craft = this.renderCraft();
-    const html = `<div class="win"><h2><span>${this.chest ? 'STORAGE' : 'INVENTORY'} · ${formatCredits(p.credits)} cr</span><span><button data-act="sort">Sort</button> <button data-act="close">&times;</button></span></h2>
+    const html = `<div class="win"><h2><span>${this.chest ? 'STORAGE' : 'INVENTORY'} · ${formatCredits(p.credits)} cr</span><span><button data-act="housing">Housing</button> <button data-act="sort">Sort</button> <button data-act="close">&times;</button></span></h2>
       <div class="body"><div class="cols">
         <div class="col">${chestHtml}<div class="label">Inventory</div><div class="grid">${inv}</div>
           <div class="tip">${tip}</div><div class="row">${acts}</div></div>
@@ -500,6 +502,8 @@ export class UI {
     const g = this.game, p = g.player;
     switch (act) {
       case 'close': this.closePanel(); return;
+      case 'housing': this.toast(g.town.diagnose(), '#9dff3d'); return;
+      case 'achievements': this.panel = 'ach'; this.renderAchievements(); return;
       case 'sort': sortInventory(p.inv); this.pick = null; this.refreshPanel(); return;
       case 'showall': this.showAll = !this.showAll; this.renderInventory(); return;
       case 'craft': this.craft(1); return;
@@ -603,7 +607,7 @@ export class UI {
     const bosses = Object.keys(w.flags.bosses).length;
     const html = `<div class="win" style="width:min(360px,94vw)"><h2><span>PAUSED</span><button data-act="close">&times;</button></h2><div class="body">
       <div class="help">${esc(p.name)} · ${p.maxLife} max integrity · ${bosses} bosses defeated${w.flags.hardmode ? ' · <b>Singularity</b>' : ''}<br>${esc(w.name)} · Day ${w.day}</div>
-      <div class="menu-buttons" style="margin:10px auto"><button class="primary" data-act="resume">Resume</button><button data-act="help">Field Guide</button><button data-act="settings">Settings</button><button data-act="save">Save</button><button data-act="quit">Save &amp; Exit</button></div></div></div>`;
+      <div class="menu-buttons" style="margin:10px auto"><button class="primary" data-act="resume">Resume</button><button data-act="help">Field Guide</button><button data-act="achievements">Achievements (${p.achievements.size}/${ACHIEVEMENTS.length})</button><button data-act="settings">Settings</button><button data-act="save">Save</button><button data-act="quit">Save &amp; Exit</button></div></div></div>`;
     this.show(html); this.bindPanel();
   }
 
@@ -612,6 +616,16 @@ export class UI {
     const html = `<div class="win" style="width:min(460px,96vw)"><h2><span>SETTINGS</span><button data-act="back">Back</button></h2><div class="body">${settingsForm(s)}</div></div>`;
     this.show(html); this.bindPanel();
     bindSettingsForm($('#panel'), s, () => { this.env.applySettings(); this.applyLayout(); });
+  }
+
+  renderAchievements() {
+    const p = this.game.player;
+    const rows = ACHIEVEMENTS.map((a) => {
+      const on = p.achievements.has(a.key);
+      return `<div class="shopitem" style="${on ? 'border-color:#ffcc33' : 'opacity:0.55'}"><span style="color:${on ? '#ffcc33' : '#8aa0c0'}">${on ? '&#9733;' : '&#9734;'}</span><span><b>${esc(a.name)}</b><br><span style="font-size:11px;color:#8aa0c0">${esc(a.desc)}</span></span></div>`;
+    }).join('');
+    const html = `<div class="win" style="width:min(520px,96vw)"><h2><span>ACHIEVEMENTS ${p.achievements.size}/${ACHIEVEMENTS.length}</span><button data-act="back">Back</button></h2><div class="body"><div class="shoplist" style="max-height:none">${rows}</div></div></div>`;
+    this.show(html); this.bindPanel();
   }
 
   renderHelp() {
@@ -644,6 +658,7 @@ export function settingsForm(s) {
   const range = (k, label, min, max, step) => `<div class="formrow"><span class="lbl">${label}</span><input type="range" data-set="${k}" min="${min}" max="${max}" step="${step}" value="${s[k]}"></div>`;
   const tog = (k, label) => `<div class="formrow"><span class="lbl">${label}</span><div class="opt"><button data-tog="${k}" class="${s[k] ? 'on' : ''}">${s[k] ? 'On' : 'Off'}</button></div></div>`;
   return range('sfx', 'Sound', 0, 1, 0.05) + range('music', 'Music', 0, 1, 0.05) + range('zoom', 'Zoom', 0.6, 1.6, 0.1) + range('controlScale', 'Button size', 0.7, 1.4, 0.05)
+    + `<div class="formrow"><span class="lbl">Resolution</span><div class="opt">${[[1, 'Low'], [1.5, 'Medium'], [2, 'High'], [3, 'Max']].map(([v, n]) => `<button data-res="${v}" class="${s.resolution === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>`
     + `<div class="formrow"><span class="lbl">Lighting</span><div class="opt"><button data-light="1" class="${s.lightQuality === 1 ? 'on' : ''}">Fast</button><button data-light="2" class="${s.lightQuality === 2 ? 'on' : ''}">Quality</button></div></div>`
     + tog('smoothLight', 'Smooth light') + tog('minimap', 'Minimap') + tog('leftHanded', 'Left-handed') + tog('showFps', 'Show FPS') + tog('autoPause', 'Pause in menus');
 }
@@ -651,5 +666,6 @@ export function settingsForm(s) {
 export function bindSettingsForm(root, s, onChange) {
   root.querySelectorAll('[data-set]').forEach((el) => { el.oninput = () => { s[el.dataset.set] = parseFloat(el.value); onChange(); }; });
   root.querySelectorAll('[data-tog]').forEach((el) => { el.onclick = () => { s[el.dataset.tog] = !s[el.dataset.tog]; el.classList.toggle('on'); el.textContent = s[el.dataset.tog] ? 'On' : 'Off'; onChange(); }; });
+  root.querySelectorAll('[data-res]').forEach((el) => { el.onclick = () => { s.resolution = +el.dataset.res; root.querySelectorAll('[data-res]').forEach((b) => b.classList.toggle('on', b === el)); onChange(); }; });
   root.querySelectorAll('[data-light]').forEach((el) => { el.onclick = () => { s.lightQuality = +el.dataset.light; root.querySelectorAll('[data-light]').forEach((b) => b.classList.toggle('on', b === el)); onChange(); }; });
 }

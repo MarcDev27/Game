@@ -1,5 +1,5 @@
 // Draws the world, entities and colored lighting onto the main canvas.
-import { TILE, hash2, makeCanvas, clamp, rgba } from '../core/util.js';
+import { TILE, hash2, makeCanvas, clamp, rgba, shade } from '../core/util.js';
 import { TILES, BLOCKY, OPAQUE, SOLID, T } from '../content/tiles.js';
 import { ITEMS } from '../content/items.js';
 import { ATLAS } from './textures.js';
@@ -10,6 +10,9 @@ import { LIQ, DOOR_OPEN } from '../world/world.js';
 
 const LIQ_COLORS = { [LIQ.water]: [40, 140, 230], [LIQ.plasma]: [255, 90, 40], [LIQ.gel]: [230, 170, 40] };
 const MARGIN = 14;
+const _shades = new Map();
+const shadeCache = (c) => { if (!_shades.has(c)) _shades.set(c, shade(c, 1.3)); return _shades.get(c); };
+const CHUNK = 32;
 
 export class Renderer {
   constructor(canvas) {
@@ -28,9 +31,74 @@ export class Renderer {
     this.canvas.width = Math.round(cssW * dpr); this.canvas.height = Math.round(cssH * dpr);
     this.canvas.style.width = cssW + 'px'; this.canvas.style.height = cssH + 'px';
     const short = Math.min(cssW, cssH) * dpr;
-    const target = 24 / zoomPref;
+    const target = Math.max(24, Math.min(cssW, cssH) / 22) / zoomPref;
     this.scale = Math.max(1, Math.round(short / (target * TILE)));
     this.ctx.imageSmoothingEnabled = false;
+  }
+
+  attach(w) {
+    if (this.world === w) return;
+    this.world = w;
+    this.chunks = new Map();
+    w.listeners.push((x, y) => {
+      if (x < 0) { this.chunks.clear(); return; }
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const c = this.chunks.get((((y + dy) >> 5) << 12) + ((x + dx) >> 5));
+        if (c) c.dirty = true;
+      }
+    });
+  }
+
+  chunk(w, cx, cy) {
+    const key = (cy << 12) + cx;
+    let c = this.chunks.get(key);
+    if (c && !c.dirty) { c.used = this.frameNo; return c.canvas; }
+    if (!c) { c = { canvas: makeCanvas(CHUNK * TILE, CHUNK * TILE) }; this.chunks.set(key, c); }
+    c.dirty = false; c.used = this.frameNo;
+    const ctx = c.canvas.getContext('2d');
+    ctx.clearRect(0, 0, CHUNK * TILE, CHUNK * TILE);
+    const fg = w.fg, wall = w.wall, W = w.w;
+    const x0 = cx * CHUNK, y0 = cy * CHUNK;
+    const x1 = Math.min(W, x0 + CHUNK), y1 = Math.min(w.h, y0 + CHUNK);
+    const wallAtlas = ATLAS.walls, atlas = ATLAS.tiles, rows = ATLAS.tileRow;
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
+      const i = y * W + x, wl = wall[i];
+      if (!wl || OPAQUE[fg[i]]) continue;
+      ctx.drawImage(wallAtlas, ((x * 7 + y * 13) % 3) * TILE, wl * TILE, TILE, TILE, (x - x0) * TILE, (y - y0) * TILE, TILE, TILE);
+    }
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
+      const i = y * W + x, id = fg[i];
+      if (!id) continue;
+      const t = TILES[id];
+      if (t.furn || t.tree) continue;
+      const px = (x - x0) * TILE, py = (y - y0) * TILE;
+      const row = rows[id];
+      if (row >= 0) {
+        let mask = 0;
+        if (y > 0 && !BLOCKY[fg[i - W]]) mask |= 1;
+        if (x < W - 1 && !BLOCKY[fg[i + 1]]) mask |= 2;
+        if (y < w.h - 1 && !BLOCKY[fg[i + W]]) mask |= 4;
+        if (x > 0 && !BLOCKY[fg[i - 1]]) mask |= 8;
+        const v = ((x * 3 + y * 7) ^ (x >> 2)) % 3;
+        ctx.drawImage(atlas, (mask * 3 + v) * TILE, row * TILE, TILE, TILE, px, py, TILE, TILE);
+      } else if (t.platform) {
+        const m = (SOLID[fg[i - 1]] === 2 || BLOCKY[fg[i - 1]] ? 1 : 0) | (SOLID[fg[i + 1]] === 2 || BLOCKY[fg[i + 1]] ? 2 : 0);
+        ctx.drawImage(ATLAS.sprites.get(id), m * TILE, 0, TILE, TILE, px, py, TILE, TILE);
+      } else {
+        const sp = ATLAS.sprites.get(id);
+        if (!sp) continue;
+        if (t.mount === 'any' && !w.solidAt(x, y + 1) && (w.solidAt(x - 1, y) || w.solidAt(x + 1, y))) {
+          ctx.save(); ctx.translate(px + 8, py + 8); ctx.rotate(w.solidAt(x - 1, y) ? 0.35 : -0.35); ctx.drawImage(sp, -8, -8); ctx.restore();
+        } else ctx.drawImage(sp, px, py);
+      }
+    }
+    return c.canvas;
+  }
+
+  evictChunks() {
+    this.frameNo = (this.frameNo || 0) + 1;
+    if (this.chunks.size < 40) return;
+    for (const [k, c] of this.chunks) if (this.frameNo - c.used > 120) this.chunks.delete(k);
   }
 
   // world px visible
@@ -70,20 +138,17 @@ export class Renderer {
     const L = game.lighting;
     const darkCut = p.s.nightVision ? -1 : 0.015;
 
-    // ---- walls ----
-    const wallAtlas = ATLAS.walls;
-    for (let y = Math.max(0, ty0); y < Math.min(w.h, ty1); y++) {
-      for (let x = Math.max(0, tx0); x < Math.min(W, tx1); x++) {
-        const i = y * W + x, wl = wall[i];
-        if (!wl || OPAQUE[fg[i]]) continue;
-        if (L.at(x, y) < darkCut) continue;
-        const v = (x * 7 + y * 13) % 3;
-        ctx.drawImage(wallAtlas, v * TILE, wl * TILE, TILE, TILE, x * TILE, y * TILE, TILE, TILE);
+    // ---- static walls + tiles from cached chunks ----
+    this.attach(w);
+    const CPX = CHUNK * TILE;
+    for (let cy = Math.max(0, Math.floor(ty0 / CHUNK)); cy <= Math.min(Math.floor((w.h - 1) / CHUNK), Math.floor(ty1 / CHUNK)); cy++) {
+      for (let cx = Math.max(0, Math.floor(tx0 / CHUNK)); cx <= Math.min(Math.floor((W - 1) / CHUNK), Math.floor(tx1 / CHUNK)); cx++) {
+        ctx.drawImage(this.chunk(w, cx, cy), cx * CPX, cy * CPX);
       }
     }
+    this.evictChunks();
 
-    // ---- tiles ----
-    const atlas = ATLAS.tiles, rows = ATLAS.tileRow;
+    // ---- dynamic tiles: trees and furniture ----
     const canopies = [];
     const furn = [];
     for (let y = Math.max(0, ty0); y < Math.min(w.h, ty1); y++) {
@@ -91,34 +156,10 @@ export class Renderer {
         const i = y * W + x, id = fg[i];
         if (!id) continue;
         const t = TILES[id];
-        if (t.furn) { if (x >= tx0 - 3) furn.push(x, y); continue; }
-        if (x < tx0 || x >= tx1) { if (t.tree && (data[i] & 4)) canopies.push(x, y, id); continue; }
-        if (L.at(x, y) < darkCut && !t.light) continue;
-        const row = rows[id];
-        if (row >= 0) {
-          let mask = 0;
-          if (y > 0 && !BLOCKY[fg[i - W]]) mask |= 1;
-          if (x < W - 1 && !BLOCKY[fg[i + 1]]) mask |= 2;
-          if (y < w.h - 1 && !BLOCKY[fg[i + W]]) mask |= 4;
-          if (x > 0 && !BLOCKY[fg[i - 1]]) mask |= 8;
-          const v = ((x * 3 + y * 7) ^ (x >> 2)) % 3;
-          ctx.drawImage(atlas, (mask * 3 + v) * TILE, row * TILE, TILE, TILE, x * TILE, y * TILE, TILE, TILE);
-        } else if (t.platform) {
-          const m = (SOLID[fg[i - 1]] === 2 || BLOCKY[fg[i - 1]] ? 1 : 0) | (SOLID[fg[i + 1]] === 2 || BLOCKY[fg[i + 1]] ? 2 : 0);
-          ctx.drawImage(ATLAS.sprites.get(id), m * TILE, 0, TILE, TILE, x * TILE, y * TILE, TILE, TILE);
-        } else if (t.tree) {
-          this.drawTree(ctx, w, x, y, id, data[i]);
-          if (data[i] & 4) canopies.push(x, y, id);
-        } else {
-          const sp = ATLAS.sprites.get(id);
-          if (sp) {
-            if (t.mount === 'any' && !w.solidAt(x, y + 1)) {
-              const lw2 = w.solidAt(x - 1, y), rw = w.solidAt(x + 1, y);
-              if (lw2 || rw) { ctx.save(); ctx.translate(x * TILE + 8, y * TILE + 8); ctx.rotate(lw2 ? 0.35 : -0.35); ctx.drawImage(sp, -8, -8); ctx.restore(); }
-              else ctx.drawImage(sp, x * TILE, y * TILE);
-            } else ctx.drawImage(sp, x * TILE, y * TILE);
-          }
-        }
+        if (t.furn) { furn.push(x, y); continue; }
+        if (!t.tree) continue;
+        if (x >= tx0 && x < tx1) this.drawTree(ctx, w, x, y, id, data[i]);
+        if (data[i] & 4) canopies.push(x, y, id);
       }
     }
     // furniture (each origin drawn once)
@@ -165,6 +206,12 @@ export class Renderer {
       drawMonster(ctx, m, game.tick, p.dead ? null : p);
     }
     if (!p.dead) this.drawPlayer(ctx, game, p);
+    // fishing lines and bobbers (drawn in the lit pass)
+    for (const pr of game.projectiles) if (pr.def.ai === 'bobber') {
+      ctx.strokeStyle = 'rgba(230,240,255,0.7)'; ctx.lineWidth = 0.75; ctx.beginPath(); ctx.moveTo(p.cx + p.dir * 14, p.y + 4);
+      ctx.quadraticCurveTo((p.cx + pr.cx) / 2, Math.max(p.y, pr.cy) + 20, pr.cx, pr.cy - 3); ctx.stroke();
+      drawProjectile(ctx, pr, game.tick);
+    }
     // hook chain
     if (p.hook) {
       ctx.strokeStyle = '#aeb7c2'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(p.cx, p.y + 18); ctx.lineTo(p.hook.x, p.hook.y); ctx.stroke();
@@ -193,6 +240,7 @@ export class Renderer {
     // ---- glow pass (unaffected by darkness) ----
     ctx.globalCompositeOperation = 'lighter';
     for (const pr of game.projectiles) {
+      if (pr.def.ai === 'bobber') continue;
       if (pr.x < camX - 64 || pr.x > camX + viewW + 64 || pr.y < camY - 64 || pr.y > camY + viewH + 64) continue;
       drawProjectile(ctx, pr, game.tick);
     }
@@ -301,8 +349,13 @@ export class Renderer {
       ctx.fillRect(x * TILE - 2, y * TILE + 12, 20, 4);
       ctx.fillRect(x * TILE + 1, y * TILE + 10, 14, 2);
     }
-    if (d & 1) { ctx.fillStyle = TILES[id].tex.c; ctx.fillRect(x * TILE - 8, y * TILE + 6, 9, 3); ctx.fillStyle = t.leaf; ctx.fillRect(x * TILE - 16, y * TILE, 10, 8); ctx.fillStyle = t.leaf2; ctx.fillRect(x * TILE - 16, y * TILE + 6, 10, 2); }
-    if (d & 2) { ctx.fillStyle = TILES[id].tex.c; ctx.fillRect(x * TILE + 15, y * TILE + 6, 9, 3); ctx.fillStyle = t.leaf; ctx.fillRect(x * TILE + 22, y * TILE, 10, 8); ctx.fillStyle = t.leaf2; ctx.fillRect(x * TILE + 22, y * TILE + 6, 10, 2); }
+    const blob = (cx, cy) => {
+      ctx.fillStyle = t.leaf2; ctx.beginPath(); ctx.arc(cx, cy + 1, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = t.leaf; ctx.beginPath(); ctx.arc(cx - 1, cy - 1, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = shadeCache(t.leaf); ctx.fillRect(cx - 4, cy - 4, 3, 2);
+    };
+    if (d & 1) { ctx.fillStyle = TILES[id].tex.c; ctx.fillRect(x * TILE - 6, y * TILE + 7, 9, 3); blob(x * TILE - 8, y * TILE + 4); }
+    if (d & 2) { ctx.fillStyle = TILES[id].tex.c; ctx.fillRect(x * TILE + 13, y * TILE + 7, 9, 3); blob(x * TILE + 24, y * TILE + 4); }
   }
 
   drawFurniture(ctx, w, ox, oy) {

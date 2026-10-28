@@ -18,6 +18,8 @@ import { Events } from './events.js';
 import { Town } from './town.js';
 import { addItem, canFit } from './inventory.js';
 import { rectSolid } from './physics.js';
+import { openCrate } from './fishing.js';
+import { ACHIEVEMENTS } from '../content/achievements.js';
 
 const TREE_HP = 220;
 
@@ -43,7 +45,7 @@ export class Game {
     this.rng = new RNG((world.seed ^ Date.now()) >>> 0);
     this.saveTimer = 0;
     this.dpsLog = [];
-    world.listeners.push((x, y) => this.mapDirty.add((y >> 6) * 4096 + (x >> 6)));
+    world.listeners.push((x, y) => this.mapDirty.add(x < 0 ? -1 : (y >> 6) * 4096 + (x >> 6)));
   }
 
   start() {
@@ -96,6 +98,7 @@ export class Game {
     if (this.tick % 60 === 0) for (const [k, v] of this.tileDmg) if (this.tick - v.t > 300) this.tileDmg.delete(k);
     this.updateCamera();
     this.chestRangeCheck();
+    if (this.tick % 120 === 7) this.checkAchievements();
   }
 
   updateCamera() {
@@ -322,6 +325,7 @@ export class Game {
       if (cr > 0) this.dropCredits(x, y, cr);
     };
     if (d.boss && !m.owner) {
+      if (m.segments && d.segmentHp) for (const sg of m.segments) loot(sg.cx, sg.cy);
       loot(m.cx, m.cy);
       this.dropItem(m.cx, m.cy, m.def.hp > 10000 ? 'mega_stim' : 'stim_pack', this.rng.int(5, 12));
       this.onBossKilled(m);
@@ -530,7 +534,7 @@ export class Game {
     const power = it.pick || it.hammer || 0;
     if (t.minPick > power) { if (this.tick % 20 === 0 || !this.tileDmg.has(key)) this.fx.text(x * TILE + 8, y * TILE, 'Needs ' + t.minPick + '% pick power', '#ffcc33'); this.tileDmg.set(key, { dmg: 0, t: this.tick }); return; }
     if (t.biome === 'dungeon' && !w.flags.bosses.archon && t.solid) { this.fx.text(x * TILE + 8, y * TILE, 'Protected by the Archon', '#66ccff'); return; }
-    if (t.biome === 'temple' && !w.flags.bosses.bloom_titan) { this.fx.text(x * TILE + 8, y * TILE, 'Sealed', '#ffaa22'); return; }
+    if (t.biome === 'temple' && !w.flags.bosses.gravity_golem) { this.fx.text(x * TILE + 8, y * TILE, 'Sealed until the Golem falls', '#ffaa22'); return; }
     const e = this.tileDmg.get(key) || { dmg: 0, t: 0 };
     e.dmg += t.furn || t.platform || !t.solid ? 100 : power;
     e.t = this.tick;
@@ -588,6 +592,9 @@ export class Game {
       return true;
     }
     w.set(x, y, 0);
+    if (drop && t.cut && t.key.startsWith('tallgrass') && this.rng.chance(0.04)) this.dropItem(x * TILE + 8, y * TILE + 8, 'bio_worm', 1);
+    if (drop && t.key === 'herb_glowcap' && this.rng.chance(0.3)) this.dropItem(x * TILE + 8, y * TILE + 8, 'glow_grub', 1);
+    if (drop && t.key === 'swarmcomb' && this.rng.chance(0.05)) this.dropItem(x * TILE + 8, y * TILE + 8, 'nano_larva', 1);
     if (drop && t.drop && ITEMS[t.drop] && (!t.dropChance || this.rng.chance(t.dropChance))) this.dropItem(x * TILE + 8, y * TILE + 8, t.drop, 1, false);
     if (t.solid) this.audio.play('break');
     this.fx.debris(x * TILE + 8, y * TILE + 8, t.map, 5);
@@ -768,6 +775,7 @@ export class Game {
     }
     if (c.accSlot) { if (p.accSlots >= 6) return false; p.accSlots = 6; this.notify('Accessory slot unlocked!', '#d0a0ff'); this.audio.play('levelup'); }
     if (c.recall) this.recall();
+    if (c.crate) openCrate(this, c.crate);
     if (c.summon) return this.useSummon(c.summon);
     return true;
   }
@@ -870,6 +878,16 @@ export class Game {
     if (Math.abs(p.cx / TILE - ox) > 8 || Math.abs(p.cy / TILE - oy) > 7 || !this.world.chests.has(this.openChest)) this.closeChest();
   }
   closeChest() { this.openChest = null; this.openChestPos = null; if (this.ui) this.ui.closeChest(); }
+
+  checkAchievements() {
+    const p = this.player;
+    for (const a of ACHIEVEMENTS) {
+      if (p.achievements.has(a.key)) continue;
+      let ok = false;
+      try { ok = a.check(this); } catch (e) { ok = false; }
+      if (ok) { p.achievements.add(a.key); this.notify('Achievement: ' + a.name, '#ffcc33'); this.audio.play('levelup'); }
+    }
+  }
 
   onPickup(k) { if (this.ui) this.ui.dirtyInv = true; this.town.onPickup(k); }
 
