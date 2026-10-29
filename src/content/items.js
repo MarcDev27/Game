@@ -421,3 +421,68 @@ cons('sonar_inj', 'Sonar Injector', { buff: 'sonar', time: 60 * 60 * 6 }, { s: '
 cons('fishing_inj', 'Angler Injector', { buff: 'angler', time: 60 * 60 * 8 }, { s: 'injector', c: '#66ccff' }, 500, 1, '+15 fishing power');
 acc('tackle_box', 'Tackle Box', { baitSave: 0.5 }, { s: 'crate', c: '#5a6b8a', c2: '#ffcc33' }, 15000, 2, '50% chance to keep bait');
 acc('angler_band', 'Angler Band', { fishingPower: 10 }, { s: 'band', c: '#4ad9ff', c2: '#2ef2ff' }, 15000, 2, '+10 fishing power');
+
+// ---------------- vehicles ----------------
+// Equip in the Vehicle slot, then tap RIDE. Each type has its own handling (see game/vehicles.js).
+export const VEHICLES = {
+  hoverbike: { w: 38, h: 26, speed: 9, mode: 'hover', stats: { defense: 4 }, color: '#2ef2ff', c2: '#3a3d46', ram: 20 },
+  skycar: { w: 54, h: 26, speed: 8, mode: 'fly', antigrav: 34, stats: { defense: 8 }, color: '#ff3ddc', c2: '#2a2a3a', ram: 30 },
+  drillpod: { w: 30, h: 30, speed: 2.4, mode: 'drill', drill: 70, stats: { defense: 14 }, color: '#f2dd7a', c2: '#59616c', ram: 0 },
+  mech: { w: 40, h: 58, speed: 3.4, mode: 'walk', jump: 9, stats: { defense: 30, kbImmune: 1 }, color: '#5a6b7a', c2: '#ff3355', gun: { proj: 'mech_shell', dmg: 75, cd: 16, speed: 13 }, ram: 0 },
+  starjumper: { w: 58, h: 28, speed: 12, mode: 'fly', antigrav: 0, stats: { defense: 20, plasmaImmune: 1 }, color: '#d0a0ff', c2: '#1a1030', gun: { proj: 'star_missile', dmg: 110, cd: 22, speed: 9 }, ram: 60 },
+};
+const veh = (key, name, icon, value, rarity, tip) => item(key, { name, type: 'vehicle', vehicle: key, icon, value, rarity, tip });
+veh('hoverbike', 'Scrap Hoverbike', { s: 'bike', c: '#2ef2ff', c2: '#3a3d46' }, 15000, 2, 'Glides over ground and liquid at high speed. Ram enemies. No fall damage.');
+veh('skycar', 'Aerodyne Sky Car', { s: 'car', c: '#ff3ddc', c2: '#2a2a3a' }, 60000, 4, 'A flying car. Its antigrav field works up to 34 tiles above solid ground.');
+veh('drillpod', 'Bore Pod', { s: 'pod', c: '#f2dd7a', c2: '#59616c' }, 30000, 3, 'Drives through solid rock, mining everything in its path (70% power).');
+veh('mech', 'Titan Walker Mech', { s: 'mech', c: '#5a6b7a', c2: '#ff3355' }, 150000, 6, 'Heavy combat mech: +30 defense, stomps, and an explosive cannon (tap to fire).');
+veh('starjumper', 'Starjumper Shuttle', { s: 'ship', c: '#d0a0ff', c2: '#1a1030' }, 400000, 9, 'Unlimited flight anywhere, even through plasma. Fires homing star missiles.');
+
+// ---------------- cyberware implants ----------------
+// Installed into body slots at a Surgery Bay. Total cost is limited by cyberware capacity.
+export const IMPLANT_SLOTS = ['neural', 'optic', 'arms', 'spine', 'legs', 'core'];
+export const IMPLANT_SLOT_NAMES = { neural: 'Neural', optic: 'Optics', arms: 'Arms', spine: 'Spine', legs: 'Legs', core: 'Core' };
+const imp = (key, name, slot, cost, stats, color, value, rarity, tip, extra = {}) => item(key, Object.assign({ name, type: 'implant', slot, cost, stats, icon: { s: 'implant_' + slot, c: color }, value, rarity, tip }, extra));
+imp('reflex_booster', 'Reflex Booster', 'neural', 6, { crit: 5 }, '#3dffb0', 40000, 4, 'AUG: Time Dilation — the world slows to a crawl for 4s.', { active: 'timedilation', cooldown: 30 * 60 });
+imp('tactical_link', 'Tactical Link', 'neural', 4, { minions: 1, summonDmg: 0.1 }, '#66ccff', 25000, 3, 'AUG: Drone Command — your drones deal double damage for 6s.', { active: 'dronecommand', cooldown: 25 * 60 });
+imp('hack_uplink', 'Hack Uplink', 'neural', 5, { energyDmg: 0.05 }, '#9dff3d', 35000, 3, 'AUG: Override — hijack the nearest machine; it fights for you for 20s.', { active: 'override', cooldown: 35 * 60 });
+imp('overdrive_chip', 'Overdrive Chip', 'neural', 7, { allDmg: 0.05 }, '#ff3355', 90000, 6, 'AUG: Overdrive — +40% damage and speed for 8s.', { active: 'overdrive', cooldown: 40 * 60 });
+imp('thermal_optics', 'Thermal Optics', 'optic', 2, { hunter: 1, nightVision: 1 }, '#ff8a3d', 8000, 2, 'See heat signatures: enemies highlighted, see in the dark.');
+imp('ore_lens', 'Prospector Lens', 'optic', 2, { scanner: 1 }, '#ffcc33', 8000, 2, 'Ores and treasure glow through rock.');
+imp('zoom_optics', 'Wide-Field Optics', 'optic', 3, { zoomOut: 0.3 }, '#2ef2ff', 15000, 3, 'See 30% more of the world.');
+imp('targeting_optics', 'Targeting Optics', 'optic', 3, { rangedDmg: 0.1, crit: 8 }, '#ff3355', 30000, 4, 'Ballistic overlay for marksmen.');
+imp('mantis_blades', 'Mantis Blades', 'arms', 5, { meleeSpeed: 0.1 }, '#ff6a3d', 25000, 4, 'Forearm blades. Attack with an empty hotbar slot to slash (scales with progress).', { mantis: true });
+imp('gorilla_arms', 'Gorilla Arms', 'arms', 4, { mineSpeed: 0.25, meleeDmg: 0.15, meleeKnock: 1 }, '#aeb7c2', 15000, 3, 'Hydraulic arms: dig faster, punch harder.');
+imp('grapple_arm', 'Grapple Arm', 'arms', 3, {}, '#d8dde4', 12000, 2, 'A built-in grappling hook (30 tiles) when no hook is equipped.', { builtinHook: { hookRange: 30, hookSpeed: 17 } });
+imp('launcher_arm', 'Launcher Arm', 'arms', 4, { rangedDmg: 0.05 }, '#ffb12e', 40000, 5, 'Shoulder pod auto-fires micro-missiles at nearby enemies.', { autoMissile: true });
+imp('exo_spine', 'Exo-Spine', 'spine', 4, { defense: 8, kbImmune: 1 }, '#59616c', 15000, 3, 'Carbon-steel vertebrae.');
+imp('synth_muscle', 'Synthetic Muscle', 'spine', 3, { moveSpeed: 0.2, runSpeed: 1.5 }, '#ff5a8a', 12000, 2, 'Faster in every way.');
+imp('shock_spine', 'Shock Spine', 'spine', 3, { thorns: 1.0 }, '#e8ff4a', 20000, 3, 'Discharges into anything that touches you.');
+imp('spring_legs', 'Spring Legs', 'legs', 3, { doubleJump: 1, jumpBoost: 1.4, noFall: 1 }, '#66ccff', 10000, 2, 'Pneumatic legs: double jump, high jumps, no fall damage.');
+imp('kinetic_legs', 'Kinetic Legs', 'legs', 4, { dash: 1, stomp: 1 }, '#3dffb0', 20000, 3, 'Dash, and crush enemies by landing on them.');
+imp('mag_treads', 'Mag-Treads', 'legs', 3, { wallClimb: 1, waterWalk: 1 }, '#8a8f99', 18000, 3, 'Grip walls and walk on liquids.');
+imp('nano_heart', 'Nano-Heart', 'core', 6, { lifeRegen: 1 }, '#ff3355', 45000, 4, 'Reboots you at 50% integrity when destroyed (once every 5 minutes).', { revive: true });
+imp('fusion_core', 'Micro-Fusion Core', 'core', 4, { maxEnergy: 40, energyRegen: 6 }, '#a46bff', 25000, 3, 'Clean energy for your energy weapons.');
+imp('bio_monitor', 'Bio-Monitor', 'core', 3, { lifeRegen: 3, stimCooldown: -0.2 }, '#3dff6a', 15000, 3, 'Automated nanite repairs.');
+imp('overclock_core', 'Overclocked Core', 'core', 5, { allDmg: 0.08, crit: 4 }, '#ff3ddc', 80000, 6, 'Runs hot. Hits harder.');
+furnItem('surgery_bay', { name: 'Surgery Bay', stack: 99, value: 5000, tip: 'Stand near it to install or remove cyberware implants' });
+// Internal: the attack performed by Mantis Blades with an empty hotbar slot.
+item('mantis_strike', { name: 'Mantis Strike', type: 'weapon', dmgType: 'melee', useStyle: 'swing', damage: 18, useTime: 11, size: 30, knock: 4, crit: 10, icon: { s: 'blade', c: '#ff6a3d', c2: '#8a2a12' }, hidden: true });
+
+// ---------------- futuristic weapons & tech ----------------
+const techw = (key, d) => item(key, Object.assign({ type: 'weapon', useStyle: 'shoot', crit: 4, knock: 2 }, d));
+techw('photon_lance', { name: 'Photon Lance', dmgType: 'energy', damage: 14, useTime: 5, energyCost: 1, tech: { kind: 'beam', range: 24, rate: 5, color: '#a46bff', width: 2 }, icon: { s: 'raygun', c: '#a46bff', c2: '#4b2a8a' }, value: 12000, rarity: 3, tip: 'Hold to sustain a continuous photon beam.' });
+techw('graviton_ray', { name: 'Graviton Ray', dmgType: 'energy', damage: 42, useTime: 4, energyCost: 2, tech: { kind: 'beam', range: 30, rate: 4, pierce: 3, pull: true, color: '#3dffb0', width: 3 }, icon: { s: 'raygun', c: '#3dffb0', c2: '#118a5a' }, value: 60000, rarity: 7, tip: 'A piercing beam that drags enemies toward you.' });
+techw('coilgun', { name: 'Coilgun', dmgType: 'ranged', damage: 80, useTime: 20, energyCost: 6, tech: { kind: 'charge', max: 60, speed: 18, proj: 'coil_slug', fullProj: 'coil_slug', color: '#66ccff', cooldown: 12 }, icon: { s: 'sniper', c: '#66ccff', c2: '#44607e' }, value: 20000, rarity: 4, tip: 'Hold to charge magnetic rails, release to fire. Full charge pierces deeper.' });
+techw('tachyon_lance', { name: 'Tachyon Lance', dmgType: 'ranged', damage: 300, useTime: 20, energyCost: 12, tech: { kind: 'charge', max: 75, speed: 24, proj: 'coil_slug', fullProj: 'tachyon_slug', color: '#fff1a8', cooldown: 15 }, icon: { s: 'sniper', c: '#fff1a8', c2: '#9a8a3a' }, value: 90000, rarity: 8, tip: 'Charged tachyon shots phase straight through walls.' });
+techw('gravity_gun', { name: 'Gravity Gun', dmgType: 'ranged', damage: 55, useTime: 10, energyCost: 3, tech: { kind: 'grab', range: 18, throwSpeed: 17, color: '#ff8a3d' }, icon: { s: 'raygun', c: '#ff8a3d', c2: '#59616c' }, value: 25000, rarity: 4, tip: 'Hold to lift an enemy, release to hurl it into walls and other enemies.' });
+techw('wormhole_projector', { name: 'Wormhole Projector', dmgType: 'energy', damage: 0, useTime: 20, energyCost: 10, tech: { kind: 'portal', range: 40 }, icon: { s: 'raygun', c: '#66ccff', c2: '#ff8a3d' }, value: 40000, rarity: 5, tip: 'Tap twice to open a linked pair of wormholes. Walk into one to exit the other.' });
+techw('monofilament_whip', { name: 'Monofilament Whip', dmgType: 'melee', damage: 17, useTime: 24, knock: 3, tech: { kind: 'whip', reach: 130, color: '#ff3ddc' }, icon: { s: 'cable', c: '#ff3ddc' }, value: 15000, rarity: 3, tip: 'A molecule-thin wire that slices everything in a long line.' });
+techw('plasma_filament', { name: 'Plasma Filament', dmgType: 'melee', damage: 58, useTime: 20, knock: 4, onHit: { buff: 'burn', time: 240 }, tech: { kind: 'whip', reach: 170, color: '#ff5a2a' }, icon: { s: 'cable', c: '#ff5a2a' }, value: 70000, rarity: 7, tip: 'A superheated filament. Sets enemies ablaze.' });
+ranged('smart_pistol', { name: 'Smart Pistol', damage: 9, useTime: 14, convertAmmo: 'smart_round', smartAim: true, icon: { s: 'pistol', c: '#2ef2ff', c2: '#3a3d46' }, value: 6000, rarity: 2, tip: 'Rounds lock onto the target nearest your aim.' });
+weapon('black_hole_charge', { name: 'Black Hole Charge', type: 'weapon', dmgType: 'ranged', damage: 30, useTime: 45, useStyle: 'throw', shoot: 'black_hole', shootSpeed: 6, consumeSelf: true, stack: 99, icon: { s: 'grenade', c: '#1a1030', c2: '#d0a0ff' }, value: 600, rarity: 5, tip: 'Collapses into a micro black hole that devours nearby enemies.' });
+summon('barrier_projector', { name: 'Hardlight Barrier', damage: 10, shoot: 'hardlight_wall', energyCost: 15, sentry: false, barrier: true, icon: { s: 'shield', c: '#2ef2ff', c2: '#ffffff' }, value: 12000, rarity: 3, tip: 'Projects a wall of solid light that blocks enemy fire (max 2).' });
+tool('nano_disassembler', { name: 'Nano Disassembler', pick: 70, axe: 60, damage: 8, useTime: 14, area: 1, reach: 2, icon: { s: 'raygun', c: '#7ff0ff', c2: '#2a7a8a' }, value: 30000, rarity: 4, tip: 'Unbinds matter in a 3×3 area.' });
+tool('matter_disassembler', { name: 'Matter Disassembler', pick: 160, axe: 120, damage: 24, useTime: 9, area: 1, reach: 4, icon: { s: 'raygun', c: '#3dffb0', c2: '#118a5a' }, value: 90000, rarity: 8, tip: 'Industrial-grade 3×3 matter disassembly.' });
+furnItem('quantum_beacon', { name: 'Quantum Beacon', stack: 99, value: 4000, tip: 'Tap a beacon to teleport to any other beacon or your landing site.' });
+item('memory_shard', { name: 'Memory Shard', icon: { s: 'shard', c: '#2ef2ff', c2: '#ff3ddc' }, value: 0, rarity: 3, tip: 'A recovered fragment of the Strata archive.' });

@@ -33,6 +33,7 @@ export function fillChest(chest, kind, depthFactor, rng) {
   if (rng.chance(0.25)) add('demo_charge', rng.int(2, 6));
   if (rng.chance(0.25)) add('star_shard', rng.int(1, 3));
   if (rng.chance(0.2)) add('vital_core', 1);
+  if (rng.chance(kind === 'derelict' || kind === 'core' || kind === 'temple' || kind === 'sky' ? 0.5 : 0.12)) add('memory_shard', 1);
   chest.credits = Math.floor(rng.int(100, 600) * (1 + depthFactor * 3));
 }
 

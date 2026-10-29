@@ -9,7 +9,9 @@
   --dim: #8aa0c0;
   --life: #ff3355;
   --energy: #a46bff;
-  --slot: 40px;
+  --slot: 44px;
+  --center-x: 50%;
+  --center-w: 420px;
   --safe-l: env(safe-area-inset-left, 0px);
   --safe-r: env(safe-area-inset-right, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
@@ -32,18 +34,20 @@ input[type=text] { font-family: var(--font); font-size: 16px; background: #0a122
 /* ---------- HUD ---------- */
 #hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
 #hud * { pointer-events: auto; }
-#bars { position: absolute; left: calc(8px + var(--safe-l)); top: calc(6px + var(--safe-t)); width: 170px; pointer-events: none !important; }
+#leftcol { position: absolute; left: calc(8px + var(--safe-l)); top: calc(6px + var(--safe-t)); display: flex; flex-direction: column; gap: 3px; pointer-events: none !important; }
+#bars { width: 160px; pointer-events: none !important; }
 #bars * { pointer-events: none !important; }
 .bar { position: relative; height: 14px; background: rgba(0, 0, 0, 0.55); border: 1px solid #334; border-radius: 3px; margin-bottom: 3px; overflow: hidden; }
 .bar .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; transition: width 0.15s; }
 .bar.life .fill { background: linear-gradient(90deg, #a8102a, var(--life)); box-shadow: 0 0 6px var(--life); }
 .bar.energy .fill { background: linear-gradient(90deg, #4b2a8a, var(--energy)); box-shadow: 0 0 6px var(--energy); }
 .bar span { position: absolute; inset: 0; font-size: 10px; line-height: 13px; text-align: center; color: #fff; text-shadow: 0 1px 1px #000; }
-#buffs { display: flex; flex-wrap: wrap; gap: 2px; }
+#buffs { display: flex; flex-wrap: wrap; gap: 2px; max-width: 240px; pointer-events: none !important; }
 .buff { font-size: 9px; padding: 1px 3px; border-radius: 3px; background: rgba(0, 0, 0, 0.6); border: 1px solid; white-space: nowrap; }
-#hotbar { position: absolute; left: 50%; transform: translateX(-50%); top: calc(4px + var(--safe-t)); display: flex; gap: 2px; }
+#hotbar { display: flex; flex-direction: column; gap: 2px; }
+.hbg { display: flex; gap: 2px; }
 .slot { width: var(--slot); height: var(--slot); background: rgba(12, 20, 40, 0.8); border: 1px solid #2a3a5a; border-radius: 5px; position: relative; display: flex; align-items: center; justify-content: center; }
-.slot img { width: 28px; height: 28px; image-rendering: pixelated; pointer-events: none; }
+.slot img { width: 30px; height: 30px; image-rendering: pixelated; pointer-events: none; }
 .slot .n { position: absolute; right: 2px; bottom: 0; font-size: 10px; color: #fff; text-shadow: 0 1px 1px #000, 0 0 2px #000; pointer-events: none; }
 .slot .k { position: absolute; left: 3px; top: 1px; font-size: 8px; color: var(--dim); pointer-events: none; }
 .slot.sel { border-color: var(--cyan); box-shadow: 0 0 8px rgba(46, 242, 255, 0.6) inset, 0 0 6px rgba(46, 242, 255, 0.4); }
@@ -55,13 +59,13 @@ input[type=text] { font-family: var(--font); font-size: 16px; background: #0a122
 #minimap { border: 1px solid var(--line); border-radius: 4px; background: #000; width: 140px; height: 88px; }
 #info { font-size: 10px; text-align: right; color: var(--dim); text-shadow: 0 1px 1px #000; max-width: 160px; line-height: 13px; pointer-events: none !important; }
 #menu-buttons { display: flex; flex-direction: column; gap: 4px; }
-.hb { width: 38px; height: 38px; padding: 0; font-size: 18px; background: rgba(12, 20, 40, 0.85); }
-#bossbar { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(8px + var(--safe-b)); width: min(420px, 60vw); text-align: center; pointer-events: none !important; }
+.hb { width: 44px; height: 44px; padding: 0; font-size: 18px; background: rgba(12, 20, 40, 0.85); }
+#bossbar { position: absolute; left: var(--center-x); transform: translateX(-50%); bottom: calc(8px + var(--safe-b)); width: min(var(--center-w), 60vw); text-align: center; pointer-events: none !important; }
 #bossbar .name { font-size: 12px; color: #ffb0c0; text-shadow: 0 0 4px #ff3355; }
 #bossbar .track { height: 10px; background: rgba(0, 0, 0, 0.7); border: 1px solid #ff3355; border-radius: 3px; overflow: hidden; }
 #bossbar .fill { height: 100%; background: linear-gradient(90deg, #ff3355, #ff3ddc); }
-#eventbar { position: absolute; left: 50%; transform: translateX(-50%); top: calc(52px + var(--safe-t)); font-size: 11px; color: #ffcc33; background: rgba(0, 0, 0, 0.6); padding: 2px 8px; border-radius: 4px; pointer-events: none !important; }
-#toasts { position: absolute; left: 50%; transform: translateX(-50%); top: calc(74px + var(--safe-t)); display: flex; flex-direction: column; align-items: center; gap: 2px; pointer-events: none !important; width: 80vw; }
+#eventbar { position: absolute; left: var(--center-x); transform: translateX(-50%); top: calc(6px + var(--safe-t)); font-size: 11px; color: #ffcc33; background: rgba(0, 0, 0, 0.6); padding: 2px 8px; border-radius: 4px; pointer-events: none !important; }
+#toasts { position: absolute; left: var(--center-x); transform: translateX(-50%); top: calc(30px + var(--safe-t)); display: flex; flex-direction: column; align-items: center; gap: 2px; pointer-events: none !important; width: var(--center-w); max-width: 56vw; }
 .toast { font-size: 12px; padding: 3px 10px; background: rgba(0, 0, 0, 0.6); border-radius: 4px; text-shadow: 0 1px 1px #000; animation: fade 5s forwards; text-align: center; }
 @keyframes fade { 0% { opacity: 0; transform: translateY(-4px); } 6% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; } }
 #credits { font-size: 11px; margin: 0 0 2px 2px; color: #ffe27a; text-shadow: 0 1px 1px #000; pointer-events: none !important; }
@@ -75,13 +79,16 @@ input[type=text] { font-family: var(--font); font-size: 16px; background: #0a122
 #joybase { position: absolute; width: 110px; height: 110px; margin: -55px 0 0 -55px; left: calc(80px + var(--safe-l)); top: calc(100% - 90px - var(--safe-b)); border-radius: 50%; border: 2px solid rgba(46, 242, 255, 0.35); background: rgba(10, 30, 50, 0.25); opacity: 0.55; transition: opacity 0.1s; }
 #joybase.active { opacity: 1; }
 #joyknob { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #8ff8ff, #1a7a8a); box-shadow: 0 0 12px rgba(46, 242, 255, 0.6); }
-#actions { position: absolute; right: calc(14px + var(--safe-r)); bottom: calc(14px + var(--safe-b)); width: 190px; height: 190px; pointer-events: none; }
+#actions { position: absolute; right: calc(14px + var(--safe-r)); bottom: calc(14px + var(--safe-b)); width: 200px; height: 190px; pointer-events: none; }
 .act { position: absolute; pointer-events: auto; border-radius: 50%; background: rgba(10, 30, 50, 0.45); border: 2px solid rgba(46, 242, 255, 0.5); color: #bff; font-size: 11px; padding: 0; }
 #act-jump { width: 84px; height: 84px; right: 0; bottom: 0; font-size: 13px; }
 #act-hook { width: 54px; height: 54px; right: 92px; bottom: 6px; }
 #act-heal { width: 50px; height: 50px; right: 18px; bottom: 96px; border-color: rgba(255, 51, 85, 0.6); color: #fbb; }
-#act-energy { width: 46px; height: 46px; right: 82px; bottom: 74px; border-color: rgba(164, 107, 255, 0.6); color: #dbf; }
+#act-energy { width: 50px; height: 50px; right: 82px; bottom: 74px; border-color: rgba(164, 107, 255, 0.6); color: #dbf; }
 #act-dash { width: 50px; height: 50px; right: 140px; bottom: 64px; border-color: rgba(61, 255, 176, 0.6); color: #bfd; }
+#act-ride { width: 50px; height: 50px; right: 146px; bottom: 122px; border-color: rgba(255, 61, 220, 0.6); color: #fbf; }
+#act-aug { width: 50px; height: 50px; right: 84px; bottom: 136px; border-color: rgba(157, 255, 61, 0.6); color: #dfb; }
+#act-aug.cool { opacity: 0.45; }
 body.lefty #joyzone { left: auto; right: 0; }
 body.lefty #joybase { left: auto; right: calc(80px + var(--safe-r)); margin-right: -55px; }
 body.lefty #actions { right: auto; left: calc(14px + var(--safe-l)); transform: scaleX(-1); }
@@ -95,7 +102,7 @@ body.lefty .act { transform: scaleX(-1); }
 .win h2 button { padding: 4px 10px; }
 .win .body { padding: 8px; overflow: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
 .grid { display: grid; grid-template-columns: repeat(10, var(--slot)); gap: 2px; }
-.cols { display: flex; gap: 10px; align-items: flex-start; }
+.cols { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
 .col { display: flex; flex-direction: column; gap: 4px; }
 .equip { display: grid; grid-template-columns: repeat(2, var(--slot)); gap: 2px; }
 .label { font-size: 10px; color: var(--dim); margin: 4px 0 2px; letter-spacing: 1px; text-transform: uppercase; }
@@ -150,21 +157,52 @@ body.lefty .act { transform: scaleX(-1); }
 input[type=range] { width: 160px; }
 .help { font-size: 12px; line-height: 18px; color: var(--text); }
 .help b { color: var(--cyan); }
-#rotate-hint { position: fixed; left: 0; right: 0; bottom: calc(10px + var(--safe-b)); text-align: center; z-index: 30; font-size: 12px; color: var(--dim); pointer-events: none; }
 .menubg { position: fixed; inset: 0; z-index: 19; }
 
+#ctrlbg { display: none; }
+
+/* Wide screens (iPhone Pro Max landscape, iPhone Duo inner display): one row, two banks. */
+body.wide #hotbar { position: fixed; top: calc(4px + var(--safe-t)); left: 50%; transform: translateX(-50%); flex-direction: row; gap: 14px; }
+body.wide #toasts { top: calc(56px + var(--safe-t)); }
+body.wide #eventbar { top: calc(54px + var(--safe-t)); }
+body.wide #eventbar:not(.hidden) ~ #toasts { top: calc(78px + var(--safe-t)); }
+
+/* iPhone Duo partially folded like a book: keep the fold clear, banks sit either side of it. */
+body.fold-book.wide #hotbar { left: var(--fold-x); gap: calc(var(--fold-w) + 28px); }
+body.fold-book #panel { right: calc(100% - var(--fold-x)); }
+
+/* iPhone Duo partially folded like a laptop: game on the top half, controls on the bottom half. */
+body.fold-laptop #ctrlbg { display: block; position: fixed; left: 0; right: 0; top: calc(var(--fold-y) + var(--fold-h)); bottom: 0; z-index: 4;
+  background: repeating-linear-gradient(90deg, rgba(46, 242, 255, 0.04) 0 1px, transparent 1px 24px), repeating-linear-gradient(0deg, rgba(46, 242, 255, 0.04) 0 1px, transparent 1px 24px), linear-gradient(#0a1424, #05060f);
+  border-top: 1px solid var(--line); }
+body.fold-laptop #touch { top: calc(var(--fold-y) + var(--fold-h)); }
+body.fold-laptop #joyzone { width: 34vw; height: 100%; }
+body.fold-laptop #hotbar { position: fixed; top: calc(var(--fold-y) + var(--fold-h) + 12px); left: 50%; transform: translateX(-50%); flex-direction: column; gap: 4px; z-index: 7; }
+body.fold-laptop #bossbar { bottom: calc(100% - var(--fold-y) + 8px); }
+body.fold-laptop #panel, body.fold-laptop #mapview { bottom: auto; height: var(--fold-y); }
+
+/* Touch: every control is at least 44pt, per Apple's guidance. */
+@media (pointer: coarse) {
+  button { min-height: 44px; min-width: 44px; }
+  .sw { width: 44px; height: 44px; }
+  .win h2 button { padding: 4px 12px; }
+}
+
 @media (max-height: 430px) {
-  :root { --slot: 34px; }
-  .slot img { width: 24px; height: 24px; }
   .craftlist { max-height: 140px; }
   .shoplist { max-height: 200px; }
+  #minimap { width: 120px; height: 75px; }
 }
 @media (max-width: 600px) {
-  :root { --slot: 30px; }
-  .slot img { width: 22px; height: 22px; }
-  #hotbar { top: calc(104px + var(--safe-t)); left: calc(6px + var(--safe-l)); transform: none; }
-  #toasts { top: calc(142px + var(--safe-t)); }
-  #minimap { width: 104px; height: 66px; }
   .cols { flex-direction: column; }
-  #actions { transform: scale(0.85); transform-origin: bottom right; }
+  .grid { grid-template-columns: repeat(5, var(--slot)); }
 }
+body.portrait #minimap { width: 92px; height: 64px; }
+body.portrait #toasts { top: calc(150px + var(--safe-t)); max-width: 92vw; width: 92vw; left: 50%; }
+body.portrait #eventbar { top: calc(128px + var(--safe-t)); left: 50%; }
+
+/* Compact landscape: transient messages use the space between the hotbar column and the minimap. */
+body:not(.wide):not(.portrait):not(.fold-laptop) #toasts { left: calc(250px + var(--safe-l)); right: calc(200px + var(--safe-r)); transform: none; width: auto; max-width: none; top: calc(8px + var(--safe-t)); }
+body:not(.wide):not(.portrait):not(.fold-laptop) #eventbar { left: calc(250px + var(--safe-l) + (100vw - 450px) / 2); }
+body.fold-book .grid { grid-template-columns: repeat(5, var(--slot)); }
+body.fold-laptop #topright { top: calc(var(--fold-y) + var(--fold-h) + 12px); z-index: 7; position: fixed; }

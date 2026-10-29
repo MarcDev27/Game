@@ -4,6 +4,7 @@ import { PREFIXES, prefixValueMult } from '../content/prefixes.js';
 import { RARITY_COLORS } from '../content/materials.js';
 import { BUFFS } from '../content/buffs.js';
 import { formatCredits } from '../core/util.js';
+import { VEHICLES, IMPLANT_SLOT_NAMES } from '../content/items.js';
 
 const STAT_TEXT = {
   defense: (v) => `+${v} defense`, allDmg: (v) => `+${Math.round(v * 100)}% damage`, meleeDmg: (v) => `+${Math.round(v * 100)}% melee damage`,
@@ -61,6 +62,8 @@ export function itemTooltip(slot, player, extra = {}) {
   if (it.type === 'armor' && it.stats) L.push(...statLines(it.stats));
   if (it.type === 'accessory') L.push(...statLines(it.stats || {}));
   if (it.type === 'hook') L.push(`Reach ${it.hookRange} tiles`);
+  if (it.type === 'implant') { L.push(`<span class="st">${IMPLANT_SLOT_NAMES[it.slot]} implant · ${it.cost} capacity</span>`); L.push(...statLines(it.stats || {})); }
+  if (it.type === 'vehicle') { const v = VEHICLES[it.vehicle]; L.push('<span class="st">Vehicle · equip, then RIDE (R)</span>'); L.push(...statLines(v.stats)); if (v.gun) L.push(`Cannon: ${v.gun.dmg} damage`); }
   if (it.consume) {
     const c = it.consume;
     if (c.heal) L.push(`<span class="bonus">Restores ${c.heal} integrity</span>`);

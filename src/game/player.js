@@ -8,6 +8,10 @@ import { moveEntity, liquidAt, rectSolid } from './physics.js';
 import { addItem, removeItem, countItem, INV_SIZE } from './inventory.js';
 import { LIQ, DOOR_OPEN } from '../world/world.js';
 import { findBait, reelIn, fishingPower } from './fishing.js';
+import { VEHICLES, IMPLANT_SLOTS } from '../content/items.js';
+import { updateVehicle } from './vehicles.js';
+import { tickImplants, MANTIS, mantisDamage } from './implants.js';
+import { updateTech, checkPortals } from './tech.js';
 
 export const PLAYER_W = 20, PLAYER_H = 42;
 
@@ -18,7 +22,7 @@ export function newPlayerData(name, look, mode) {
     name, look, mode: mode || 'soft', inv, trash: null,
     equip: { head: null, body: null, legs: null, acc: [null, null, null, null, null, null], hook: null },
     maxLife: 100, maxEnergy: 20, life: 100, energy: 20, credits: 0, accSlots: 5,
-    discovered: DEFAULT_START.map(([k]) => k), spawns: {}, playTime: 0, created: Date.now(), id: null,
+    discovered: DEFAULT_START.map(([k]) => k), spawns: {}, portals: {}, lore: [], playTime: 0, created: Date.now(), id: null,
     stats: { kills: 0, deaths: 0, bosses: 0, crafted: 0, mined: 0 },
   };
 }
@@ -27,6 +31,12 @@ export class Player {
   constructor(data) {
     this.data = data;
     Object.assign(this, data);
+    if (!this.equip.implants) this.equip.implants = {};
+    if (this.equip.vehicle === undefined) this.equip.vehicle = null;
+    this.vehicle = null; this.augCd = 0; this.reviveCd = 0; this.mantisBase = 18;
+    if (!this.portals) this.portals = {};
+    if (!this.lore) this.lore = [];
+    this.techCd = 0; this.techHeld = false; this.charge = 0; this.grabbed = null; this.portalCd = 0; this.techFx = null;
     this.discovered = new Set(data.discovered);
     this.achievements = new Set(data.achievements || []);
     this.x = 0; this.y = 0; this.w = PLAYER_W; this.h = PLAYER_H; this.vx = 0; this.vy = 0;
@@ -43,7 +53,7 @@ export class Player {
 
   serialize() {
     const d = this.data;
-    for (const k of ['name', 'look', 'mode', 'inv', 'trash', 'equip', 'maxLife', 'maxEnergy', 'life', 'energy', 'credits', 'accSlots', 'spawns', 'playTime', 'created', 'id', 'stats']) d[k] = this[k];
+    for (const k of ['name', 'look', 'mode', 'inv', 'trash', 'equip', 'maxLife', 'maxEnergy', 'life', 'energy', 'credits', 'accSlots', 'spawns', 'portals', 'lore', 'playTime', 'created', 'id', 'stats']) d[k] = this[k];
     d.discovered = [...this.discovered];
     d.achievements = [...this.achievements];
     return d;
@@ -68,7 +78,7 @@ export class Player {
       maxLife: this.maxLife, maxEnergy: this.maxEnergy, energyCost: 0, minions: 1, mineSpeed: 0, reach: 0, magnet: 0, light: 0, dash: 0,
       wallClimb: 0, waterWalk: 0, swim: 0, plasmaImmune: 0, coldImmune: 0, burnImmune: 0, thorns: 0, lifesteal: 0, dodge: 0, damageReduce: 0,
       maxLifePct: 0, nightVision: 0, featherFall: 0, scanner: 0, hunter: 0, placeSpeed: 0, spawnRate: 0, immuneTime: 0, berserk: 0,
-      stimCooldown: 0, plasmaWard: 0, fishingPower: 0, baitSave: 0, sonar: 0, swarmRetaliate: 0, meleeKnock: 0, plasmaResist: 0, info: new Set(), setBonus: null, noRegen: false,
+      stimCooldown: 0, plasmaWard: 0, fishingPower: 0, baitSave: 0, sonar: 0, zoomOut: 0, stomp: 0, swarmRetaliate: 0, meleeKnock: 0, plasmaResist: 0, info: new Set(), setBonus: null, noRegen: false,
     };
     const addStats = (st) => {
       if (!st) return;
@@ -101,6 +111,8 @@ export class Player {
         if (p) { s.defense += p.def || 0; s.crit += p.crit || 0; s.allDmg += p.dmg || 0; s.moveSpeed += p.move || 0; s.maxEnergy += p.energy || 0; }
       }
     }
+    for (const sl of IMPLANT_SLOTS) { const im = eq.implants[sl]; if (im && ITEMS[im.k]) addStats(ITEMS[im.k].stats); }
+    if (this.vehicle) addStats(VEHICLES[this.vehicle.key].stats);
     for (const [k] of this.buffs) {
       const b = BUFFS[k];
       if (!b) continue;
@@ -123,6 +135,7 @@ export class Player {
   itemDamage(slot) {
     const it = ITEMS[slot.k];
     const p = slot.p ? PREFIXES[slot.p] : null;
+    if (slot.k === MANTIS) return Math.round(this.mantisBase * this.dmgMult('melee'));
     return Math.round(it.damage * (1 + (p ? p.dmg || 0 : 0)) * this.dmgMult(it.dmgType));
   }
   itemCrit(slot) {
@@ -191,6 +204,17 @@ export class Player {
 
     if (this.immune > 0) this.immune--;
     if (this.dashCd > 0) this.dashCd--;
+    this.mantisBase = mantisDamage(game);
+    tickImplants(game, this);
+    checkPortals(game, this);
+
+    if (this.vehicle) {
+      this.aimX = aim.x; this.aimY = aim.y;
+      const handled = updateVehicle(game, this, inp, aim, useHeld);
+      if (!handled) this.updateUse(game, useHeld, aim);
+      else if (this.useTimer > 0) this.useTimer--;
+      return;
+    }
 
     // ---------- movement ----------
     const liquid = liquidAt(world, this);
@@ -340,7 +364,8 @@ export class Player {
 
   updateHook(game, inp, aim) {
     const world = game.world;
-    const hk = this.equip.hook && ITEMS[this.equip.hook.k];
+    let hk = this.equip.hook && ITEMS[this.equip.hook.k];
+    if (!hk) { const arm = this.equip.implants.arms && ITEMS[this.equip.implants.arms.k]; if (arm && arm.builtinHook) hk = arm.builtinHook; }
     if (!hk) { this.hook = null; return; }
     if (inp.hook) {
       if (this.hook) { this.hook = null; }
@@ -377,11 +402,23 @@ export class Player {
   // ---------------- using items ----------------
   updateUse(game, useHeld, aim) {
     const slot = this.inv[this.sel];
+    const tit = slot && ITEMS[slot.k];
+    if (tit && tit.tech) {
+      updateTech(game, this, tit, slot, useHeld && !(game.ui && game.ui.blocking()), aim);
+      if (this.useTimer > 0) this.useTimer--;
+      return;
+    }
+    this.techFx = null; this.charge = 0;
+    if (this.grabbed) { this.grabbed.grabbed = false; this.grabbed = null; }
     if (this.useTimer > 0) {
       this.useTimer--;
       const it = this.useKey && ITEMS[this.useKey];
       if (it) this.continueUse(game, it, slot);
       if (this.useTimer === 0) { this.useKey = null; this.swingHits.clear(); }
+      return;
+    }
+    if (useHeld && !slot && this.equip.implants.arms && ITEMS[this.equip.implants.arms.k].mantis && !(game.ui && game.ui.blocking())) {
+      this.startUse(game, ITEMS[MANTIS], { k: MANTIS, n: 1 }, aim);
       return;
     }
     if (!useHeld || !slot) { this.holdTime = 0; return; }
@@ -408,7 +445,12 @@ export class Player {
     if (it.pick || it.axe || it.hammer) {
       used = true;
       const tgt = game.toolTarget(this, it, tx, ty);
-      if (tgt) game.hitTile(this, it, tgt.x, tgt.y, tgt.mode);
+      if (tgt) {
+        game.hitTile(this, it, tgt.x, tgt.y, tgt.mode);
+        if (it.area && tgt.mode === 'tile') for (let dy = -it.area; dy <= it.area; dy++) for (let dx = -it.area; dx <= it.area; dx++) {
+          if ((dx || dy) && world.solidAt(tgt.x + dx, tgt.y + dy) && !TILES[world.get(tgt.x + dx, tgt.y + dy)].furn) game.hitTile(this, it, tgt.x + dx, tgt.y + dy, 'tile');
+        }
+      }
     }
     if (it.seedGrass) {
       const t = game.pickPlaceTarget(this, it, tx, ty, true);
@@ -450,6 +492,7 @@ export class Player {
   }
 
   continueUse(game, it, slot) {
+    if (it.key === MANTIS) slot = { k: MANTIS, n: 1 };
     if (!slot || slot.k !== it.key) return;
     const prog = 1 - this.useTimer / this.useTotal;
     if (it.useStyle === 'swing' && (it.type === 'weapon' || it.damage)) {
@@ -504,12 +547,15 @@ export class Player {
     }
     if (it.summonMinion) {
       if (it.sentry) { game.projectiles.filter((p) => p.def.key === projKey).forEach((p) => (p.dead = true)); }
+      else if (it.barrier) { const walls = game.projectiles.filter((q) => q.def.key === projKey); if (walls.length >= 2) walls[0].dead = true; }
       else {
-        const mins = game.projectiles.filter((p) => p.def.ai === 'minion' && p.owner === 'player');
-        if (mins.length >= s.minions) mins[0].dead = true;
+        if (!it.barrier) {
+          const mins = game.projectiles.filter((p) => p.def.ai === 'minion' && p.owner === 'player');
+          if (mins.length >= s.minions) mins[0].dead = true;
+        }
       }
       const p = game.spawnProjectile(projKey, aim.x, aim.y, 0, 0, Math.round(this.itemDamage(slot)), this.itemKnock(slot), 'player', { crit: 0, dmgType: 'summon' });
-      if (it.sentry) { p.x = aim.x - p.w / 2; p.y = aim.y - p.h; }
+      if (it.sentry || it.barrier) { p.x = aim.x - p.w / 2; p.y = aim.y - p.h / (it.barrier ? 2 : 1); }
       game.audio.play('summon');
       return true;
     }
@@ -517,6 +563,11 @@ export class Player {
       if (!slot || slot.n <= 0) return false;
     }
     const dmg = Math.round((it.damage + ammoDmg) * (1 + (slot.p ? PREFIXES[slot.p]?.dmg || 0 : 0)) * this.dmgMult(it.dmgType));
+    if (it.smartAim) {
+      let best = null, bd = 260;
+      for (const m of game.monsters) { if (m.dead || m.allied) continue; const d = Math.hypot(m.cx - aim.x, m.cy - aim.y); if (d < bd) { bd = d; best = m; } }
+      if (best) aim = { x: best.cx, y: best.cy };
+    }
     const cx = this.cx, cy = this.y + 16;
     const baseAng = Math.atan2(aim.y - cy, aim.x - cx);
     const count = it.count || 1;
@@ -552,6 +603,8 @@ export class Player {
     const c = (slot) => { const e = this.equip[slot]; return e ? ITEMS[e.k].icon.c : null; };
     g.head = c('head'); g.body = c('body'); g.legs = c('legs');
     for (let i = 0; i < this.accSlots; i++) { const a = this.equip.acc[i]; if (a && ITEMS[a.k].stats && ITEMS[a.k].stats.flight) g.wings = ITEMS[a.k].icon.c; }
+    g.imp = {};
+    for (const sl of IMPLANT_SLOTS) { const im = this.equip.implants[sl]; if (im) g.imp[sl] = { k: im.k, c: ITEMS[im.k].icon.c }; }
     return g;
   }
 }

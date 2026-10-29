@@ -4,7 +4,8 @@ import { TILES, BLOCKY, OPAQUE, SOLID, T } from '../content/tiles.js';
 import { ITEMS } from '../content/items.js';
 import { ATLAS } from './textures.js';
 import { Background } from './background.js';
-import { drawHumanoid, drawArm, drawHeldItem, drawMonster, drawMonsterGlow, drawProjectile } from './sprites.js';
+import { drawHumanoid, drawArm, drawHeldItem, drawMonster, drawMonsterGlow, drawProjectile, drawVehicle } from './sprites.js';
+import { VEHICLES } from '../content/items.js';
 import { iconCanvas } from './icons.js';
 import { LIQ, DOOR_OPEN } from '../world/world.js';
 
@@ -245,10 +246,12 @@ export class Renderer {
       drawProjectile(ctx, pr, game.tick);
     }
     game.fx.draw(ctx, true);
+    this.drawTech(ctx, game, p);
     for (const m of game.monsters) if (m.def.light || m.def.boss) drawMonsterGlow(ctx, m);
     for (const d of game.drops) if (d.star || d.k === 'star_shard') { ctx.globalAlpha = 0.5; ctx.fillStyle = '#fff38a'; ctx.fillRect(d.x - 2, d.y - 2, 16, 16); ctx.globalAlpha = 1; }
     if (p.s.scanner) this.drawScanner(ctx, w, tx0, ty0, tx1, ty1, game.tick);
     ctx.globalCompositeOperation = 'source-over';
+    for (const m of game.monsters) if (m.allied) { ctx.strokeStyle = 'rgba(157,255,61,0.9)'; ctx.lineWidth = 1; ctx.strokeRect(m.x - 2, m.y - 2, m.w + 4, m.h + 4); }
     if (p.s.hunter) for (const m of game.monsters) { ctx.strokeStyle = 'rgba(255,138,61,0.8)'; ctx.lineWidth = 1; ctx.strokeRect(m.x - 1, m.y - 1, m.w + 2, m.h + 2); }
 
     // ---- overlays: cursor, health bars, texts ----
@@ -270,6 +273,41 @@ export class Renderer {
     game.fx.drawTexts(ctx);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (p.immune > 0 && p.hurtTimer > 290) { ctx.fillStyle = 'rgba(255,40,60,0.15)'; ctx.fillRect(0, 0, vw, vh); }
+    if (game.slowmo > 0) { ctx.fillStyle = 'rgba(61,255,176,0.08)'; ctx.fillRect(0, 0, vw, vh); ctx.strokeStyle = 'rgba(61,255,176,0.35)'; ctx.lineWidth = 6; ctx.strokeRect(3, 3, vw - 6, vh - 6); }
+    if (p.buffs.has('overdrive')) { ctx.strokeStyle = 'rgba(255,51,85,0.35)'; ctx.lineWidth = 6; ctx.strokeRect(3, 3, vw - 6, vh - 6); }
+  }
+
+  drawTech(ctx, game, p) {
+    const fx = p.techFx, t = game.tick;
+    if (fx) {
+      if (fx.type === 'beam' || fx.type === 'whip' || fx.type === 'tether') {
+        const jitter = fx.type === 'tether' ? 3 : 0;
+        ctx.strokeStyle = rgba(fx.color, 0.35); ctx.lineWidth = (fx.w || 1.5) * 3;
+        ctx.beginPath(); ctx.moveTo(fx.x1, fx.y1);
+        if (fx.type === 'whip') ctx.quadraticCurveTo((fx.x1 + fx.x2) / 2, (fx.y1 + fx.y2) / 2 - 18, fx.x2, fx.y2); else ctx.lineTo(fx.x2, fx.y2);
+        ctx.stroke();
+        ctx.strokeStyle = fx.color; ctx.lineWidth = fx.w || 1;
+        ctx.beginPath(); ctx.moveTo(fx.x1, fx.y1);
+        if (fx.type === 'whip') ctx.quadraticCurveTo((fx.x1 + fx.x2) / 2, (fx.y1 + fx.y2) / 2 - 18, fx.x2, fx.y2);
+        else for (let k = 1; k <= 8; k++) ctx.lineTo(fx.x1 + (fx.x2 - fx.x1) * k / 8 + (k < 8 ? (Math.random() - 0.5) * jitter : 0), fx.y1 + (fx.y2 - fx.y1) * k / 8 + (k < 8 ? (Math.random() - 0.5) * jitter : 0));
+        ctx.stroke();
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(fx.x1, fx.y1); ctx.lineTo(fx.x2, fx.y2); if (fx.type === 'beam') ctx.stroke();
+      } else if (fx.type === 'charge') {
+        const r = 3 + fx.k * 9;
+        ctx.fillStyle = rgba(fx.color, 0.3); ctx.beginPath(); ctx.arc(fx.x, fx.y, r * 1.8, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = fx.k >= 1 && (t >> 2) % 2 ? '#ffffff' : fx.color; ctx.beginPath(); ctx.arc(fx.x, fx.y, r, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    // wormholes
+    const list = p.portals && p.portals[game.world.id];
+    if (list) list.forEach(([x, y], i) => {
+      const col = i === 0 ? '#ff8a3d' : '#66ccff';
+      for (let k = 0; k < 4; k++) {
+        ctx.strokeStyle = rgba(col, 0.9 - k * 0.2); ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.ellipse(x, y, 10 - k * 2, 22 - k * 4, 0, t * 0.1 + k, t * 0.1 + k + Math.PI * 1.6); ctx.stroke();
+      }
+      ctx.fillStyle = rgba(col, 0.25); ctx.beginPath(); ctx.ellipse(x, y, 10, 22, 0, 0, Math.PI * 2); ctx.fill();
+    });
   }
 
   ambient(game) {
@@ -380,6 +418,7 @@ export class Renderer {
   drawPlayer(ctx, game, p) {
     if (p.immune > 0 && (game.tick >> 2) % 2 === 0 && p.hurtTimer > 250) ctx.globalAlpha = 0.5;
     const gear = p.gearColors();
+    if (p.vehicle) { drawVehicle(ctx, p, p.vehicle.key, VEHICLES[p.vehicle.key], p.look, gear, game.tick); ctx.globalAlpha = 1; return; }
     drawHumanoid(ctx, p, p.look, gear, game.tick);
     const it = p.useKey ? ITEMS[p.useKey] : null;
     let armAng = Math.sin(p.anim * 0.35) * 0.5 * (p.dir);

@@ -15,9 +15,10 @@ export function drawHumanoid(ctx, e, look, gear, t) {
   if (dir < 0) ctx.scale(-1, 1);
   const chassis = look.chassis || '#c8d0da';
   const suit = gear.body || look.suit || '#2a3a4f';
-  const legsC = gear.legs || shade(look.suit || '#2a3a4f', 0.8);
+  const legsC = gear.legs || ((gear.imp && gear.imp.legs) ? '#8a8f99' : shade(look.suit || '#2a3a4f', 0.8));
   const helm = gear.head || null;
-  const visor = look.visor || '#2ef2ff';
+  const imp = gear.imp || {};
+  const visor = imp.optic ? imp.optic.c : (look.visor || '#2ef2ff');
   const walk = e.onGround && Math.abs(e.vx) > 0.2 ? Math.sin(e.anim * 0.35) : 0;
   const air = !e.onGround;
   // jetpack
@@ -37,12 +38,16 @@ export function drawHumanoid(ctx, e, look, gear, t) {
   R(ctx, legsC, -2 + l1, 28, 5, 13);
   R(ctx, '#1a1f28', -2 + l1, 40, 6, 2);
   R(ctx, shade(legsC, 1.3), -1 + l1, 29, 1, 9);
+  if (imp.spine) { R(ctx, '#59616c', -8, 13, 2, 16); R(ctx, imp.spine.c, -8, 15, 2, 1); R(ctx, imp.spine.c, -8, 20, 2, 1); R(ctx, imp.spine.c, -8, 25, 2, 1); }
+  if (imp.legs) { R(ctx, imp.legs.c, -3 + l2, 33, 3, 1); R(ctx, imp.legs.c, -1 + l1, 33, 3, 1); }
   // torso
   R(ctx, suit, -5, 14, 11, 15);
   R(ctx, shade(suit, 1.25), -4, 14, 9, 2);
   R(ctx, shade(suit, 0.7), -5, 27, 11, 2);
   R(ctx, visor, 1, 18, 3, 1);
   if (!gear.body) { R(ctx, shade(chassis, 0.85), -2, 15, 4, 2); }
+  if (imp.core) { R(ctx, imp.core.c, -2, 19, 3, 3); R(ctx, '#ffffff', -1, 20, 1, 1); }
+  if (imp.arms && imp.arms.k === 'launcher_arm') { R(ctx, '#59616c', -8, 10, 7, 5); R(ctx, imp.arms.c, -7, 11, 2, 3); }
   // head
   const hy = 2;
   R(ctx, chassis, -5, hy, 11, 12);
@@ -75,8 +80,67 @@ export function drawArm(ctx, e, look, gear, angle) {
   ctx.translate(x + e.dir * 1, y + 16);
   ctx.rotate(angle);
   const suit = gear.body || look.suit || '#2a3a4f';
-  R(ctx, shade(suit, 0.85), -2, 0, 4, 11);
-  R(ctx, look.chassis || '#c8d0da', -2, 10, 4, 3);
+  const arms = gear.imp && gear.imp.arms;
+  if (arms && arms.k === 'gorilla_arms') { R(ctx, '#59616c', -3, 0, 6, 11); R(ctx, '#aeb7c2', -3, 9, 6, 4); R(ctx, '#ffcc33', -1, 4, 2, 2); }
+  else { R(ctx, shade(suit, 0.85), -2, 0, 4, 11); R(ctx, look.chassis || '#c8d0da', -2, 10, 4, 3); }
+  if (arms && arms.k === 'mantis_blades') { R(ctx, '#ff6a3d', 1, 2, 2, 14); R(ctx, '#ffd0b0', 2, 3, 1, 12); }
+  ctx.restore();
+}
+
+// Rideable vehicles. The pilot is drawn seated, then the vehicle body in front.
+export function drawVehicle(ctx, p, key, d, look, gear, t) {
+  const c = d.color, c2 = d.c2;
+  ctx.save();
+  ctx.translate(Math.round(p.x + p.w / 2), Math.round(p.y));
+  if (p.dir < 0) ctx.scale(-1, 1);
+  const pilot = (sx, sy) => drawHumanoid(ctx, { x: sx - 10, y: sy, w: 20, h: 42, dir: 1, anim: 0, onGround: true, vx: 0, vy: 0 }, look, gear, t);
+  const flick = (t >> 1) % 2;
+  switch (key) {
+    case 'hoverbike':
+      pilot(-3, -20);
+      R(ctx, c2, -19, 8, 36, 9); R(ctx, c, -17, 6, 28, 5); R(ctx, shade(c, 1.4), -15, 6, 20, 1);
+      R(ctx, c, 9, 2, 10, 6); R(ctx, '#ffffff', 17, 3, 2, 2); R(ctx, c2, 6, -6, 3, 9);
+      ctx.globalAlpha = flick ? 0.9 : 0.6; R(ctx, '#2ef2ff', -15, 18, 10, 3); R(ctx, '#2ef2ff', 5, 18, 10, 3); ctx.globalAlpha = 1;
+      break;
+    case 'skycar':
+      pilot(2, -22);
+      R(ctx, c2, -27, 6, 54, 16); R(ctx, c, -25, 4, 48, 11); R(ctx, shade(c, 1.35), -23, 4, 40, 2);
+      R(ctx, c, 18, 8, 9, 7); R(ctx, '#fff3c0', 25, 9, 2, 3);
+      ctx.fillStyle = 'rgba(150,230,255,0.35)'; ctx.fillRect(-8, -12, 22, 17); R(ctx, 'rgba(255,255,255,0.5)', -6, -11, 2, 8);
+      R(ctx, c2, -27, 18, 12, 4); R(ctx, c2, 14, 18, 12, 4);
+      ctx.globalAlpha = 0.8; R(ctx, flick ? '#ffb12e' : '#ff6a3d', -33, 9, 6, 6); ctx.globalAlpha = 1;
+      R(ctx, '#2ef2ff', -20, 21, 6, 2); R(ctx, '#2ef2ff', 18, 21, 6, 2);
+      break;
+    case 'drillpod': {
+      R(ctx, c2, -15, 1, 30, 28); R(ctx, c, -13, 3, 24, 23); R(ctx, shade(c, 1.3), -12, 3, 20, 2);
+      R(ctx, '#0e1e24', -7, 7, 12, 8); R(ctx, look.visor || '#2ef2ff', -5, 9, 8, 3);
+      const sp = (t >> 1) % 3;
+      ctx.fillStyle = '#aeb7c2'; ctx.beginPath(); ctx.moveTo(14, 4); ctx.lineTo(24, 15); ctx.lineTo(14, 26); ctx.fill();
+      R(ctx, '#59616c', 15, 8 + sp * 3, 6, 2); R(ctx, '#59616c', 15, 16 + sp * 2, 4, 2);
+      R(ctx, '#3a3d46', -13, 25, 24, 4); for (let k = 0; k < 4; k++) R(ctx, '#aeb7c2', -12 + k * 7 + (t >> 2) % 3, 26, 3, 2);
+      break;
+    }
+    case 'mech': {
+      const walk = Math.abs(p.vx) > 0.2 && p.onGround ? Math.sin(t * 0.25) * 4 : 0;
+      R(ctx, shade(c, 0.6), -14 + walk, 36, 8, 22); R(ctx, shade(c, 0.6), 6 - walk, 36, 8, 22);
+      R(ctx, '#222', -16 + walk, 55, 12, 3); R(ctx, '#222', 4 - walk, 55, 12, 3);
+      R(ctx, c, -18, 12, 36, 26); R(ctx, shade(c, 1.25), -18, 12, 36, 3);
+      R(ctx, '#0e1e24', -8, 16, 16, 9); R(ctx, look.visor || '#2ef2ff', -6, 19, 12, 3);
+      R(ctx, c2, -4, 30, 8, 3);
+      R(ctx, shade(c, 0.8), 14, 18, 10, 8); R(ctx, '#333', 22, 20, 12, 4); R(ctx, c2, 32, 20, 2, 4);
+      R(ctx, shade(c, 0.8), -24, 16, 8, 14);
+      break;
+    }
+    case 'starjumper':
+      pilot(4, -18);
+      ctx.fillStyle = c2; ctx.beginPath(); ctx.moveTo(-29, 22); ctx.lineTo(-20, 4); ctx.lineTo(18, 2); ctx.lineTo(31, 14); ctx.lineTo(18, 24); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(-24, 18); ctx.lineTo(-17, 7); ctx.lineTo(16, 5); ctx.lineTo(26, 14); ctx.lineTo(16, 20); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(208,160,255,0.35)'; ctx.fillRect(-4, -8, 20, 14);
+      R(ctx, '#2ef2ff', 20, 12, 4, 2);
+      ctx.globalAlpha = 0.85; R(ctx, flick ? '#d0a0ff' : '#ffffff', -36, 10, 9, 6); ctx.globalAlpha = 1;
+      R(ctx, c2, -14, 22, 16, 3);
+      break;
+  }
   ctx.restore();
 }
 
@@ -386,6 +450,13 @@ export function drawProjectile(ctx, p, t) {
       ctx.rotate(ang); ctx.fillStyle = rgba(c, 0.4); ctx.fillRect(-p.w, -p.h / 2 - 1, p.w * 2, p.h + 2);
       ctx.fillStyle = c; ctx.fillRect(-p.w / 2 - 4, -p.h / 2, p.w + 4, p.h); ctx.fillStyle = '#fff'; ctx.fillRect(-p.w / 2, -0.5, p.w, 1); break;
     case 'orb': case 'star':
+      if (d.ai === 'blackhole' && p.t >= 60) {
+        ctx.rotate(t * 0.15);
+        for (let r = 40; r > 8; r -= 8) { ctx.globalAlpha = 0.18; ctx.fillStyle = r % 16 ? '#d0a0ff' : '#2ef2ff'; ctx.beginPath(); ctx.ellipse(0, 0, r, r * 0.45, 0, 0, Math.PI * 2); ctx.fill(); }
+        ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.stroke();
+        break;
+      }
       ctx.fillStyle = rgba(c, 0.3); ctx.beginPath(); ctx.arc(0, 0, p.w * 0.9, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = c; ctx.beginPath(); ctx.arc(0, 0, p.w * 0.5, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#fff'; ctx.fillRect(-1.5, -1.5, 3, 3);
@@ -424,6 +495,13 @@ export function drawProjectile(ctx, p, t) {
     case 'sentry':
       ctx.fillStyle = '#59616c'; ctx.fillRect(-8, 0, 16, 10); ctx.fillStyle = c; ctx.fillRect(-6, -8, 12, 9);
       ctx.rotate(p.aim || 0); ctx.fillStyle = '#333'; ctx.fillRect(0, -2, 12, 4); break;
+    case 'barrier': {
+      const a = 0.45 + Math.sin(t * 0.3) * 0.15;
+      ctx.fillStyle = `rgba(46,242,255,${a})`; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(-1, -p.h / 2, 2, p.h);
+      ctx.fillStyle = '#59616c'; ctx.fillRect(-p.w / 2 - 1, p.h / 2 - 3, p.w + 2, 4); ctx.fillRect(-p.w / 2 - 1, -p.h / 2 - 1, p.w + 2, 3);
+      break;
+    }
     case 'bobber':
       ctx.fillStyle = '#ffffff'; ctx.fillRect(-3, -3, 6, 3); ctx.fillStyle = c; ctx.fillRect(-3, 0, 6, 3); ctx.fillStyle = '#222'; ctx.fillRect(-1, -5, 2, 2); break;
     case 'skull':

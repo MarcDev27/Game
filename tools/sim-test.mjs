@@ -84,13 +84,15 @@ const result = await page.evaluate(async () => {
   // crafting: place all stations near player and craft every recipe
   for (let i = 0; i < p.inv.length; i++) p.inv[i] = null;
   const px = Math.floor(p.cx / 16), py = Math.floor(p.cy / 16);
-  const stations = ['assembly_bench', 'smelter', 'fabricator', 'synth_vat', 'textile_printer', 'tinker_station', 'plasma_forge', 'nano_forge', 'quantum_assembler', 'singularity_core', 'cryo_lathe'];
+  const stations = ['assembly_bench', 'smelter', 'fabricator', 'synth_vat', 'textile_printer', 'tinker_station', 'plasma_forge', 'nano_forge', 'quantum_assembler', 'singularity_core', 'cryo_lathe', 'surgery_bay'];
   // flatten an area
   for (let y = py - 12; y <= py + 1; y++) for (let x = px - 20; x <= px + 20; x++) g.world.set(x, y, 0);
   for (let x = px - 20; x <= px + 20; x++) g.world.set(x, py + 2, Tl.T.ferrocrete);
   p.y = (py + 2) * 16 - p.h - 0.1; p.x = px * 16;
   let sx = px - 18;
   for (const s of stations) { const f = Tl.TILES[Tl.T[s]].furn; g.world.placeFurniture(sx, py + 2 - f.h, Tl.T[s]); sx += f.w; }
+  // every station within reach (the row of stations is wider than the crafting radius)
+  g.nearbyStations = () => new Set(['bench', 'smelter', 'fabricator', 'vat', 'printer', 'tinker', 'plasmaforge', 'nanoforge', 'quantum', 'singularity', 'lathe', 'surgery']);
   const st = R.stationsProvided(g.nearbyStations());
   log.push('stations ' + [...st].join(','));
   const ui = g.ui;
@@ -100,8 +102,10 @@ const result = await page.evaluate(async () => {
     for (const [k, n] of r.ing) give(R.GROUPS[k] ? R.GROUPS[k][0] : k, n);
     ui.craftSel = r.id;
     const beforeCount = inv.countItem(p.inv, r.out);
+    for (const d of g.drops) d.dead = true;
+    g.drops = [];
     guard('craft ' + r.out, () => ui.craft(1));
-    if (inv.countItem(p.inv, r.out) > beforeCount || g.drops.length) crafted++;
+    if (inv.countItem(p.inv, r.out) > beforeCount || g.drops.some((d) => d.k === r.out)) crafted++;
     else fail.push('could not craft ' + r.out + ' at ' + r.at);
   }
   log.push('crafted ' + crafted + '/' + R.RECIPES.length);

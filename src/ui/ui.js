@@ -11,6 +11,9 @@ import { addItem, countItem, removeItem, sortInventory, maxStack, HOTBAR } from 
 import { COLONISTS } from '../game/town.js';
 import { WorldMap } from './map.js';
 import { ACHIEVEMENTS } from '../content/achievements.js';
+import { LORE } from '../content/lore.js';
+import { IMPLANT_SLOTS, IMPLANT_SLOT_NAMES } from '../content/items.js';
+import { capacity, usedCapacity, canInstall, activeImplant } from '../game/implants.js';
 import { formatCredits, TILE, rng } from '../core/util.js';
 
 const $ = (s) => document.querySelector(s);
@@ -42,13 +45,21 @@ export class UI {
   }
 
   build() {
+    // Two banks of five: an even split that divides cleanly around the iPhone Duo fold.
     const hb = $('#hotbar');
     hb.innerHTML = '';
-    for (let i = 0; i < HOTBAR; i++) {
-      const d = document.createElement('div');
-      d.className = 'slot hot'; d.dataset.i = i;
-      d.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); this.game.player.sel = i; this.dirtyInv = true; this.env.audio.play('ui'); });
-      hb.appendChild(d);
+    this.hotSlots = [];
+    for (let g = 0; g < 2; g++) {
+      const bank = document.createElement('div');
+      bank.className = 'hbg';
+      for (let i = g * 5; i < g * 5 + 5; i++) {
+        const d = document.createElement('div');
+        d.className = 'slot hot'; d.dataset.i = i;
+        d.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); this.game.player.sel = i; this.dirtyInv = true; this.env.audio.play('ui'); });
+        bank.appendChild(d);
+        this.hotSlots.push(d);
+      }
+      hb.appendChild(bank);
     }
     $('#hud').classList.remove('hidden');
     $('#touch').classList.toggle('hidden', !this.input.isTouch);
@@ -57,7 +68,7 @@ export class UI {
     bind('#btn-map', () => this.openMap());
     bind('#btn-pause', () => this.togglePanel('pause'));
     this.input.bindJoystick($('#joyzone'), $('#joyknob'), $('#joybase'));
-    for (const [id, name] of [['#act-jump', 'jump'], ['#act-hook', 'hook'], ['#act-heal', 'heal'], ['#act-energy', 'energy'], ['#act-dash', 'dash']]) this.input.bindButton($(id), name);
+    for (const [id, name] of [['#act-jump', 'jump'], ['#act-hook', 'hook'], ['#act-heal', 'heal'], ['#act-energy', 'energy'], ['#act-dash', 'dash'], ['#act-ride', 'ride'], ['#act-aug', 'aug']]) this.input.bindButton($(id), name);
     // map controls
     const mc = $('#mapcanvas');
     let drag = null;
@@ -70,8 +81,12 @@ export class UI {
     $('#map-center').onclick = () => this.map.center();
     $('#map-close').onclick = () => this.closeMap();
     $('#panel').onpointerdown = (e) => { if (e.target.id === 'panel') this.closePanel(); };
+    // A panel opens on pointerdown; swallow the click that the same tap fires on whatever now sits under the finger.
+    $('#panel').addEventListener('click', (e) => { if (performance.now() - this.openedAt < 400) { e.stopPropagation(); e.preventDefault(); } }, true);
     this.applyLayout();
   }
+
+  relayout() { if (this.panel) this.refreshPanel(); }
 
   applyLayout() {
     document.body.classList.toggle('lefty', !!this.env.settings.leftHanded);
@@ -133,8 +148,16 @@ export class UI {
         eb.textContent = ev === 'invasion' && g.events.invasion ? `DRONE INVASION ${Math.floor(g.events.invasion.done / g.events.invasion.need * 100)}%` : ev === 'redshift' ? 'RED SHIFT' : 'SOLAR FLARE';
       } else eb.classList.add('hidden');
       // touch extras
-      $('#act-hook').classList.toggle('hidden', !p.equip.hook);
+      const arm = p.equip.implants.arms && ITEMS[p.equip.implants.arms.k];
+      $('#act-hook').classList.toggle('hidden', !p.equip.hook && !(arm && arm.builtinHook));
       $('#act-dash').classList.toggle('hidden', !s.dash);
+      $('#act-ride').classList.toggle('hidden', !p.equip.vehicle);
+      $('#act-ride').textContent = p.vehicle ? 'EXIT' : 'RIDE';
+      const aug = activeImplant(p);
+      const ab = $('#act-aug');
+      ab.classList.toggle('hidden', !(aug && aug.active));
+      ab.classList.toggle('cool', p.augCd > 0);
+      ab.textContent = p.augCd > 0 ? Math.ceil(p.augCd / 60) + 's' : 'AUG';
       // death overlay
       const de = $('#death');
       if (p.dead && p.mode !== 'hard') { de.classList.remove('hidden'); de.querySelector('.sub').textContent = 'Reassembling in ' + Math.ceil(p.respawn / 60) + 's'; }
@@ -147,7 +170,7 @@ export class UI {
     const sig = p.sel + '|' + p.inv.slice(0, HOTBAR).map((s) => (s ? s.k + s.n : '')).join(',');
     if (sig !== this.lastHot || this.dirtyInv) {
       this.lastHot = sig;
-      const slots = $('#hotbar').children;
+      const slots = this.hotSlots;
       for (let i = 0; i < HOTBAR; i++) {
         const el = slots[i];
         el.className = 'slot hot' + (i === p.sel ? ' sel' : '');
@@ -204,6 +227,7 @@ export class UI {
 
   show(html) {
     const el = $('#panel');
+    if (el.classList.contains('hidden')) this.openedAt = performance.now();
     el.innerHTML = html;
     el.classList.remove('hidden');
     this.input.releaseAll();
@@ -230,6 +254,7 @@ export class UI {
     else if (this.panel === 'settings') this.renderSettings();
     else if (this.panel === 'help') this.renderHelp();
     else if (this.panel === 'ach') this.renderAchievements();
+    else if (this.panel === 'archive') this.renderArchive();
   }
 
   // slot access by (src, i)
@@ -238,7 +263,7 @@ export class UI {
     if (src === 'inv') return p.inv[i];
     if (src === 'chest') return this.chest ? this.chest.items[i] : null;
     if (src === 'trash') return p.trash;
-    if (src === 'eq') return i.startsWith('acc') ? p.equip.acc[+i.slice(3)] : p.equip[i];
+    if (src === 'eq') return i.startsWith('acc') ? p.equip.acc[+i.slice(3)] : i.startsWith('imp_') ? p.equip.implants[i.slice(4)] || null : p.equip[i];
     return null;
   }
   setSlot(src, i, v) {
@@ -246,7 +271,7 @@ export class UI {
     if (src === 'inv') p.inv[i] = v;
     else if (src === 'chest') this.chest.items[i] = v;
     else if (src === 'trash') p.trash = v;
-    else if (src === 'eq') { if (i.startsWith('acc')) p.equip.acc[+i.slice(3)] = v; else p.equip[i] = v; }
+    else if (src === 'eq') { if (i.startsWith('acc')) p.equip.acc[+i.slice(3)] = v; else if (i.startsWith('imp_')) p.equip.implants[i.slice(4)] = v; else p.equip[i] = v; }
   }
   validFor(src, i, slot) {
     if (!slot) return true;
@@ -254,6 +279,13 @@ export class UI {
     const it = ITEMS[slot.k], p = this.game.player;
     if (i === 'head' || i === 'body' || i === 'legs') return it.type === 'armor' && it.slot === i;
     if (i === 'hook') return it.type === 'hook';
+    if (i === 'vehicle') { if (p.vehicle) { this.reason = 'Dismount before swapping vehicles.'; return false; } return it.type === 'vehicle'; }
+    if (i.startsWith('imp_')) {
+      if (it.type !== 'implant' || it.slot !== i.slice(4)) return false;
+      const why = canInstall(this.game, p, i.slice(4), it);
+      if (why) { this.reason = why; return false; }
+      return true;
+    }
     if (i.startsWith('acc')) {
       const idx = +i.slice(3);
       if (idx >= p.accSlots || it.type !== 'accessory') return false;
@@ -287,7 +319,11 @@ export class UI {
       if (A.n <= 0) this.setSlot(sa, ia, null);
       return;
     }
-    if (!this.validFor(sb, ib, A) || !this.validFor(sa, ia, B)) { this.toast('That does not fit there.', '#ff8fa8'); return; }
+    this.reason = null;
+    const leavingImplant = (sa === 'eq' && String(ia).startsWith('imp_')) || (sb === 'eq' && String(ib).startsWith('imp_') && B);
+    if (leavingImplant && !this.game.nearbyStations().has('surgery')) { this.toast('Removing cyberware requires a Surgery Bay nearby.', '#ff8fa8'); return; }
+    if ((sa === 'eq' && ia === 'vehicle' && this.game.player.vehicle)) { this.toast('Dismount first.', '#ff8fa8'); return; }
+    if (!this.validFor(sb, ib, A) || !this.validFor(sa, ia, B)) { this.toast(this.reason || 'That does not fit there.', '#ff8fa8'); return; }
     this.setSlot(sa, ia, B); this.setSlot(sb, ib, A);
   }
 
@@ -302,6 +338,8 @@ export class UI {
       let target = null;
       if (it.type === 'armor') target = it.slot;
       else if (it.type === 'hook') target = 'hook';
+      else if (it.type === 'vehicle') target = 'vehicle';
+      else if (it.type === 'implant') target = 'imp_' + it.slot;
       else if (it.type === 'accessory') {
         const dupe = p.equip.acc.findIndex((x, j) => x && x.k === s.k && j < p.accSlots);
         if (dupe >= 0) target = 'acc' + dupe;
@@ -310,6 +348,8 @@ export class UI {
       if (target) this.moveSlot(a.src, a.i, 'eq', target);
       p.recalc();
     } else if (act === 'unequip') {
+      if (String(a.i).startsWith('imp_') && !g.nearbyStations().has('surgery')) { this.toast('Removing cyberware requires a Surgery Bay nearby.', '#ff8fa8'); return; }
+      if (a.i === 'vehicle' && p.vehicle) { this.toast('Dismount first.', '#ff8fa8'); return; }
       const free = p.inv.findIndex((x, j) => !x && j >= 0);
       if (free >= 0) { this.setSlot('inv', free, s); this.setSlot(a.src, a.i, null); p.recalc(); }
       else this.toast('Inventory full', '#ff8fa8');
@@ -380,7 +420,8 @@ export class UI {
     if (sel) {
       const it = ITEMS[sel.k];
       if (this.pick.src === 'eq') acts += '<button data-act="unequip">Unequip</button>';
-      else if (['armor', 'accessory', 'hook'].includes(it.type)) acts += '<button class="primary" data-act="equip">Equip</button>';
+      else if (['armor', 'accessory', 'hook', 'vehicle'].includes(it.type)) acts += '<button class="primary" data-act="equip">Equip</button>';
+      else if (it.type === 'implant') acts += '<button class="primary" data-act="equip">Install</button>';
       if (it.type === 'consumable' && (it.consume.heal || it.consume.energy || it.consume.buff || it.consume.maxLife || it.consume.maxEnergy || it.consume.accSlot || it.consume.recall || it.consume.crate)) acts += '<button data-act="use">Use</button>';
       if (this.pick.src !== 'eq' && !(this.pick.src === 'inv' && this.pick.i < HOTBAR)) acts += '<button data-act="hotbar">To hotbar</button>';
       if (sel.n > 1) acts += '<button data-act="split">Split</button>';
@@ -391,7 +432,10 @@ export class UI {
       <div class="body"><div class="cols">
         <div class="col">${chestHtml}<div class="label">Inventory</div><div class="grid">${inv}</div>
           <div class="tip">${tip}</div><div class="row">${acts}</div></div>
-        <div class="col"><div class="label">Equipment · ${p.s.defense} DEF</div><div class="equip">${eq}</div>${p.s.setBonus ? `<div class="label" style="color:#3dff6a">Set bonus active</div>` : ''}</div>
+        <div class="col"><div class="label">Equipment · ${p.s.defense} DEF</div><div class="equip">${eq}</div>${p.s.setBonus ? `<div class="label" style="color:#3dff6a">Set bonus active</div>` : ''}
+          <div class="label">Vehicle</div><div class="equip">${this.slotHTML('eq', 'vehicle', p.equip.vehicle, '', '&#9992;')}</div></div>
+        <div class="col"><div class="label">Cyberware ${usedCapacity(p)}/${capacity(p)}</div><div class="equip">${IMPLANT_SLOTS.map((sl) => this.slotHTML('eq', 'imp_' + sl, p.equip.implants[sl], '', IMPLANT_SLOT_NAMES[sl].slice(0, 3))).join('')}</div>
+          <div style="font-size:10px;color:#8aa0c0;max-width:96px">${g.nearbyStations().has('surgery') ? '<span style="color:#3dff6a">Surgery Bay ready</span>' : 'Install at a Surgery Bay'}</div></div>
         <div class="col" style="min-width:200px;max-width:300px">${craft}</div>
       </div></div></div>`;
     this.show(html);
@@ -504,6 +548,8 @@ export class UI {
       case 'close': this.closePanel(); return;
       case 'housing': this.toast(g.town.diagnose(), '#9dff3d'); return;
       case 'achievements': this.panel = 'ach'; this.renderAchievements(); return;
+      case 'archive': this.panel = 'archive'; this.renderArchive(); return;
+      case 'warp': { const [x, y] = el.dataset.to.split(',').map(Number); this.closePanel(); g.teleportTo(x, y); return; }
       case 'sort': sortInventory(p.inv); this.pick = null; this.refreshPanel(); return;
       case 'showall': this.showAll = !this.showAll; this.renderInventory(); return;
       case 'craft': this.craft(1); return;
@@ -607,7 +653,7 @@ export class UI {
     const bosses = Object.keys(w.flags.bosses).length;
     const html = `<div class="win" style="width:min(360px,94vw)"><h2><span>PAUSED</span><button data-act="close">&times;</button></h2><div class="body">
       <div class="help">${esc(p.name)} · ${p.maxLife} max integrity · ${bosses} bosses defeated${w.flags.hardmode ? ' · <b>Singularity</b>' : ''}<br>${esc(w.name)} · Day ${w.day}</div>
-      <div class="menu-buttons" style="margin:10px auto"><button class="primary" data-act="resume">Resume</button><button data-act="help">Field Guide</button><button data-act="achievements">Achievements (${p.achievements.size}/${ACHIEVEMENTS.length})</button><button data-act="settings">Settings</button><button data-act="save">Save</button><button data-act="quit">Save &amp; Exit</button></div></div></div>`;
+      <div class="menu-buttons" style="margin:10px auto"><button class="primary" data-act="resume">Resume</button><button data-act="help">Field Guide</button><button data-act="archive">Archive (${p.lore.length}/${LORE.length})</button><button data-act="achievements">Achievements (${p.achievements.size}/${ACHIEVEMENTS.length})</button><button data-act="settings">Settings</button><button data-act="save">Save</button><button data-act="quit">Save &amp; Exit</button></div></div></div>`;
     this.show(html); this.bindPanel();
   }
 
@@ -616,6 +662,29 @@ export class UI {
     const html = `<div class="win" style="width:min(460px,96vw)"><h2><span>SETTINGS</span><button data-act="back">Back</button></h2><div class="body">${settingsForm(s)}</div></div>`;
     this.show(html); this.bindPanel();
     bindSettingsForm($('#panel'), s, () => { this.env.applySettings(); this.applyLayout(); });
+  }
+
+  renderArchive() {
+    const p = this.game.player;
+    const rows = LORE.map((l, i) => p.lore.includes(i)
+      ? `<div class="shopitem" style="display:block"><b style="color:#2ef2ff">${String(i + 1).padStart(2, '0')} · ${esc(l.title)}</b><div style="font-size:12px;line-height:17px;margin-top:4px">${esc(l.text)}</div></div>`
+      : `<div class="shopitem" style="opacity:0.45">${String(i + 1).padStart(2, '0')} · <i>Corrupted — find more Memory Shards</i></div>`).join('');
+    const html = `<div class="win" style="width:min(560px,96vw)"><h2><span>ARCHIVE ${p.lore.length}/${LORE.length}</span><button data-act="back">Back</button></h2><div class="body"><div class="shoplist" style="max-height:none">${rows}</div>
+      <div style="font-size:11px;color:#8aa0c0;margin-top:6px">Memory Shards hide in chests (especially the Derelict Station, Reactor Core ruins, sky islands and the Temple) and drop from bosses the first time you defeat them.</div></div></div>`;
+    this.show(html); this.bindPanel();
+  }
+
+  openBeacons(from) {
+    const g = this.game, w = g.world;
+    this.panel = 'beacons';
+    const list = g.beacons().filter(([x, y]) => x !== from[0] || y !== from[1]);
+    const rows = [[w.spawnX, w.spawnY, 'Landing site'], ...list.map(([x, y]) => [x + 1, y + 3, 'Beacon']), ...(g.player.spawns[w.id] ? [[g.player.spawns[w.id][0], g.player.spawns[w.id][1], 'Rest Pod']] : [])]
+      .map(([x, y, n]) => {
+        const dx = x - (w.w >> 1), depth = y - w.layers.surface;
+        return `<div class="shopitem"><span>${n}</span><span style="color:#8aa0c0;font-size:11px">${Math.abs(dx)}${dx >= 0 ? 'E' : 'W'} · ${depth < 0 ? -depth + 'm up' : depth + 'm deep'}</span><button class="primary" data-act="warp" data-to="${x},${y}" style="margin-left:auto">Warp</button></div>`;
+      }).join('');
+    this.show(`<div class="win dialog" style="width:min(460px,96vw)"><h2><span>QUANTUM BEACON NETWORK</span><button data-act="close">&times;</button></h2><div class="body"><div class="shoplist">${rows}</div><div style="font-size:11px;color:#8aa0c0;margin-top:6px">Place more Quantum Beacons to expand the network.</div></div></div>`);
+    this.bindPanel();
   }
 
   renderAchievements() {
@@ -646,19 +715,23 @@ export class UI {
 }
 
 export const HELP_HTML = `
-<b>Goal.</b> You are a reawakened synthetic on the shattered terraforming world of the Strata. Dig, build, craft, defeat 12 bosses and reach the Singularity.<br><br>
-<b>Touch controls.</b> Left stick: move (push up to jump / climb, down to drop through platforms). Tap or hold anywhere in the world to use the selected item there: mine, chop, build, swing or shoot toward your finger. Tap doors, chests, beds, terminals and colonists to interact. Buttons: JUMP, HOOK (needs a hook equipped), STIM (quick heal), CELL (quick energy), DASH (with a dash accessory). Tap a hotbar slot to select it.<br><br>
-<b>Keyboard.</b> A/D move, W/Space jump, S drop, mouse to aim/use, right-click to interact, 1-0 or wheel for hotbar, E inventory, M map, F hook, H heal, J energy, Shift dash, Esc menu.<br><br>
-<b>First steps.</b> 1) Chop Lattice trees with the Scrap Cutter for Fiber. 2) Craft an Assembly Bench by hand (10 Fiber) and place it. 3) Kill Nanoslimes for Nanogel → Glowsticks. 4) Dig for ore, build a Smelter and Fabricator. 5) Build a house (enclosed room, background wall, door, light, table and chair) so colonists move in.<br><br>
-<b>Progression.</b> Cuprite → Ferrite → Titanite → Lumenite/Xenometal → Cryonite → Plasmite → (Singularity) Neutronium → Chronite → Aetherium → Singularity alloys. Ask the Archivist "What next?" anytime.<br><br>
-<b>Integrity</b> is your health. Smash Vital Cores underground to raise it. Five Star Shards (falling at night) make an Energy Matrix.<br><br>
-<b>Saving.</b> The game autosaves every 2 minutes and when you leave. On iPhone, use Share → Add to Home Screen to play full-screen and offline.`;
+<b>Goal.</b> You are a synthetic consciousness, rebooted on the Strata Engine — a machine-world built around a dying star. Dig, build, craft, chrome yourself up, defeat 12 bosses, and uncover what happened to the Concord through the Archive.<br><br>
+<b>Touch controls.</b> Left stick: move (push up to jump / climb, down to drop through platforms). Tap or hold anywhere in the world to use the selected item there: mine, chop, build, swing, shoot, fire a beam, charge a coilgun, grab with the gravity gun. Tap doors, chests, beds, beacons, terminals and colonists to interact. Buttons: JUMP, HOOK, STIM (quick heal), CELL (quick energy), DASH, RIDE (enter/exit your vehicle) and AUG (your neural implant's ability). Tap a hotbar slot to select it.<br><br>
+<b>Keyboard.</b> A/D move, W/Space jump, S drop, mouse to aim/use, right-click to interact, 1-0 or wheel for hotbar, E inventory, M map, F hook, H heal, J energy, Shift dash, R ride, Q augment, Esc menu.<br><br>
+<b>First steps.</b> 1) Chop Lattice trees with the Scrap Cutter for Fiber. 2) Craft an Assembly Bench by hand (10 Fiber). 3) Kill Nanoslimes for Nanogel → Glowsticks. 4) Dig for ore, build a Smelter and Fabricator. 5) Build a house (enclosed room, background wall, door, light, table and chair) so colonists move in — use the Housing button in the inventory to check a room.<br><br>
+<b>Vehicles.</b> Equip one in the Vehicle slot and tap RIDE: Scrap Hoverbike, Bore Pod (drills through rock), Aerodyne Sky Car (flying car), Titan Walker mech and the Starjumper shuttle.<br><br>
+<b>Cyberware.</b> Install implants at a Surgery Bay (or next to the Ripperdoc) into six body slots: Neural, Optics, Arms, Spine, Legs, Core. Each costs capacity; capacity grows with max integrity. Neural implants give an AUG ability: time dilation, drone command, machine hijacking or overdrive.<br><br>
+<b>Tech.</b> Beam weapons fire while held. Coilguns charge while held and fire on release. The Gravity Gun lifts enemies — release to throw them. The Wormhole Projector opens two linked portals. Quantum Beacons form a fast-travel network.<br><br>
+<b>iPhone Duo.</b> The layout follows the device: unfolded it uses the full inner display; folded like a book the controls stay clear of the fold; folded like a laptop the game sits on top with the controls below. If your fold isn't detected, choose Settings → Fold layout.<br><br>
+<b>Saving.</b> The game autosaves every 2 minutes and when you leave. Use Share → Add to Home Screen to play full-screen and offline.`;
 
 export function settingsForm(s) {
   const range = (k, label, min, max, step) => `<div class="formrow"><span class="lbl">${label}</span><input type="range" data-set="${k}" min="${min}" max="${max}" step="${step}" value="${s[k]}"></div>`;
   const tog = (k, label) => `<div class="formrow"><span class="lbl">${label}</span><div class="opt"><button data-tog="${k}" class="${s[k] ? 'on' : ''}">${s[k] ? 'On' : 'Off'}</button></div></div>`;
   return range('sfx', 'Sound', 0, 1, 0.05) + range('music', 'Music', 0, 1, 0.05) + range('zoom', 'Zoom', 0.6, 1.6, 0.1) + range('controlScale', 'Button size', 0.7, 1.4, 0.05)
     + `<div class="formrow"><span class="lbl">Resolution</span><div class="opt">${[[1, 'Low'], [1.5, 'Medium'], [2, 'High'], [3, 'Max']].map(([v, n]) => `<button data-res="${v}" class="${s.resolution === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>`
+    + `<div class="formrow"><span class="lbl">Fold layout</span><div class="opt">${[['auto', 'Auto'], ['book', 'Book'], ['laptop', 'Laptop'], ['off', 'Off']].map(([v, n]) => `<button data-fold="${v}" class="${(s.foldMode || 'auto') === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>`
+    + `<div class="formrow" style="font-size:11px;color:#8aa0c0;margin-top:-4px">For iPhone Duo: Book keeps controls off a vertical fold; Laptop puts the game on top and controls below.</div>`
     + `<div class="formrow"><span class="lbl">Lighting</span><div class="opt"><button data-light="1" class="${s.lightQuality === 1 ? 'on' : ''}">Fast</button><button data-light="2" class="${s.lightQuality === 2 ? 'on' : ''}">Quality</button></div></div>`
     + tog('smoothLight', 'Smooth light') + tog('minimap', 'Minimap') + tog('leftHanded', 'Left-handed') + tog('showFps', 'Show FPS') + tog('autoPause', 'Pause in menus');
 }
@@ -666,6 +739,7 @@ export function settingsForm(s) {
 export function bindSettingsForm(root, s, onChange) {
   root.querySelectorAll('[data-set]').forEach((el) => { el.oninput = () => { s[el.dataset.set] = parseFloat(el.value); onChange(); }; });
   root.querySelectorAll('[data-tog]').forEach((el) => { el.onclick = () => { s[el.dataset.tog] = !s[el.dataset.tog]; el.classList.toggle('on'); el.textContent = s[el.dataset.tog] ? 'On' : 'Off'; onChange(); }; });
+  root.querySelectorAll('[data-fold]').forEach((el) => { el.onclick = () => { s.foldMode = el.dataset.fold; root.querySelectorAll('[data-fold]').forEach((b) => b.classList.toggle('on', b === el)); onChange(); }; });
   root.querySelectorAll('[data-res]').forEach((el) => { el.onclick = () => { s.resolution = +el.dataset.res; root.querySelectorAll('[data-res]').forEach((b) => b.classList.toggle('on', b === el)); onChange(); }; });
   root.querySelectorAll('[data-light]').forEach((el) => { el.onclick = () => { s.lightQuality = +el.dataset.light; root.querySelectorAll('[data-light]').forEach((b) => b.classList.toggle('on', b === el)); onChange(); }; });
 }

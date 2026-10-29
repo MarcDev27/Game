@@ -20,6 +20,9 @@ import { addItem, canFit } from './inventory.js';
 import { rectSolid } from './physics.js';
 import { openCrate } from './fishing.js';
 import { ACHIEVEMENTS } from '../content/achievements.js';
+import { tryRevive } from './implants.js';
+import { updateThrown } from './tech.js';
+import { LORE } from '../content/lore.js';
 
 const TREE_HP = 220;
 
@@ -78,13 +81,18 @@ export class Game {
     // biome sensing every half second
     if (this.tick % 30 === 1) this.senseBiome();
     p.update(this, intents, aim, useHeld);
+    if (this.slowmo > 0) this.slowmo--;
+    const frozen = this.slowmo > 0 && this.tick % 3 !== 0;
     for (const m of this.monsters) if (!m.dead) {
+      if (frozen && !m.allied) continue;
+      if (m.grabbed) { if (p.grabbed !== m) m.grabbed = false; else continue; }
+      if (m.thrown > 0) { updateThrown(this, m); continue; }
       updateMonster(m, this);
       if (m.dead) continue;
       this.monsterContact(m);
       this.despawnCheck(m);
     }
-    for (const pr of this.projectiles) if (!pr.dead) updateProjectile(pr, this);
+    for (const pr of this.projectiles) if (!pr.dead && !(frozen && pr.owner === 'enemy')) updateProjectile(pr, this);
     for (const d of this.drops) if (!d.dead) updateDrop(d, this);
     this.monsters = this.monsters.filter((m) => !m.dead);
     this.projectiles = this.projectiles.filter((q) => !q.dead);
@@ -99,6 +107,7 @@ export class Game {
     this.updateCamera();
     this.chestRangeCheck();
     if (this.tick % 120 === 7) this.checkAchievements();
+    if (this.tick % 30 === 3) for (let i = 0; i < p.inv.length; i++) if (p.inv[i] && p.inv[i].k === 'memory_shard') { const n = p.inv[i].n; p.inv[i] = null; for (let k = 0; k < n; k++) this.recoverMemory(); }
   }
 
   updateCamera() {
@@ -190,6 +199,37 @@ export class Game {
     }
   }
 
+  isCuttable(id) { const t = TILES[id]; return !!(t && t.cut); }
+
+  // Memory shards unlock the next unread archive log.
+  recoverMemory() {
+    const p = this.player;
+    const next = LORE.findIndex((l, i) => !p.lore.includes(i));
+    if (next < 0) { p.credits += 500; this.notify('Archive complete. Redundant shard sold for 500 cr.', '#2ef2ff'); return; }
+    p.lore.push(next);
+    this.notify('Memory recovered: "' + LORE[next].title + '" — read it in Menu → Archive', '#2ef2ff');
+    this.audio.play('levelup');
+  }
+
+  beacons() {
+    const w = this.world, out = [];
+    for (const [k] of w.chests) { /* chests only */ }
+    const list = w.flags.beacons || [];
+    for (const [x, y] of list) if (TILES[w.get(x, y)] && TILES[w.get(x, y)].key === 'quantum_beacon') out.push([x, y]);
+    w.flags.beacons = out;
+    return out;
+  }
+
+  teleportTo(tx, ty) {
+    const p = this.player;
+    if (p.vehicle) { p.vehicle = null; p.w = 20; p.h = 42; p.recalc(); }
+    this.fx.burst(p.cx, p.cy, '#66ccff', 30, 3);
+    p.x = tx * TILE + 8 - p.w / 2; p.y = ty * TILE - p.h - 1; p.vx = p.vy = 0; p.fallStartY = p.y; p.hook = null;
+    if (rectSolid(this.world, p.x, p.y, p.w, p.h)) p.y = this.findStandY(tx) * TILE - p.h - 1;
+    this.fx.burst(p.cx, p.cy, '#66ccff', 30, 3);
+    this.audio.play('summon');
+  }
+
   exposed(x, y) { const w = this.world; return w.isAir(x - 1, y) || w.isAir(x + 1, y) || w.isAir(x, y - 1) || w.isAir(x, y + 1); }
 
   growSapling(x, y) {
@@ -256,7 +296,7 @@ export class Game {
 
   monsterContact(m) {
     const p = this.player;
-    if (p.dead || m.def.friendly || m.dmg <= 0) return;
+    if (p.dead || m.def.friendly || m.allied || m.dmg <= 0) return;
     if (rectsOverlap(m, p)) {
       this.hurtPlayer(m.dmg, m.cx, 5, m.def.name);
       if (m.def.contactBuff) p.addBuff(m.def.contactBuff.buff, m.def.contactBuff.time);
@@ -287,6 +327,7 @@ export class Game {
 
   damageMonster(m, dmg, kb, dir, crit, src) {
     if (m.dead) return 0;
+    if (src && src.dmgType === 'summon' && this.player.buffs.has('drone_cmd')) dmg *= 2;
     if (m.head) { const h = m.head; if (h.dead) return 0; return this.applyDamage(h, m, dmg, kb, dir, crit); }
     return this.applyDamage(m, m, dmg, kb, dir, crit);
   }
@@ -345,6 +386,7 @@ export class Game {
     }
     this.bosses = this.bosses.filter((b) => !b.dead);
     const first = !w.flags.bosses[key];
+    if (first) this.dropItem(m.cx, m.cy, 'memory_shard', 1);
     w.flags.bosses[key] = (w.flags.bosses[key] || 0) + 1;
     this.player.stats.bosses++;
     this.notify((BOSS_INFO[key] ? BOSS_INFO[key].name : m.def.name) + ' has been defeated!', '#ffcc33');
@@ -380,6 +422,8 @@ export class Game {
   killPlayer(cause) {
     const p = this.player;
     if (p.dead) return;
+    if (tryRevive(this, p)) return;
+    if (p.vehicle) { p.vehicle = null; p.y += p.h - 42; p.w = 20; p.h = 42; }
     p.dead = true; p.life = 0; p.hook = null;
     p.stats.deaths++;
     const boss = this.bosses.some((b) => !b.dead);
@@ -397,7 +441,7 @@ export class Game {
 
   respawnPlayer() {
     const p = this.player, w = this.world;
-    p.dead = false;
+    p.dead = false; p.w = 20; p.h = 42;
     p.life = p.s.maxLife; p.energy = p.s.maxEnergy;
     p.buffs.clear(); p.recalc();
     const sp = p.spawns[w.id];
@@ -418,6 +462,7 @@ export class Game {
 
   recall() {
     const p = this.player;
+    if (p.vehicle) { p.vehicle = null; p.w = 20; p.h = 42; p.recalc(); }
     this.fx.burst(p.cx, p.cy, '#2ef2ff', 30, 3);
     this.audio.play('summon');
     p.hook = null;
@@ -719,6 +764,7 @@ export class Game {
     }
     for (let dy = 0; dy < f.h; dy++) for (let dx = 0; dx < f.w; dx++) if (w.get(ox + dx, oy + dy)) w.set(ox + dx, oy + dy, 0);
     w.placeFurniture(ox, oy, id);
+    if (t.key === 'quantum_beacon') { w.flags.beacons = w.flags.beacons || []; w.flags.beacons.push([ox, oy]); }
     return true;
   }
 
@@ -846,6 +892,10 @@ export class Game {
         if (this.ui) this.ui.openChest(ch);
         return true;
       }
+      case 'beacon': {
+        if (this.ui) this.ui.openBeacons([ox, oy]);
+        return true;
+      }
       case 'bed': {
         p.spawns[w.id] = [ox + 1, oy + 2];
         this.notify('Respawn point set.', '#2ef2ff');
@@ -899,6 +949,7 @@ export class Game {
       const t = TILES[w.get(x, y)];
       if (t && t.station) s.add(t.station);
     }
+    if (this.town.npcs.some((n) => n.key === 'ripperdoc' && Math.abs(n.cx - p.cx) < 8 * TILE && Math.abs(n.cy - p.cy) < 6 * TILE)) s.add('surgery');
     return s;
   }
 }

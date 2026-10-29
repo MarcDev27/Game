@@ -33,6 +33,8 @@ export const BUFFS = {
   battle: { name: 'Signal Beacon', color: '#ff8fa8', stats: { spawnRate: 1.0 }, desc: 'More hostiles' },
   sonar: { name: 'Sonar', color: '#4ad9ff', stats: { sonar: 1 }, desc: 'See what is biting' },
   angler: { name: 'Angler', color: '#66ccff', stats: { fishingPower: 15 }, desc: '+15 fishing power' },
+  drone_cmd: { name: 'Drone Command', color: '#66ccff', desc: 'Your drones deal double damage' },
+  overdrive: { name: 'Overdrive', color: '#ff3355', stats: { allDmg: 0.4, moveSpeed: 0.4, meleeSpeed: 0.4 }, desc: '+40% damage and speed' },
   heart_lantern: { name: 'Pod Resonance', color: '#ff5a8a', stats: { lifeRegen: 1 }, desc: 'Regenerating near a Rest Pod' },
   campfire: { name: 'Warm Glow', color: '#ffb12e', stats: { lifeRegen: 1 }, desc: 'Regenerating near a plasma torch' },
 };

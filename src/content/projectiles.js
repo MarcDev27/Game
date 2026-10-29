@@ -25,6 +25,16 @@ p('purifier_spray', { w: 12, h: 12, sprite: 'dust', color: '#6cffd8', life: 50, 
 
 p('bobber', { w: 6, h: 6, sprite: 'bobber', ai: 'bobber', gravity: 0.25, life: 1e9, color: '#ff3355', bounce: 0.2 });
 
+p('mech_shell', { w: 10, h: 10, sprite: 'rocket', color: '#ff3355', gravity: 0.06, life: 160, light: [0.6, 0.15, 0.15], explode: { r: 52, tiles: 0 }, trail: '#ff8a3d' });
+p('star_missile', { w: 10, h: 10, sprite: 'rocket', ai: 'homing', homing: 0.12, color: '#d0a0ff', life: 200, light: [0.5, 0.35, 0.7], explode: { r: 44, tiles: 0 }, trail: '#d0a0ff' });
+p('micro_missile', { w: 6, h: 6, sprite: 'rocket', ai: 'homing', homing: 0.16, color: '#ffb12e', life: 140, light: [0.4, 0.25, 0.05], explode: { r: 24, tiles: 0 }, trail: '#ffb12e' });
+
+p('coil_slug', { w: 12, h: 4, sprite: 'laser', color: '#66ccff', life: 60, pierce: 2, light: [0.2, 0.4, 0.6], trail: '#66ccff' });
+p('tachyon_slug', { w: 16, h: 4, sprite: 'laser', color: '#fff1a8', life: 70, pierce: 8, tileCollide: false, light: [0.6, 0.55, 0.3], trail: '#fff1a8' });
+p('smart_round', { w: 6, h: 6, sprite: 'bullet', ai: 'homing', homing: 0.22, color: '#2ef2ff', life: 120, light: [0.1, 0.4, 0.45] });
+p('black_hole', { w: 10, h: 10, sprite: 'orb', ai: 'blackhole', color: '#d0a0ff', gravity: 0.2, bounce: 0.3, life: 300, light: [0.4, 0.25, 0.6], pierce: 99 });
+p('hardlight_wall', { w: 10, h: 48, sprite: 'barrier', ai: 'barrier', color: '#2ef2ff', life: 60 * 15, tileCollide: false, pierce: 99, light: [0.15, 0.5, 0.55] });
+
 // ----- player melee / thrown -----
 p('ion_boomerang', { w: 14, h: 14, sprite: 'boomerang', ai: 'boomerang', color: '#66ccff', pierce: 99, life: 600, light: [0.2, 0.4, 0.6], returnAfter: 30 });
 p('plasma_boomerang', { w: 14, h: 14, sprite: 'boomerang', ai: 'boomerang', color: '#ff5ab0', pierce: 99, life: 600, light: [0.5, 0.1, 0.3], returnAfter: 40, onHit: { buff: 'burn', time: 180 } });

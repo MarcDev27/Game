@@ -17,15 +17,18 @@
 </head>
 <body>
   <canvas id="game"></canvas>
+  <div id="ctrlbg"></div>
 
   <div id="hud" class="hidden">
-    <div id="bars">
-      <div class="bar life"><div class="fill"></div><span></span></div>
-      <div class="bar energy"><div class="fill"></div><span></span></div>
-      <div id="credits"></div>
+    <div id="leftcol">
+      <div id="bars">
+        <div class="bar life"><div class="fill"></div><span></span></div>
+        <div class="bar energy"><div class="fill"></div><span></span></div>
+        <div id="credits"></div>
+      </div>
+      <div id="hotbar"></div>
       <div id="buffs"></div>
     </div>
-    <div id="hotbar"></div>
     <div id="topright">
       <div id="minimap-wrap"><canvas id="minimap" width="140" height="88"></canvas><div id="info"></div></div>
       <div id="menu-buttons">
@@ -48,13 +51,14 @@
       <button class="act small" id="act-heal">STIM</button>
       <button class="act small" id="act-energy">CELL</button>
       <button class="act small hidden" id="act-dash">DASH</button>
+      <button class="act small hidden" id="act-ride">RIDE</button>
+      <button class="act small hidden" id="act-aug">AUG</button>
     </div>
   </div>
 
   <div id="panel" class="hidden"></div>
   <div id="mapview" class="hidden"><canvas id="mapcanvas"></canvas><div class="mapbar"><button id="map-in">+</button><button id="map-out">&minus;</button><button id="map-center">&#8982;</button><button id="map-close">Close</button></div></div>
   <div id="menu"></div>
-  <div id="rotate-hint" class="hidden">Rotate your device to landscape for the best experience</div>
 
   <script type="module" src="src/main.js"></script>
 </body>

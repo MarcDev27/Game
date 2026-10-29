@@ -84,6 +84,7 @@ export function updateDrop(d, game) {
     moveEntity(game.world, d, { platforms: true });
   }
   if (!p.dead && d.delay === 0 && dist < 20 && fits) {
+    if (d.k === 'memory_shard') { for (let i = 0; i < d.n; i++) game.recoverMemory(); d.dead = true; return; }
     if (d.k === 'credits') { p.credits += d.n; game.fx.text(p.cx, p.y - 4, '+' + d.n + ' cr', '#ffe27a'); game.audio.play('coin'); }
     else {
       const left = addItem(p.inv, d.k, d.n, d.p);
@@ -138,6 +139,30 @@ export function updateProjectile(p, game) {
     }
     case 'minion': return updateMinion(p, game);
     case 'bobber': return updateBobber(p, game);
+    case 'blackhole': {
+      if (p.t < 60) break; // flies as a grenade first
+      p.vx *= 0.8; p.vy *= 0.8;
+      if (p.t === 60) { game.audio.play('roar'); game.camShake = 6; }
+      for (const m of game.monsters) {
+        if (m.dead || m.allied) continue;
+        const dx = p.cx - m.cx, dy = p.cy - m.cy, dd = Math.hypot(dx, dy);
+        if (dd > 220) continue;
+        if (!m.def.boss) { m.x += dx / (dd || 1) * 3.2; m.y += dy / (dd || 1) * 3.2; }
+        if (dd < 40 && p.t % 10 === 0) game.damageMonster(m, p.dmg, 0, 1, false, p);
+      }
+      for (const d of game.drops) { const dx = p.cx - d.x, dy = p.cy - d.y, dd = Math.hypot(dx, dy); if (dd < 220) { d.x += dx / (dd || 1) * 2; d.y += dy / (dd || 1) * 2; } }
+      if (p.t % 2 === 0) { const a = Math.random() * Math.PI * 2; game.fx.spark(p.cx + Math.cos(a) * 60, p.cy + Math.sin(a) * 60, '#d0a0ff', -Math.cos(a) * 3, -Math.sin(a) * 3, 20, 2); }
+      return;
+    }
+    case 'barrier': {
+      for (const q of game.projectiles) if (q.owner === 'enemy' && !q.dead && rectsOverlap(p, q)) { q.dead = true; game.fx.burst(q.cx, q.cy, '#2ef2ff', 5, 1.5); }
+      for (const m of game.monsters) {
+        if (m.dead || m.allied || m.def.boss || !rectsOverlap(p, m)) continue;
+        m.vx = (m.cx < p.cx ? -1 : 1) * 4; m.x += m.vx;
+        if (p.t % 20 === 0) game.damageMonster(m, p.dmg, 3, Math.sign(m.vx), false, p);
+      }
+      return;
+    }
     case 'sentry': {
       p.vy = Math.min(p.vy + 0.3, 8); p.vx = 0;
       moveEntity(world, p, { platforms: true });

@@ -2,6 +2,7 @@
 import { TILE, rng, sign, clamp } from '../core/util.js';
 import { moveEntity, liquidAt, rectSolid } from './physics.js';
 import { BOSS_AI } from './bosses.js';
+import { alliedTarget, alliedContact } from './implants.js';
 
 function target(game) { return game.player.dead ? null : game.player; }
 
@@ -27,7 +28,13 @@ export function updateMonster(m, game) {
     }
   }
   const slow = m.buffs.has('chill') ? 0.6 : m.buffs.has('slow') ? 0.4 : 1;
-  const tgt = target(game);
+  let tgt = target(game);
+  if (m.allied) {
+    m.allied--;
+    tgt = alliedTarget(game, m);
+    alliedContact(game, m);
+    if (m.allied <= 0) { m.allied = 0; game.fx.burst(m.cx, m.cy, '#ff3355', 10, 2); }
+  }
   if (BOSS_AI[d.ai]) { BOSS_AI[d.ai](m, game, tgt); return; }
   const fn = AI[d.ai] || AI.walker;
   fn(m, game, tgt, slow);

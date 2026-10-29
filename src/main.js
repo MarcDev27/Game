@@ -12,6 +12,9 @@ import { generateWorld } from './world/worldgen.js';
 import { UI } from './ui/ui.js';
 import { Menus } from './ui/menus.js';
 import { HOTBAR } from './game/inventory.js';
+import { applyLayout, watchLayout } from './ui/layout.js';
+import { toggleRide } from './game/vehicles.js';
+import { activateAug } from './game/implants.js';
 
 const canvas = document.getElementById('game');
 const settings = loadSettings();
@@ -20,6 +23,7 @@ const audio = new Audio();
 const renderer = new Renderer(canvas);
 let game = null, ui = null, state = 'menu';
 let consumedTouch = false;
+let lastZoomOut = 0;
 let lastAim = { x: 0, y: 0, show: false, fromMouse: false };
 
 const env = {
@@ -88,14 +92,18 @@ function exitToMenu(skipSave) {
   menus.title();
 }
 
+// Every resize (rotation, iPhone Duo opening/closing/folding, Split View) re-lays out the HUD
+// and resizes the canvas to the new shape — no letterboxing, the view simply grows or shrinks.
 function resize() {
   const dpr = Math.min(window.devicePixelRatio || 1, settings.resolution || 2);
-  renderer.resize(window.innerWidth, window.innerHeight, dpr, settings.zoom);
+  const area = applyLayout(settings);
+  const zoomOut = game ? game.player.s.zoomOut || 0 : 0;
+  lastZoomOut = zoomOut;
+  renderer.resize(area.w, area.h, dpr, settings.zoom / (1 + zoomOut));
   if (game) { const v = renderer.viewSize(); game.view.w = v.w; game.view.h = v.h; }
-  document.getElementById('rotate-hint').classList.toggle('hidden', !(input.isTouch && window.innerHeight > window.innerWidth && state === 'game'));
+  if (ui) ui.relayout();
 }
-window.addEventListener('resize', resize);
-window.addEventListener('orientationchange', () => setTimeout(resize, 200));
+watchLayout(resize);
 
 // ---------------- input → actions ----------------
 function quickUse(kind) {
@@ -128,6 +136,8 @@ function step() {
   // hotbar keys
   for (let i = 0; i < HOTBAR; i++) if (input.pressed.has(String((i + 1) % 10))) p.sel = i;
   if (input.wheel && !ui.panel) p.sel = (p.sel + input.wheel + HOTBAR) % HOTBAR;
+  if (intents.ride && !p.dead) toggleRide(game, p);
+  if (intents.aug && !p.dead) activateAug(game, p);
   if (intents.heal) quickUse('heal');
   if (intents.energy) quickUse('energy');
 
@@ -176,6 +186,7 @@ function frame(now) {
     let n = 0;
     while (acc >= 1000 / 60 && n < 4) { step(); acc -= 1000 / 60; n++; }
     if (n === 4) acc = 0;
+    if ((game.player.s.zoomOut || 0) !== lastZoomOut) resize();
     renderer.render(game, lastAim, settings);
     ui.update();
     saveClock += dt;

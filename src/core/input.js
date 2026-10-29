@@ -141,6 +141,8 @@ export class Input {
       inventory: this.pressed.has('e') || this.pressed.has('Escape') || this.pressed.has('i') || this.buttonPressed.has('inventory'),
       map: this.pressed.has('m') || this.buttonPressed.has('map'),
       throwItem: this.pressed.has('t'),
+      ride: this.pressed.has('r') || this.buttonPressed.has('ride'),
+      aug: this.pressed.has('q') || this.buttonPressed.has('aug'),
     };
   }
 

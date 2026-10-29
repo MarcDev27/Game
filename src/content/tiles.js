@@ -162,6 +162,8 @@ furniture('nano_forge', 'Nano Forge', 'nanoforge', 3, 2, { station: 'nanoforge',
 furniture('quantum_assembler', 'Quantum Assembler', 'quantum', 3, 3, { station: 'quantum', light: [0.3, 1, 0.7], map: '#3dffb0' });
 furniture('singularity_core', 'Singularity Core', 'singularity', 3, 3, { station: 'singularity', light: [0.8, 0.6, 1], map: '#d0a0ff' });
 furniture('cryo_lathe', 'Cryo Lathe', 'lathe', 2, 2, { station: 'lathe', light: [0.4, 0.8, 1], map: '#7ff0ff' });
+furniture('surgery_bay', 'Surgery Bay', 'surgery', 3, 2, { station: 'surgery', light: [0.3, 0.9, 0.7], map: '#3dffb0' });
+furniture('quantum_beacon', 'Quantum Beacon', 'beacon', 2, 3, { interact: 'beacon', light: [0.4, 0.7, 1], map: '#66ccff' });
 furniture('trade_terminal', 'Trade Terminal', 'terminal', 2, 2, { light: [0.2, 0.7, 0.9], map: '#2ef2ff' });
 
 // world-generated interactables

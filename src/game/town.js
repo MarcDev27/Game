@@ -51,6 +51,13 @@ export const COLONISTS = {
     shop: (g) => ['spark_wand', 'charge_cell', 'greater_cell', 'energy_band', 'void_band', 'eclipse_lens', 'signal_flare'],
     lines: ['I can rewrite your gear\'s firmware. For a price.', 'Every weapon has a hidden modifier. Mine are better.'],
   },
+  ripperdoc: {
+    title: 'Ripperdoc', names: ['Vik', 'Chrome', 'Dr. Lattice', 'Splice'], look: { chassis: '#aeb7c2', suit: '#1a1a22', visor: '#3dffb0', hair: '#3dffb0', style: 1 },
+    cond: (g) => !!g.world.flags.bosses.overseer || !!g.world.flags.bosses.gel_sovereign,
+    shop: (g) => ['surgery_bay', 'spring_legs', 'thermal_optics', 'ore_lens', 'synth_muscle', 'gorilla_arms', 'circuitry', 'battery', ...(g.world.flags.bosses.archon ? ['hack_uplink', 'exo_spine'] : []), ...(g.world.flags.hardmode ? ['bio_monitor', 'fusion_core'] : [])],
+    lines: ['Chrome is temporary. Chrome is forever. Pick one.', 'Your capacity grows with your integrity. Find Vital Cores, get more chrome.', 'Stand next to me and I\'ll install anything you\'ve got.'],
+    hint: () => 'Implants go in six body slots: Neural, Optics, Arms, Spine, Legs and Core. Neural implants give an AUG ability — tap the AUG button.',
+  },
   smuggler: {
     title: 'Smuggler', names: ['Vex', 'Nyx', 'Rook'], look: { chassis: '#5a4a6a', suit: '#2a1f3a', visor: '#ff3ddc', hair: '#ff3ddc', style: 3 },
     cond: () => false, noHouse: true, traveling: true,
@@ -252,12 +259,15 @@ export class Town {
     if (!discovered('smelter')) return 'Mine down to find Ferrocrete and ore veins. A Smelter needs 20 Ferrocrete, 4 Fiber and 3 Glowsticks (Nanogel from slimes + Fiber).';
     if (!discovered('fabricator')) return 'Smelt Ferrite Ore into bars at the Smelter. 5 Ferrite Bars make a Fabricator, where you can build metal tools and armor.';
     if (this.npcs.length < 3 && !w.flags.bosses.overseer) return 'Colonists need housing: an enclosed room (at least 50 tiles) with background walls, a door or platform, a light, a table and a chair.';
+    if (!discovered('hoverbike') && !discovered('smart_pistol') && !f.overseer) return 'At the Fabricator you can build tech, not just tools: a Smart Pistol, a Monofilament Whip, or a Scrap Hoverbike (14 Ferrite Bars, 4 Battery Cells, 3 Circuitry). Circuitry is 2 Scrap + 1 Cuprite Bar.';
     if (p.maxLife < 160 && !f.overseer) return 'Vital Cores glow red deep underground. Smash them with your pick to permanently raise your max integrity.';
     if (!f.gel_sovereign && !f.overseer) return 'You could challenge the Gel Sovereign (craft a Gel Beacon from 30 Nanogel) or the Overseer (Optic Lure from 6 Optic Lenses, at night).';
     if (!f.overseer) return BOSS_INFO.overseer.hint;
+    if (!discovered('surgery_bay') && this.has('ripperdoc')) return 'A Ripperdoc has moved in. Build a Surgery Bay to install cyberware — body mods in six slots. Your cyberware capacity grows with your max integrity.';
     if (!f.data_wyrm) return 'Lumenite Ore from the Overseer makes strong gear. Next, venture into the Blight: ' + BOSS_INFO.data_wyrm.hint;
     if (!f.swarm_mother) return 'Deep in the Overgrowth lies a hive. ' + BOSS_INFO.swarm_mother.hint;
     if (!f.archon) return 'Wyrm Scales + Lumenite make Blight Shell armor. When ready: ' + BOSS_INFO.archon.hint;
+    if (!discovered('skycar') && discovered('xenometal_ore')) return 'Xenometal from an Orbital Drop can be fabricated into an Aerodyne Sky Car — a flying car whose antigrav field works up to 34 tiles above the ground.';
     if (!discovered('plasmite_ore')) return 'The Derelict Station holds Access Keys and loot. Then dig to the Reactor Core at the bottom of the world for Plasmite (needs a Cryonite Pick).';
     if (!f.core_warden) return 'Plasmite gear will protect you in the Core. ' + BOSS_INFO.core_warden.hint + ' Build a long bridge first!';
     if (!f.twin_lancers || !f.leviathan || !f.prime_archon) return 'The Singularity has begun. Smash new Neutronium ore with a Plasmite Pick. Mechanical bosses await: Mechanical Optic, Worm Chip and Skull (Photon/Void Cores from Prism/Blight caves).';

@@ -130,6 +130,17 @@ function drawIcon(ctx, it) {
     case 'grub': for (let i = 0; i < 4; i++) R(i % 2 ? c : dk, 3 + i * 3, 8 + (i % 2), 3, 4); R('#111', 13, 9, 1, 1); break;
     case 'fish': R(c, 3, 6, 9, 5); R(c, 11, 5, 2, 7); R(c, 13, 4, 2, 2); R(c, 13, 11, 2, 2); R(hi, 4, 6, 7, 1); R(dk, 3, 10, 9, 1); R('#111', 5, 7, 1, 1); R(dk, 7, 4, 3, 2); break;
     case 'crate': R(dk, 2, 3, 12, 11); R(c, 3, 4, 10, 9); R(c2, 3, 8, 10, 1); R(c2, 7, 4, 2, 9); R(hi, 3, 4, 10, 1); break;
+    case 'bike': R(c2, 1, 8, 13, 3); R(c, 2, 6, 10, 3); R(c, 11, 4, 4, 3); R('#2ef2ff', 2, 12, 4, 1); R('#2ef2ff', 9, 12, 4, 1); R(hi, 3, 6, 6, 1); break;
+    case 'car': R(c2, 1, 7, 14, 5); R(c, 2, 6, 12, 4); R('rgba(150,230,255,0.8)', 5, 3, 6, 4); R('#ffb12e', 0, 8, 1, 2); R('#2ef2ff', 3, 12, 3, 1); R('#2ef2ff', 10, 12, 3, 1); break;
+    case 'pod': R(c2, 2, 3, 10, 10); R(c, 3, 4, 8, 8); R('#0e1e24', 4, 6, 4, 3); R('#2ef2ff', 5, 7, 2, 1); R('#aeb7c2', 12, 5, 3, 6); R('#aeb7c2', 15, 7, 1, 2); break;
+    case 'mech': R(c, 3, 3, 10, 7); R('#0e1e24', 5, 4, 6, 3); R('#2ef2ff', 6, 5, 4, 1); R(dk, 4, 10, 3, 5); R(dk, 9, 10, 3, 5); R('#333', 12, 5, 4, 2); break;
+    case 'ship': R(c2, 1, 7, 14, 4); R(c, 3, 6, 11, 3); R('rgba(208,160,255,0.8)', 7, 3, 4, 3); R('#ffffff', 0, 8, 1, 2); R('#2ef2ff', 13, 7, 2, 1); break;
+    case 'implant_neural': R('#59616c', 4, 4, 8, 8); R(c, 5, 5, 6, 6); for (let i = 0; i < 4; i++) { R(c, 2, 5 + i * 2, 2, 1); R(c, 12, 5 + i * 2, 2, 1); } R('#ffffff', 7, 7, 2, 2); break;
+    case 'implant_optic': circle(8, 8, 6, '#59616c'); circle(8, 8, 4, c); circle(8, 8, 2, '#111'); R('#ffffff', 6, 6, 1, 1); break;
+    case 'implant_arms': R('#59616c', 3, 3, 4, 11); R(c, 4, 4, 2, 9); R('#aeb7c2', 7, 10, 6, 3); R(c, 9, 2, 2, 8); break;
+    case 'implant_spine': for (let i = 0; i < 6; i++) R(i % 2 ? '#aeb7c2' : c, 6, 1 + i * 2 + i, 4, 2); R(dk, 7, 1, 2, 14); break;
+    case 'implant_legs': R('#59616c', 4, 2, 3, 12); R('#59616c', 9, 2, 3, 12); R(c, 4, 7, 3, 2); R(c, 9, 7, 3, 2); R('#aeb7c2', 3, 13, 5, 2); R('#aeb7c2', 8, 13, 5, 2); break;
+    case 'implant_core': circle(8, 8, 6, '#59616c'); circle(8, 8, 4, c); R('#ffffff', 7, 7, 2, 2); R(c, 1, 7, 2, 2); R(c, 13, 7, 2, 2); break;
     default: R(c, 3, 3, 10, 10); R(hi, 3, 3, 10, 1);
   }
 }

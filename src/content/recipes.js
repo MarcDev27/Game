@@ -19,7 +19,7 @@ export const STATION_PROVIDES = {
 export const STATION_NAMES = {
   bench: 'Assembly Bench', smelter: 'Smelter', fabricator: 'Fabricator', vat: 'Synth Vat', printer: 'Textile Printer',
   tinker: 'Tinker Station', plasmaforge: 'Plasma Forge', nanoforge: 'Nano Forge', quantum: 'Quantum Assembler',
-  singularity: 'Singularity Core', lathe: 'Cryo Lathe',
+  singularity: 'Singularity Core', lathe: 'Cryo Lathe', surgery: 'Surgery Bay',
 };
 
 export const RECIPES = [];
@@ -235,6 +235,55 @@ r('optic_inj', 1, [['glass', 1], ['cave_lumen', 1]], 'vat');
 r('lifeforce_inj', 1, [['glass', 1], ['prism_koi', 1]], 'vat');
 r('regen_inj', 1, [['glass', 1], ['spore_pike', 1]], 'vat');
 r('glow_grub', 3, [['bio_worm', 3], ['glowcap', 1]], 'vat');
+
+// ---- circuitry, surgery, vehicles, cyberware ----
+r('circuitry', 1, [['scrap', 2], ['cuprite_bar', 1]], 'fabricator');
+r('battery', 1, [['scrap', 2], ['nanogel', 3], ['ferrite_bar', 1]], 'fabricator');
+r('surgery_bay', 1, [['ferrite_bar', 10], ['circuitry', 5], ['battery', 2], ['glass', 4]], 'fabricator');
+r('hoverbike', 1, [['ferrite_bar', 14], ['battery', 4], ['circuitry', 3]], 'fabricator');
+r('drillpod', 1, [['titanite_bar', 16], ['titanite_pick', 1], ['battery', 4]], 'fabricator');
+r('skycar', 1, [['xenometal_bar', 20], ['battery', 6], ['circuitry', 6], ['aero_vane', 8]], 'fabricator');
+r('mech', 1, [['neutronium_bar', 25], ['force_matrix', 8], ['circuitry', 10]], 'nanoforge');
+r('starjumper', 1, [['skycar', 1], ['chronite_bar', 15], ['gravity_core', 10], ['golem_core', 1]], 'quantum');
+const S = 'surgery';
+r('thermal_optics', 1, [['optic_lens', 6], ['circuitry', 4], ['titanite_bar', 5]], S);
+r('ore_lens', 1, [['optic_lens', 2], ['titanite_ore', 10], ['circuitry', 4]], S);
+r('zoom_optics', 1, [['optic_lens', 4], ['lumenite_bar', 8], ['circuitry', 4]], S);
+r('targeting_optics', 1, [['targeting_scope', 1], ['circuitry', 4], ['targeting_matrix', 5]], S);
+r('mantis_blades', 1, [['xenometal_bar', 15], ['circuitry', 4], ['battery', 2]], S);
+r('gorilla_arms', 1, [['ferrite_bar', 15], ['bone_alloy', 5], ['circuitry', 4]], S);
+r('grapple_arm', 1, [['grapple_hook', 1], ['titanite_bar', 8], ['circuitry', 4]], S);
+r('launcher_arm', 1, [['plasmite_bar', 12], ['battery', 6], ['circuitry', 6]], S);
+r('exo_spine', 1, [['ferrite_bar', 20], ['bone_alloy', 10], ['circuitry', 4]], S);
+r('synth_muscle', 1, [['biofiber', 10], ['nanoweave', 8], ['circuitry', 4]], S);
+r('shock_spine', 1, [['cryonite_bar', 10], ['battery', 6], ['nano_stinger', 5]], S);
+r('spring_legs', 1, [['jump_module', 1], ['cuprite_bar', 8], ['circuitry', 4]], S);
+r('kinetic_legs', 1, [['titanite_bar', 12], ['battery', 4], ['circuitry', 4]], S);
+r('mag_treads', 1, [['gecko_gloves', 1], ['hover_soles', 1], ['circuitry', 6]], S);
+r('nano_heart', 1, [['vital_core', 2], ['lumenite_bar', 10], ['circuitry', 6]], S);
+r('fusion_core', 1, [['energy_matrix', 3], ['xenometal_bar', 8], ['battery', 4]], S);
+r('bio_monitor', 1, [['bio_spore', 10], ['cryo_essence', 3], ['circuitry', 4]], S);
+r('overclock_core', 1, [['neutronium_bar', 10], ['force_matrix', 5], ['circuitry', 6]], S);
+r('reflex_booster', 1, [['cryonite_bar', 15], ['circuitry', 10], ['cryo_essence', 5]], S);
+r('tactical_link', 1, [['swarm_chitin', 10], ['circuitry', 6], ['battery', 4]], S);
+r('hack_uplink', 1, [['circuitry', 20], ['battery', 10], ['bone_alloy', 5]], S);
+r('overdrive_chip', 1, [['neutronium_bar', 10], ['terror_matrix', 5], ['circuitry', 6]], S);
+
+// ---- futuristic weapons & tech ----
+r('smart_pistol', 1, [['ferrite_bar', 8], ['circuitry', 3]], 'fabricator');
+r('monofilament_whip', 1, [['titanite_bar', 10], ['nano_filament', 10], ['circuitry', 2]], 'fabricator');
+r('barrier_projector', 1, [['titanite_bar', 10], ['battery', 4], ['circuitry', 4]], 'fabricator');
+r('quantum_beacon', 1, [['titanite_bar', 8], ['star_shard', 5], ['circuitry', 4]], 'fabricator');
+r('photon_lance', 1, [['lumenite_bar', 12], ['star_shard', 4], ['circuitry', 4]], 'fabricator');
+r('coilgun', 1, [['xenometal_bar', 14], ['battery', 6], ['circuitry', 4]], 'fabricator');
+r('gravity_gun', 1, [['cryonite_bar', 10], ['battery', 6], ['circuitry', 4]], 'lathe');
+r('nano_disassembler', 1, [['cryonite_bar', 12], ['battery', 4], ['circuitry', 6]], 'lathe');
+r('wormhole_projector', 1, [['lumenite_bar', 10], ['bone_alloy', 10], ['circuitry', 8], ['star_shard', 2]], 'fabricator');
+r('black_hole_charge', 5, [['gravity_core', 1], ['neutronium_bar', 2]], 'nanoforge');
+r('plasma_filament', 1, [['monofilament_whip', 1], ['neutronium_bar', 12], ['void_core', 5]], 'nanoforge');
+r('graviton_ray', 1, [['chronite_bar', 14], ['gravity_core', 6], ['circuitry', 8]], 'nanoforge');
+r('matter_disassembler', 1, [['chronite_bar', 16], ['circuitry', 10]], 'nanoforge');
+r('tachyon_lance', 1, [['aetherium_bar', 16], ['circuitry', 10], ['photon_core', 5]], 'nanoforge');
 
 // ---- boss and event summons ----
 r('optic_lure', 1, [['optic_lens', 6], ['scrap', 3]], 'fabricator');
