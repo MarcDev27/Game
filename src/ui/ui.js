@@ -726,15 +726,23 @@ export const HELP_HTML = `
 <b>iPhone Duo.</b> The layout follows the device: unfolded it uses the full inner display; folded like a book the controls stay clear of the fold; folded like a laptop the game sits on top with the controls below. Safari only reports the fold when its Device Posture and Viewport Segments feature flags are on (Settings → Apps → Safari → Advanced → Feature Flags); otherwise choose Settings → Fold layout.<br><br>
 <b>Saving.</b> The game autosaves every 2 minutes and when you leave. Use Share → Add to Home Screen to play full-screen and offline.`;
 
+// What the browser reports about the screen, to diagnose layouts on new devices.
+function displayInfo() {
+  const d = window.__neonDisplay ? window.__neonDisplay() : {};
+  return Object.entries(d).map(([k, v]) => `${k}: ${v}`).join('<br>');
+}
+
 export function settingsForm(s) {
-  const range = (k, label, min, max, step) => `<div class="formrow"><span class="lbl">${label}</span><input type="range" data-set="${k}" min="${min}" max="${max}" step="${step}" value="${s[k]}"></div>`;
+  const range = (k, label, min, max, step) => `<div class="formrow"><span class="lbl">${label}</span><input type="range" data-set="${k}" min="${min}" max="${max}" step="${step}" value="${s[k] ?? 0}"></div>`;
   const tog = (k, label) => `<div class="formrow"><span class="lbl">${label}</span><div class="opt"><button data-tog="${k}" class="${s[k] ? 'on' : ''}">${s[k] ? 'On' : 'Off'}</button></div></div>`;
   return range('sfx', 'Sound', 0, 1, 0.05) + range('music', 'Music', 0, 1, 0.05) + range('zoom', 'Zoom', 0.6, 1.6, 0.1) + range('controlScale', 'Button size', 0.7, 1.4, 0.05)
-    + `<div class="formrow"><span class="lbl">Resolution</span><div class="opt">${[[1, 'Low'], [1.5, 'Medium'], [2, 'High'], [3, 'Max']].map(([v, n]) => `<button data-res="${v}" class="${s.resolution === v ? 'on' : ''}">${n}</button>`).join('')}</div></div><div style="font-size:11px;color:#8aa0c0;margin:-2px 0 6px">Auto needs Safari's Device Posture and Viewport Segments feature flags. Otherwise pick Book or Laptop while folded.</div>`
+    + `<div class="formrow"><span class="lbl">Resolution</span><div class="opt">${[[1, 'Low'], [1.5, 'Medium'], [2, 'High'], [3, 'Max']].map(([v, n]) => `<button data-res="${v}" class="${s.resolution === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>`
     + `<div class="formrow"><span class="lbl">Fold layout</span><div class="opt">${[['auto', 'Auto'], ['book', 'Book'], ['laptop', 'Laptop'], ['off', 'Off']].map(([v, n]) => `<button data-fold="${v}" class="${(s.foldMode || 'auto') === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>`
-    + `<div class="formrow" style="font-size:11px;color:#8aa0c0;margin-top:-4px">For iPhone Duo: Book keeps controls off a vertical fold; Laptop puts the game on top and controls below.</div>`
+    + range('foldShift', 'Fold position', -120, 120, 2)
+    + `<div class="formrow" style="font-size:11px;color:#8aa0c0;margin-top:-4px">For iPhone Duo: Book keeps controls off a vertical fold; Laptop puts the game on top and controls below. Fold position nudges the split if it doesn't line up with the hinge. Auto needs Safari's Device Posture and Viewport Segments feature flags.</div>`
     + `<div class="formrow"><span class="lbl">Lighting</span><div class="opt"><button data-light="1" class="${s.lightQuality === 1 ? 'on' : ''}">Fast</button><button data-light="2" class="${s.lightQuality === 2 ? 'on' : ''}">Quality</button></div></div>`
-    + tog('smoothLight', 'Smooth light') + tog('minimap', 'Minimap') + tog('leftHanded', 'Left-handed') + tog('showFps', 'Show FPS') + tog('autoPause', 'Pause in menus');
+    + tog('smoothLight', 'Smooth light') + tog('minimap', 'Minimap') + tog('leftHanded', 'Left-handed') + tog('showFps', 'Show FPS') + tog('autoPause', 'Pause in menus')
+    + `<div class="label">Display info</div><div class="tip" style="min-height:0;font-size:10px;line-height:14px;user-select:text;-webkit-user-select:text">${displayInfo()}</div>`;
 }
 
 export function bindSettingsForm(root, s, onChange) {

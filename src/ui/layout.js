@@ -42,23 +42,57 @@ function cssSegments() {
   return null;
 }
 
-// Where the middle of the physical screen falls in page coordinates.
-function screenMiddle(W, H) {
+// Where the middle of the physical screen falls in page coordinates. On iPhone Duo the system
+// keeps a strip outside the page — along the trailing side, or along the bottom of the inner
+// display in portrait — so the page starts at the screen's top-left corner but is smaller than
+// the screen, and the middle of the page is not where the hinge is.
+function screenSize(W, H) {
   let sw = window.screen ? screen.width : W, sh = window.screen ? screen.height : H;
   if ((W > H) !== (sw > sh)) [sw, sh] = [sh, sw]; // iOS reports screen size in portrait
-  const dw = sw - W, dh = sh - H;
-  // Only trust the difference when it looks like a system bar, not a browser window or toolbar.
-  const standalone = navigator.standalone || (mq('(display-mode: standalone)') || {}).matches || (mq('(display-mode: fullscreen)') || {}).matches;
-  const ok = (d, s) => standalone && d > 2 && d < s * 0.2;
-  // A bar along the top (portrait) pushes the page down; a side bar sits on the trailing edge.
-  return { x: ok(dw, sw) ? sw / 2 : W / 2, y: ok(dh, sh) ? sh / 2 - dh : H / 2 };
+  return { sw, sh };
 }
+function screenMiddle(W, H) {
+  const { sw, sh } = screenSize(W, H);
+  // Only trust a difference that looks like a system strip, not a desktop browser window.
+  const ok = (d, s) => d > 2 && d < s * 0.2;
+  return { x: ok(sw - W, sw) ? sw / 2 : W / 2, y: ok(sh - H, sh) ? sh / 2 : H / 2 };
+}
+
+let lastFold = { mode: 'none' };
+// Everything the browser reports about the screen, shown in Settings for troubleshooting.
+window.__neonDisplay = () => {
+  const W = window.innerWidth, H = window.innerHeight, { sw, sh } = screenSize(W, H);
+  let ins = '?';
+  try {
+    const pr = document.createElement('div');
+    pr.style.cssText = 'position:fixed;visibility:hidden;padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0)';
+    document.body.appendChild(pr);
+    const c = getComputedStyle(pr);
+    ins = [c.paddingTop, c.paddingRight, c.paddingBottom, c.paddingLeft].map((v) => parseFloat(v)).join(' / ');
+    pr.remove();
+  } catch (e) { /* ignore */ }
+  const dm = ['fullscreen', 'standalone', 'minimal-ui', 'browser'].find((m) => (mq(`(display-mode: ${m})`) || {}).matches) || '?';
+  let posture = 'not available';
+  try { if (navigator.devicePosture) posture = navigator.devicePosture.type; } catch (e) { /* ignore */ }
+  if (posture === 'not available' && MQ.folded && MQ.folded.matches) posture = 'folded (CSS)';
+  const segs = window.viewport && window.viewport.segments ? window.viewport.segments.length : (MQ.hseg && MQ.hseg.matches ? '2 side by side (CSS)' : MQ.vseg && MQ.vseg.matches ? '2 stacked (CSS)' : 'not available');
+  const f = lastFold;
+  return {
+    Build: window.__neonBuild || '?',
+    Page: `${W} × ${H}`, Screen: `${sw} × ${sh}`, 'Pixel ratio': window.devicePixelRatio,
+    'Safe area (t/r/b/l)': ins, 'Display mode': dm + (navigator.standalone ? ' (Home Screen)' : ''),
+    Posture: posture, Segments: segs,
+    Fold: f.mode === 'book' ? `book at x=${Math.round(f.x)}` : f.mode === 'laptop' ? `laptop at y=${Math.round(f.y)}` : 'none',
+  };
+};
 
 export function detectFold(settings) {
   const W = window.innerWidth, H = window.innerHeight;
   const pref = settings.foldMode || 'auto';
   if (pref === 'off') return { mode: 'none' };
   const mid = screenMiddle(W, H);
+  const shift = settings.foldShift || 0;
+  mid.x += shift; mid.y += shift;
   const clampX = (x) => Math.round(Math.min(W * 0.7, Math.max(W * 0.3, x)));
   const clampY = (y) => Math.round(Math.min(H * 0.7, Math.max(H * 0.3, y)));
   if (pref === 'book') return { mode: 'book', x: clampX(mid.x), w: 0 };
@@ -87,6 +121,7 @@ export function detectFold(settings) {
 export function applyLayout(settings) {
   const W = window.innerWidth, H = window.innerHeight;
   const fold = detectFold(settings);
+  lastFold = fold;
   const b = document.body, st = document.documentElement.style;
   const portrait = H > W;
   let gameH = H;

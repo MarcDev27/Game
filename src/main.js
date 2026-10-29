@@ -108,7 +108,7 @@ function resize() {
   if (ui) ui.relayout();
 }
 watchLayout(resize);
-startPadding(renderer.canvas, () => ({ active: state === 'game' && input.isTouch, gameH: gameArea ? gameArea.h : window.innerHeight }));
+startPadding(renderer.canvas, () => ({ gameH: gameArea ? gameArea.h : window.innerHeight }));
 
 // ---------------- input → actions ----------------
 function quickUse(kind) {
@@ -238,7 +238,15 @@ async function boot() {
   menus.title();
   requestAnimationFrame(frame);
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js').then((reg) => reg.update()).catch(() => {});
+    // A new version was installed: reload straight away on the title screen, otherwise say so.
+    let reloading = false;
+    const hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloading || !hadController) return;
+      if (state !== 'game') { reloading = true; location.reload(); } else if (ui) ui.toast('Update installed. Return to the title screen to load it.', '#2ef2ff');
+    });
+    fetch('sw.js').then((r) => r.text()).then((t) => { const m = t.match(/neon-strata-([0-9a-f]+)/); if (m) window.__neonBuild = m[1]; }).catch(() => {});
   }
   window.__neon = { get game() { return game; }, env, menus, launch };
 }

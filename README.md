@@ -38,7 +38,11 @@ On **iPhone Duo** the layout follows the device:
 - **Folded like a book:** the hotbar and menus stay clear of the fold.
 - **Folded like a laptop:** the world is on the top half and the controls are on the bottom half.
 
-The game detects the fold through the Viewport Segments and Device Posture APIs. In Safari 27.1 these are still behind feature flags (**Settings → Apps → Safari → Advanced → Feature Flags**). Without them, choose **Menu → Settings → Fold layout**. The game then places the split at the middle of the physical screen, even when the system keeps a status bar outside the page. Any strip the system keeps beside the page, such as the status-bar and camera strip along the side, is filled with the game's own edge pixels, so the picture still reaches the edge of the screen. **Settings → Resolution** trades sharpness for battery life.
+The game detects the fold through the Viewport Segments and Device Posture APIs. In Safari 27.1 these are still behind feature flags (**Settings → Apps → Safari → Advanced → Feature Flags**). Without them, choose **Menu → Settings → Fold layout**. The game then puts the split at the middle of the physical screen, even though the system keeps a strip outside the page. **Fold position** nudges the split if it still doesn't line up with the hinge, and **Display info** at the bottom of Settings shows what the phone reports.
+
+Safari 27.1 doesn't yet let web content draw under the iPhone Duo's side strip (status bar and camera), or under the strip along the bottom of the inner display in portrait. It fills that strip with the page's background colour, so the game keeps that colour in step with the scene next to the strip.
+
+**Settings → Resolution** trades sharpness for battery life.
 
 Controls:
 - **Left thumb stick:** move. Push up to jump or climb, and down to drop through platforms.
@@ -77,7 +81,7 @@ src/game     game loop, player, entities, AI, bosses, spawner, events, colonists
              vehicles, implants (cyberware), tech weapons, smart aim for the USE button
 src/gfx      procedural textures and sprites, renderer, backgrounds, icons
 src/ui       HUD, inventory/crafting/shops, map, menus, layout (safe areas, iPhone Duo fold),
-             padding art for system bars
+             strip colour for system bars
 ```
 
 All art and audio are generated in code at startup, so there are no asset files.
