@@ -13,6 +13,8 @@ import { UI } from './ui/ui.js';
 import { Menus } from './ui/menus.js';
 import { HOTBAR } from './game/inventory.js';
 import { applyLayout, watchLayout } from './ui/layout.js';
+import { smartAim } from './game/smartaim.js';
+import { startPadding } from './ui/padding.js';
 import { toggleRide } from './game/vehicles.js';
 import { activateAug } from './game/implants.js';
 
@@ -94,9 +96,11 @@ function exitToMenu(skipSave) {
 
 // Every resize (rotation, iPhone Duo opening/closing/folding, Split View) re-lays out the HUD
 // and resizes the canvas to the new shape — no letterboxing, the view simply grows or shrinks.
+let gameArea = null;
 function resize() {
   const dpr = Math.min(window.devicePixelRatio || 1, settings.resolution || 2);
   const area = applyLayout(settings);
+  gameArea = area;
   const zoomOut = game ? game.player.s.zoomOut || 0 : 0;
   lastZoomOut = zoomOut;
   renderer.resize(area.w, area.h, dpr, settings.zoom / (1 + zoomOut));
@@ -104,6 +108,7 @@ function resize() {
   if (ui) ui.relayout();
 }
 watchLayout(resize);
+startPadding(renderer.canvas, () => ({ active: state === 'game' && input.isTouch, gameH: gameArea ? gameArea.h : window.innerHeight }));
 
 // ---------------- input → actions ----------------
 function quickUse(kind) {
@@ -156,7 +161,16 @@ function step() {
     game.tryInteract(wp.x, wp.y);
   }
   input.taps.length = 0;
-  if (input.touch.active && !blocked) {
+  const us = input.useStick;
+  if (us.active && !blocked && !p.dead) {
+    // USE button: drag to aim; otherwise follow the movement stick, then smart-target.
+    const j = input.joy;
+    const drag = Math.hypot(us.x, us.y) > 0.3 ? { x: us.x, y: us.y } : null;
+    const move = j.active && Math.hypot(j.x, j.y) > 0.4 ? { x: j.x, y: j.y } : null;
+    const a = smartAim(game, p, drag, move);
+    lastAim = { x: a.x, y: a.y, show: true, fromMouse: false, fromStick: true };
+    useHeld = true;
+  } else if (input.touch.active && !blocked) {
     const wp = renderer.screenToWorld(game, input.touch.x, input.touch.y);
     lastAim = { x: wp.x, y: wp.y, show: true, fromMouse: false };
     useHeld = !consumedTouch;

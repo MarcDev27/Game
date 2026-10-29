@@ -68,6 +68,7 @@ export class UI {
     bind('#btn-map', () => this.openMap());
     bind('#btn-pause', () => this.togglePanel('pause'));
     this.input.bindJoystick($('#joyzone'), $('#joyknob'), $('#joybase'));
+    this.input.bindUseStick($('#act-use'), $('#act-use .uknob'));
     for (const [id, name] of [['#act-jump', 'jump'], ['#act-hook', 'hook'], ['#act-heal', 'heal'], ['#act-energy', 'energy'], ['#act-dash', 'dash'], ['#act-ride', 'ride'], ['#act-aug', 'aug']]) this.input.bindButton($(id), name);
     // map controls
     const mc = $('#mapcanvas');
@@ -716,20 +717,20 @@ export class UI {
 
 export const HELP_HTML = `
 <b>Goal.</b> You are a synthetic consciousness, rebooted on the Strata Engine — a machine-world built around a dying star. Dig, build, craft, chrome yourself up, defeat 12 bosses, and uncover what happened to the Concord through the Archive.<br><br>
-<b>Touch controls.</b> Left stick: move (push up to jump / climb, down to drop through platforms). Tap or hold anywhere in the world to use the selected item there: mine, chop, build, swing, shoot, fire a beam, charge a coilgun, grab with the gravity gun. Tap doors, chests, beds, beacons, terminals and colonists to interact. Buttons: JUMP, HOOK, STIM (quick heal), CELL (quick energy), DASH, RIDE (enter/exit your vehicle) and AUG (your neural implant's ability). Tap a hotbar slot to select it.<br><br>
+<b>Touch controls.</b> Left stick: move (push up to jump / climb, down to drop through platforms). Hold <b>USE</b> to use the selected item without touching the world: weapons lock onto the nearest enemy, pickaxes dig the way you are walking (push the stick down to dig down), axes find the nearest tree and blocks build in front of you. Drag USE to aim in any direction. You can also tap or hold anywhere in the world to use the item exactly there. Tap doors, chests, beds, beacons, terminals and colonists to interact. Buttons: JUMP, HOOK, STIM (quick heal), CELL (quick energy), DASH, RIDE (enter/exit your vehicle) and AUG (your neural implant's ability). Tap a hotbar slot to select it.<br><br>
 <b>Keyboard.</b> A/D move, W/Space jump, S drop, mouse to aim/use, right-click to interact, 1-0 or wheel for hotbar, E inventory, M map, F hook, H heal, J energy, Shift dash, R ride, Q augment, Esc menu.<br><br>
 <b>First steps.</b> 1) Chop Lattice trees with the Scrap Cutter for Fiber. 2) Craft an Assembly Bench by hand (10 Fiber). 3) Kill Nanoslimes for Nanogel → Glowsticks. 4) Dig for ore, build a Smelter and Fabricator. 5) Build a house (enclosed room, background wall, door, light, table and chair) so colonists move in — use the Housing button in the inventory to check a room.<br><br>
 <b>Vehicles.</b> Equip one in the Vehicle slot and tap RIDE: Scrap Hoverbike, Bore Pod (drills through rock), Aerodyne Sky Car (flying car), Titan Walker mech and the Starjumper shuttle.<br><br>
 <b>Cyberware.</b> Install implants at a Surgery Bay (or next to the Ripperdoc) into six body slots: Neural, Optics, Arms, Spine, Legs, Core. Each costs capacity; capacity grows with max integrity. Neural implants give an AUG ability: time dilation, drone command, machine hijacking or overdrive.<br><br>
 <b>Tech.</b> Beam weapons fire while held. Coilguns charge while held and fire on release. The Gravity Gun lifts enemies — release to throw them. The Wormhole Projector opens two linked portals. Quantum Beacons form a fast-travel network.<br><br>
-<b>iPhone Duo.</b> The layout follows the device: unfolded it uses the full inner display; folded like a book the controls stay clear of the fold; folded like a laptop the game sits on top with the controls below. If your fold isn't detected, choose Settings → Fold layout.<br><br>
+<b>iPhone Duo.</b> The layout follows the device: unfolded it uses the full inner display; folded like a book the controls stay clear of the fold; folded like a laptop the game sits on top with the controls below. Safari only reports the fold when its Device Posture and Viewport Segments feature flags are on (Settings → Apps → Safari → Advanced → Feature Flags); otherwise choose Settings → Fold layout.<br><br>
 <b>Saving.</b> The game autosaves every 2 minutes and when you leave. Use Share → Add to Home Screen to play full-screen and offline.`;
 
 export function settingsForm(s) {
   const range = (k, label, min, max, step) => `<div class="formrow"><span class="lbl">${label}</span><input type="range" data-set="${k}" min="${min}" max="${max}" step="${step}" value="${s[k]}"></div>`;
   const tog = (k, label) => `<div class="formrow"><span class="lbl">${label}</span><div class="opt"><button data-tog="${k}" class="${s[k] ? 'on' : ''}">${s[k] ? 'On' : 'Off'}</button></div></div>`;
   return range('sfx', 'Sound', 0, 1, 0.05) + range('music', 'Music', 0, 1, 0.05) + range('zoom', 'Zoom', 0.6, 1.6, 0.1) + range('controlScale', 'Button size', 0.7, 1.4, 0.05)
-    + `<div class="formrow"><span class="lbl">Resolution</span><div class="opt">${[[1, 'Low'], [1.5, 'Medium'], [2, 'High'], [3, 'Max']].map(([v, n]) => `<button data-res="${v}" class="${s.resolution === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>`
+    + `<div class="formrow"><span class="lbl">Resolution</span><div class="opt">${[[1, 'Low'], [1.5, 'Medium'], [2, 'High'], [3, 'Max']].map(([v, n]) => `<button data-res="${v}" class="${s.resolution === v ? 'on' : ''}">${n}</button>`).join('')}</div></div><div style="font-size:11px;color:#8aa0c0;margin:-2px 0 6px">Auto needs Safari's Device Posture and Viewport Segments feature flags. Otherwise pick Book or Laptop while folded.</div>`
     + `<div class="formrow"><span class="lbl">Fold layout</span><div class="opt">${[['auto', 'Auto'], ['book', 'Book'], ['laptop', 'Laptop'], ['off', 'Off']].map(([v, n]) => `<button data-fold="${v}" class="${(s.foldMode || 'auto') === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>`
     + `<div class="formrow" style="font-size:11px;color:#8aa0c0;margin-top:-4px">For iPhone Duo: Book keeps controls off a vertical fold; Laptop puts the game on top and controls below.</div>`
     + `<div class="formrow"><span class="lbl">Lighting</span><div class="opt"><button data-light="1" class="${s.lightQuality === 1 ? 'on' : ''}">Fast</button><button data-light="2" class="${s.lightQuality === 2 ? 'on' : ''}">Quality</button></div></div>`

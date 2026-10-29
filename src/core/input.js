@@ -8,6 +8,7 @@ export class Input {
     this.wheel = 0;
     this.touch = { active: false, x: 0, y: 0, id: null, startT: 0, startX: 0, startY: 0, moved: false };
     this.joy = { active: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
+    this.useStick = { active: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
     this.buttons = {};          // virtual button states: { jump: bool, ... }
     this.buttonPressed = new Set();
     this.taps = [];             // queued world taps {x, y}
@@ -99,6 +100,36 @@ export class Input {
     zone.addEventListener('touchcancel', end, { passive: false });
   }
 
+  // The USE button doubles as an aim stick: hold it to use the selected item (with smart aim),
+  // or hold and drag to aim in that direction.
+  bindUseStick(el, knob) {
+    const u = this.useStick;
+    const update = (cx, cy) => {
+      const dx = cx - u.ox, dy = cy - u.oy, max = 38;
+      const d = Math.hypot(dx, dy), k = d > max ? max / d : 1;
+      u.x = (dx * k) / max; u.y = (dy * k) / max;
+      knob.style.transform = `translate(${dx * k}px, ${dy * k}px)`;
+    };
+    const start = (id, cx, cy) => {
+      if (u.id !== null) return;
+      this.usedTouch = true;
+      const r = el.getBoundingClientRect();
+      Object.assign(u, { active: true, id, ox: r.left + r.width / 2, oy: r.top + r.height / 2, x: 0, y: 0 });
+      el.classList.add('down');
+      // A press near the edge of the button already counts as aiming that way.
+      if (Math.hypot(cx - u.ox, cy - u.oy) > r.width * 0.3) update(cx, cy);
+    };
+    const end = () => { Object.assign(u, { active: false, id: null, x: 0, y: 0 }); knob.style.transform = ''; el.classList.remove('down'); };
+    el.addEventListener('touchstart', (e) => { const t = e.changedTouches[0]; start(t.identifier, t.clientX, t.clientY); e.preventDefault(); e.stopPropagation(); }, { passive: false });
+    el.addEventListener('touchmove', (e) => { for (const t of e.changedTouches) if (t.identifier === u.id) update(t.clientX, t.clientY); e.preventDefault(); }, { passive: false });
+    const tend = (e) => { for (const t of e.changedTouches) if (t.identifier === u.id) end(); e.preventDefault(); };
+    el.addEventListener('touchend', tend, { passive: false });
+    el.addEventListener('touchcancel', tend, { passive: false });
+    el.addEventListener('mousedown', (e) => { start('mouse', e.clientX, e.clientY); e.preventDefault(); e.stopPropagation(); });
+    window.addEventListener('mousemove', (e) => { if (u.id === 'mouse') update(e.clientX, e.clientY); });
+    window.addEventListener('mouseup', () => { if (u.id === 'mouse') end(); });
+  }
+
   bindButton(el, name) {
     const down = (e) => { this.usedTouch = true; if (!this.buttons[name]) this.buttonPressed.add(name); this.buttons[name] = true; el.classList.add('down'); e.preventDefault(); e.stopPropagation(); };
     const up = (e) => { this.buttons[name] = false; el.classList.remove('down'); e.preventDefault(); };
@@ -112,6 +143,7 @@ export class Input {
 
   releaseAll() {
     for (const k in this.buttons) this.buttons[k] = false;
+    Object.assign(this.useStick, { active: false, id: null, x: 0, y: 0 });
     this.joy.x = this.joy.y = 0; this.joy.active = false; this.joy.id = null;
     this.touch.active = false; this.touch.id = null;
   }

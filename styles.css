@@ -79,19 +79,26 @@ input[type=text] { font-family: var(--font); font-size: 16px; background: #0a122
 #joybase { position: absolute; width: 110px; height: 110px; margin: -55px 0 0 -55px; left: calc(80px + var(--safe-l)); top: calc(100% - 90px - var(--safe-b)); border-radius: 50%; border: 2px solid rgba(46, 242, 255, 0.35); background: rgba(10, 30, 50, 0.25); opacity: 0.55; transition: opacity 0.1s; }
 #joybase.active { opacity: 1; }
 #joyknob { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #8ff8ff, #1a7a8a); box-shadow: 0 0 12px rgba(46, 242, 255, 0.6); }
-#actions { position: absolute; right: calc(14px + var(--safe-r)); bottom: calc(14px + var(--safe-b)); width: 200px; height: 190px; pointer-events: none; }
+#actions { position: absolute; right: calc(12px + var(--safe-r)); bottom: calc(12px + var(--safe-b)); width: 232px; height: 202px; pointer-events: none;
+  transform: scale(var(--act-scale, 1)); transform-origin: 100% 100%; }
 .act { position: absolute; pointer-events: auto; border-radius: 50%; background: rgba(10, 30, 50, 0.45); border: 2px solid rgba(46, 242, 255, 0.5); color: #bff; font-size: 11px; padding: 0; }
-#act-jump { width: 84px; height: 84px; right: 0; bottom: 0; font-size: 13px; }
-#act-hook { width: 54px; height: 54px; right: 92px; bottom: 6px; }
-#act-heal { width: 50px; height: 50px; right: 18px; bottom: 96px; border-color: rgba(255, 51, 85, 0.6); color: #fbb; }
-#act-energy { width: 50px; height: 50px; right: 82px; bottom: 74px; border-color: rgba(164, 107, 255, 0.6); color: #dbf; }
-#act-dash { width: 50px; height: 50px; right: 140px; bottom: 64px; border-color: rgba(61, 255, 176, 0.6); color: #bfd; }
-#act-ride { width: 50px; height: 50px; right: 146px; bottom: 122px; border-color: rgba(255, 61, 220, 0.6); color: #fbf; }
-#act-aug { width: 50px; height: 50px; right: 84px; bottom: 136px; border-color: rgba(157, 255, 61, 0.6); color: #dfb; }
+/* USE: hold to use the selected item where the game aims it; drag to aim yourself. */
+#act-use { width: 88px; height: 88px; right: 0; bottom: 0; font-size: 13px; border-color: rgba(255, 204, 51, 0.7); color: #ffe9a8; background: rgba(50, 40, 10, 0.4); overflow: visible; }
+#act-use .uknob { position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fff3c0, #a07a10); opacity: 0.35; pointer-events: none; }
+#act-use.down .uknob { opacity: 0.9; box-shadow: 0 0 10px rgba(255, 204, 51, 0.7); }
+#act-use .ulbl { position: relative; pointer-events: none; }
+#act-use.down .ulbl { opacity: 0.3; }
+#act-jump { width: 72px; height: 72px; right: 96px; bottom: 0; font-size: 13px; }
+#act-hook { width: 50px; height: 50px; right: 178px; bottom: 8px; }
+#act-heal { width: 50px; height: 50px; right: 8px; bottom: 96px; border-color: rgba(255, 51, 85, 0.6); color: #fbb; }
+#act-energy { width: 50px; height: 50px; right: 64px; bottom: 92px; border-color: rgba(164, 107, 255, 0.6); color: #dbf; }
+#act-dash { width: 50px; height: 50px; right: 122px; bottom: 78px; border-color: rgba(61, 255, 176, 0.6); color: #bfd; }
+#act-ride { width: 50px; height: 50px; right: 180px; bottom: 64px; border-color: rgba(255, 61, 220, 0.6); color: #fbf; }
+#act-aug { width: 50px; height: 50px; right: 40px; bottom: 150px; border-color: rgba(157, 255, 61, 0.6); color: #dfb; }
 #act-aug.cool { opacity: 0.45; }
 body.lefty #joyzone { left: auto; right: 0; }
 body.lefty #joybase { left: auto; right: calc(80px + var(--safe-r)); margin-right: -55px; }
-body.lefty #actions { right: auto; left: calc(14px + var(--safe-l)); transform: scaleX(-1); }
+body.lefty #actions { right: auto; left: calc(12px + var(--safe-l)); transform: scale(calc(-1 * var(--act-scale, 1)), var(--act-scale, 1)); transform-origin: 0 100%; }
 body.lefty .act { transform: scaleX(-1); }
 
 /* ---------- panels ---------- */
@@ -176,8 +183,13 @@ body.fold-laptop #ctrlbg { display: block; position: fixed; left: 0; right: 0; t
   background: repeating-linear-gradient(90deg, rgba(46, 242, 255, 0.04) 0 1px, transparent 1px 24px), repeating-linear-gradient(0deg, rgba(46, 242, 255, 0.04) 0 1px, transparent 1px 24px), linear-gradient(#0a1424, #05060f);
   border-top: 1px solid var(--line); }
 body.fold-laptop #touch { top: calc(var(--fold-y) + var(--fold-h)); }
-body.fold-laptop #joyzone { width: 34vw; height: 100%; }
-body.fold-laptop #hotbar { position: fixed; top: calc(var(--fold-y) + var(--fold-h) + 12px); left: 50%; transform: translateX(-50%); flex-direction: column; gap: 4px; z-index: 7; }
+body.fold-laptop #joyzone { width: 42vw; height: 100%; }
+/* Bottom half: hotbar top-left, menu buttons top-right, stick bottom-left, actions bottom-right.
+   The minimap stays with the game view on the top half. */
+body.fold-laptop #hotbar { position: fixed; top: calc(var(--fold-y) + var(--fold-h) + 10px); left: calc(10px + var(--safe-l)); transform: none; flex-direction: column; gap: 4px; z-index: 7; }
+body.fold-laptop.laptop-row #hotbar { flex-direction: row; gap: 10px; }
+body.fold-laptop.laptop-menu #menu-buttons { position: fixed; top: calc(var(--fold-y) + var(--fold-h) + 10px); right: calc(10px + var(--safe-r)); flex-direction: row; gap: 6px; z-index: 7; }
+body.fold-laptop:not(.portrait) #toasts { width: calc(100vw - 400px); max-width: none; }
 body.fold-laptop #bossbar { bottom: calc(100% - var(--fold-y) + 8px); }
 body.fold-laptop #panel, body.fold-laptop #mapview { bottom: auto; height: var(--fold-y); }
 
@@ -198,6 +210,7 @@ body.fold-laptop #panel, body.fold-laptop #mapview { bottom: auto; height: var(-
   .grid { grid-template-columns: repeat(5, var(--slot)); }
 }
 body.portrait #minimap { width: 92px; height: 64px; }
+@media (max-width: 400px) { body.portrait #minimap { width: 78px; height: 56px; } }
 body.portrait #toasts { top: calc(150px + var(--safe-t)); max-width: 92vw; width: 92vw; left: 50%; }
 body.portrait #eventbar { top: calc(128px + var(--safe-t)); left: 50%; }
 
@@ -205,4 +218,3 @@ body.portrait #eventbar { top: calc(128px + var(--safe-t)); left: 50%; }
 body:not(.wide):not(.portrait):not(.fold-laptop) #toasts { left: calc(250px + var(--safe-l)); right: calc(200px + var(--safe-r)); transform: none; width: auto; max-width: none; top: calc(8px + var(--safe-t)); }
 body:not(.wide):not(.portrait):not(.fold-laptop) #eventbar { left: calc(250px + var(--safe-l) + (100vw - 450px) / 2); }
 body.fold-book .grid { grid-template-columns: repeat(5, var(--slot)); }
-body.fold-laptop #topright { top: calc(var(--fold-y) + var(--fold-h) + 12px); z-index: 7; position: fixed; }

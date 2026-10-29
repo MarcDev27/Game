@@ -38,11 +38,12 @@ On **iPhone Duo** the layout follows the device:
 - **Folded like a book:** the hotbar and menus stay clear of the fold.
 - **Folded like a laptop:** the world is on the top half and the controls are on the bottom half.
 
-The game detects the fold through Safari's Viewport Segments and Device Posture APIs. If it isn't detected, choose **Menu → Settings → Fold layout**. **Settings → Resolution** trades sharpness for battery life.
+The game detects the fold through the Viewport Segments and Device Posture APIs. In Safari 27.1 these are still behind feature flags (**Settings → Apps → Safari → Advanced → Feature Flags**). Without them, choose **Menu → Settings → Fold layout**. The game then places the split at the middle of the physical screen, even when the system keeps a status bar outside the page. Any strip the system keeps beside the page, such as the status-bar and camera strip along the side, is filled with the game's own edge pixels, so the picture still reaches the edge of the screen. **Settings → Resolution** trades sharpness for battery life.
 
 Controls:
 - **Left thumb stick:** move. Push up to jump or climb, and down to drop through platforms.
-- **Tap or hold in the world:** use the selected item at that spot (mine, chop, build, attack, fish).
+- **USE button (hold):** use the selected item without touching the world. Weapons lock onto the nearest enemy, pickaxes dig the way you walk (push the stick down to dig down), axes find the nearest tree, and blocks build in front of you. Drag the button to aim in any direction.
+- **Tap or hold in the world:** use the selected item at exactly that spot.
 - **Tap doors, chests, Rest Pods, terminals and colonists** to interact with them.
 - **Buttons:** JUMP, HOOK, STIM (quick heal), CELL (quick energy), DASH. RIDE appears when a vehicle is equipped, and AUG appears when a neural implant is installed.
 - **Top-right buttons:** inventory and crafting, map, and menu (field guide, Archive, achievements, settings, save).
@@ -73,9 +74,10 @@ src/core     util, noise, input (touch + keyboard), audio synth, storage (Indexe
 src/content  tiles, items, recipes, monsters, projectiles, buffs, loot, prefixes, achievements, lore
 src/world    world grid, procedural generator, lighting, liquids
 src/game     game loop, player, entities, AI, bosses, spawner, events, colonists, fishing,
-             vehicles, implants (cyberware), tech weapons
+             vehicles, implants (cyberware), tech weapons, smart aim for the USE button
 src/gfx      procedural textures and sprites, renderer, backgrounds, icons
-src/ui       HUD, inventory/crafting/shops, map, menus, layout (safe areas, iPhone Duo fold)
+src/ui       HUD, inventory/crafting/shops, map, menus, layout (safe areas, iPhone Duo fold),
+             padding art for system bars
 ```
 
 All art and audio are generated in code at startup, so there are no asset files.
