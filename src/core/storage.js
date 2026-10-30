@@ -106,9 +106,14 @@ export function deserializeWorld(o) {
 }
 
 const SETTINGS_KEY = 'neon-strata-settings';
-export const DEFAULT_SETTINGS = { foldMode: 'auto', foldShift: 0, resolution: 2, sfx: 0.6, music: 0.35, zoom: 1, lightQuality: 2, smoothLight: true, minimap: true, leftHanded: false, showFps: false, autoPause: true, controlScale: 1 };
+export const DEFAULT_SETTINGS = { foldMode: 'auto', foldShift: 0, layoutRev: 2, resolution: 2, sfx: 0.6, music: 0.35, zoom: 1, lightQuality: 2, smoothLight: true, minimap: true, leftHanded: false, showFps: false, autoPause: true, controlScale: 1 };
 export function loadSettings() {
-  try { return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); }
+  try {
+    const s = Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'));
+    // Layout revision 2 finds the iPhone Duo hinge on its own, so an earlier manual nudge would now be off.
+    if ((s.layoutRev || 0) < 2) { s.foldShift = 0; s.layoutRev = 2; }
+    return s;
+  }
   catch (e) { return { ...DEFAULT_SETTINGS }; }
 }
 export function saveSettings(s) { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch (e) { /* storage unavailable */ } }

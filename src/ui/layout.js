@@ -73,11 +73,22 @@ function cssSegments() {
 // keeps a strip outside the page — along the trailing side, or along the bottom of the inner
 // display in portrait — so the page starts at the screen's top-left corner but is smaller than
 // the screen, and the middle of the page is not where the hinge is.
-function screenSize(W, H) {
+// iPhone Duo's two displays in points. Safari 27.1 reports the outer display's size as the
+// screen size even while the page is on the inner display.
+const DUO_OUTER = [466, 678], DUO_INNER = [669, 951];
+export function screenSize(W, H) {
   let sw = window.screen ? screen.width : W, sh = window.screen ? screen.height : H;
   if ((W > H) !== (sw > sh)) [sw, sh] = [sh, sw]; // iOS reports screen size in portrait
+  if (Math.max(W, H) > Math.max(sw, sh) + 2) {
+    // The page is longer than the "screen", so the reported size belongs to another display.
+    // (A page that is only too tall is Safari's height bug on the outer display, handled below.)
+    const outer = Math.min(sw, sh) === DUO_OUTER[0] && Math.max(sw, sh) === DUO_OUTER[1];
+    const [a, b] = outer ? DUO_INNER : [Math.min(W, H), Math.max(W, H)];
+    [sw, sh] = W > H ? [b, a] : [a, b];
+  }
   return { sw, sh };
 }
+export function reportedScreen() { return window.screen ? `${screen.width} × ${screen.height}` : '?'; }
 function screenMiddle(W, H) {
   const { sw, sh } = screenSize(W, H);
   // Only trust a difference that looks like a system strip, not a desktop browser window.
@@ -106,7 +117,7 @@ window.__neonDisplay = () => {
   const f = lastFold;
   return {
     Build: window.__neonBuild || '?',
-    Page: `${W} × ${H}`, 'Page (Safari)': `probe ${probeSize().W} × ${probeSize().H}, inner ${window.innerWidth} × ${window.innerHeight}, visual ${window.visualViewport ? Math.round(visualViewport.width) + ' × ' + Math.round(visualViewport.height) : '?'}`, Screen: `${sw} × ${sh}`, 'Pixel ratio': window.devicePixelRatio,
+    Page: `${W} × ${H}`, 'Page (Safari)': `probe ${probeSize().W} × ${probeSize().H}, inner ${window.innerWidth} × ${window.innerHeight}, visual ${window.visualViewport ? Math.round(visualViewport.width) + ' × ' + Math.round(visualViewport.height) : '?'}`, Screen: `${sw} × ${sh} (reported ${reportedScreen()})`, 'Pixel ratio': window.devicePixelRatio,
     'Safe area (t/r/b/l)': ins, 'Display mode': dm + (navigator.standalone ? ' (Home Screen)' : ''),
     Posture: posture, Segments: segs,
     Fold: f.mode === 'book' ? `book at x=${Math.round(f.x)}` : f.mode === 'laptop' ? `laptop at y=${Math.round(f.y)}` : 'none',
