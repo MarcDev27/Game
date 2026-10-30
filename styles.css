@@ -22,7 +22,7 @@
 html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 13px;
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; overscroll-behavior: none; touch-action: none; }
 canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
-#game { position: fixed; inset: 0; width: 100vw; height: 100vh; }
+#game { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; }
 button { font-family: var(--font); color: var(--text); background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; font-size: 13px; cursor: pointer; }
 button:active, button.down { background: #2a4a6a; border-color: var(--cyan); }
 button.primary { border-color: var(--cyan); color: #fff; background: linear-gradient(#0f4a5a, #0a2a3a); box-shadow: 0 0 10px rgba(46, 242, 255, 0.25); }
@@ -32,7 +32,7 @@ input[type=text] { font-family: var(--font); font-size: 16px; background: #0a122
 .hidden { display: none !important; }
 
 /* ---------- HUD ---------- */
-#hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+#hud { position: fixed; left: 0; top: 0; width: var(--app-w, 100vw); height: var(--app-h, 100vh); pointer-events: none; z-index: 5; }
 #hud * { pointer-events: auto; }
 #leftcol { position: absolute; left: calc(8px + var(--safe-l)); top: calc(6px + var(--safe-t)); display: flex; flex-direction: column; gap: 3px; pointer-events: none !important; }
 #bars { width: 160px; pointer-events: none !important; }
@@ -74,7 +74,7 @@ input[type=text] { font-family: var(--font); font-size: 16px; background: #0a122
 #death .sub { margin-top: 8px; color: #ffb0c0; }
 
 /* ---------- touch controls ---------- */
-#touch { position: fixed; inset: 0; pointer-events: none; z-index: 6; }
+#touch { position: fixed; left: 0; top: 0; width: var(--app-w, 100vw); height: var(--app-h, 100vh); pointer-events: none; z-index: 6; }
 #joyzone { position: absolute; left: 0; bottom: 0; width: 38vw; height: 62vh; pointer-events: auto; }
 #joybase { position: absolute; width: 110px; height: 110px; margin: -55px 0 0 -55px; left: calc(80px + var(--safe-l)); top: calc(100% - 90px - var(--safe-b)); border-radius: 50%; border: 2px solid rgba(46, 242, 255, 0.35); background: rgba(10, 30, 50, 0.25); opacity: 0.55; transition: opacity 0.1s; }
 #joybase.active { opacity: 1; }
@@ -102,7 +102,7 @@ body.lefty #actions { right: auto; left: calc(12px + var(--safe-l)); transform: 
 body.lefty .act { transform: scaleX(-1); }
 
 /* ---------- panels ---------- */
-#panel { position: fixed; inset: 0; z-index: 10; background: rgba(0, 4, 12, 0.55); display: flex; align-items: center; justify-content: center;
+#panel { position: fixed; left: 0; top: 0; width: var(--app-w, 100vw); height: var(--app-h, 100vh); z-index: 10; background: rgba(0, 4, 12, 0.55); display: flex; align-items: center; justify-content: center;
   padding: calc(6px + var(--safe-t)) calc(6px + var(--safe-r)) calc(6px + var(--safe-b)) calc(6px + var(--safe-l)); touch-action: pan-y; }
 .win { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 0 30px rgba(46, 242, 255, 0.12); max-width: 100%; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; }
 .win h2 { margin: 0; font-size: 14px; letter-spacing: 2px; color: var(--cyan); padding: 8px 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
@@ -133,12 +133,12 @@ body.lefty .act { transform: scaleX(-1); }
 .shopitem .pr { margin-left: auto; color: #ffe27a; }
 .dialog { max-width: 520px; }
 .dialog .say { font-size: 13px; line-height: 18px; margin-bottom: 8px; }
-#mapview { position: fixed; inset: 0; z-index: 11; background: #000; }
+#mapview { position: fixed; left: 0; top: 0; width: var(--app-w, 100vw); height: var(--app-h, 100vh); z-index: 11; background: #000; }
 #mapcanvas { width: 100%; height: 100%; touch-action: none; }
 .mapbar { position: absolute; right: calc(8px + var(--safe-r)); top: calc(8px + var(--safe-t)); display: flex; gap: 4px; }
 
 /* ---------- menus ---------- */
-#menu { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; overflow: auto;
+#menu { position: fixed; left: 0; top: 0; width: var(--app-w, 100vw); height: var(--app-h, 100vh); z-index: 20; display: flex; align-items: center; justify-content: center; overflow: auto;
   padding: calc(10px + var(--safe-t)) calc(10px + var(--safe-r)) calc(10px + var(--safe-b)) calc(10px + var(--safe-l)); touch-action: pan-y; }
 #menu:empty { display: none; }
 .screen { width: min(720px, 100%); display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -164,7 +164,7 @@ body.lefty .act { transform: scaleX(-1); }
 input[type=range] { width: 160px; }
 .help { font-size: 12px; line-height: 18px; color: var(--text); }
 .help b { color: var(--cyan); }
-.menubg { position: fixed; inset: 0; z-index: 19; }
+.menubg { position: fixed; left: 0; top: 0; width: var(--app-w, 100vw); height: var(--app-h, 100vh); z-index: 19; }
 
 #ctrlbg { display: none; }
 
@@ -179,10 +179,10 @@ body.fold-book.wide #hotbar { left: var(--fold-x); gap: calc(var(--fold-w) + 28p
 body.fold-book #panel { right: calc(100% - var(--fold-x)); }
 
 /* iPhone Duo partially folded like a laptop: game on the top half, controls on the bottom half. */
-body.fold-laptop #ctrlbg { display: block; position: fixed; left: 0; right: 0; top: calc(var(--fold-y) + var(--fold-h)); bottom: 0; z-index: 4;
+body.fold-laptop #ctrlbg { display: block; position: fixed; left: 0; right: 0; top: calc(var(--fold-y) + var(--fold-h)); height: calc(var(--app-h, 100vh) - var(--fold-y) - var(--fold-h)); z-index: 4;
   background: repeating-linear-gradient(90deg, rgba(46, 242, 255, 0.04) 0 1px, transparent 1px 24px), repeating-linear-gradient(0deg, rgba(46, 242, 255, 0.04) 0 1px, transparent 1px 24px), linear-gradient(#0a1424, #05060f);
   border-top: 1px solid var(--line); }
-body.fold-laptop #touch { top: calc(var(--fold-y) + var(--fold-h)); }
+body.fold-laptop #touch { top: calc(var(--fold-y) + var(--fold-h)); height: calc(var(--app-h, 100vh) - var(--fold-y) - var(--fold-h)); }
 body.fold-laptop #joyzone { width: 42vw; height: 100%; }
 /* Bottom half: hotbar top-left, menu buttons top-right, stick bottom-left, actions bottom-right.
    The minimap stays with the game view on the top half. */

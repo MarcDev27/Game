@@ -18,11 +18,14 @@ const MQ = {
   folded: mq('(device-posture: folded)'),
 };
 
-// The size of the page as fixed-position content sees it. On iOS, innerWidth/innerHeight can lag
-// behind or differ from the area a full-page fixed element covers (for example right after
-// rotating), which would leave a band of page background uncovered.
+// The area the game fills. Normally that is the page as a full-page fixed element sees it
+// (innerWidth/innerHeight can lag behind after rotating). But Safari 27.1 on iPhone Duo gets the
+// page height wrong in landscape when the system strip is on the side: on the inner display it
+// also takes the strip off the height (leaving a band of page color at the bottom), and on the
+// outer display the page comes out taller than the screen. With a side strip the page always
+// spans the full screen height, so the game uses the screen height then.
 let pageProbe = null;
-export function pageSize() {
+function probeSize() {
   if (!pageProbe && document.body) {
     pageProbe = document.createElement('div');
     pageProbe.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;visibility:hidden;pointer-events:none;z-index:-1';
@@ -30,6 +33,16 @@ export function pageSize() {
   }
   const r = pageProbe ? pageProbe.getBoundingClientRect() : null;
   return r && r.width > 0 && r.height > 0 ? { W: Math.round(r.width), H: Math.round(r.height) } : { W: window.innerWidth, H: window.innerHeight };
+}
+function homeScreenApp() {
+  return (mq('(pointer: coarse)') || {}).matches && (navigator.standalone || (mq('(display-mode: standalone)') || {}).matches || (mq('(display-mode: fullscreen)') || {}).matches);
+}
+export function sideStrip(W, sw) { return sw - W > 2 && sw - W < sw * 0.2; }
+export function pageSize() {
+  const p = probeSize();
+  if (!homeScreenApp() || !window.screen) return p;
+  const { sw, sh } = screenSize(p.W, p.H);
+  return sideStrip(p.W, sw) && p.H !== sh ? { W: p.W, H: sh, corrected: p.H } : p;
 }
 
 let probe = null;
@@ -93,7 +106,7 @@ window.__neonDisplay = () => {
   const f = lastFold;
   return {
     Build: window.__neonBuild || '?',
-    Page: `${W} × ${H} (inner ${window.innerWidth} × ${window.innerHeight})`, Screen: `${sw} × ${sh}`, 'Pixel ratio': window.devicePixelRatio,
+    Page: `${W} × ${H}`, 'Page (Safari)': `probe ${probeSize().W} × ${probeSize().H}, inner ${window.innerWidth} × ${window.innerHeight}, visual ${window.visualViewport ? Math.round(visualViewport.width) + ' × ' + Math.round(visualViewport.height) : '?'}`, Screen: `${sw} × ${sh}`, 'Pixel ratio': window.devicePixelRatio,
     'Safe area (t/r/b/l)': ins, 'Display mode': dm + (navigator.standalone ? ' (Home Screen)' : ''),
     Posture: posture, Segments: segs,
     Fold: f.mode === 'book' ? `book at x=${Math.round(f.x)}` : f.mode === 'laptop' ? `laptop at y=${Math.round(f.y)}` : 'none',
@@ -139,6 +152,8 @@ export function applyLayout(settings) {
   const b = document.body, st = document.documentElement.style;
   const portrait = H > W;
   let gameH = H;
+  st.setProperty('--app-w', W + 'px');
+  st.setProperty('--app-h', H + 'px');
   b.classList.toggle('fold-book', fold.mode === 'book');
   b.classList.toggle('fold-laptop', fold.mode === 'laptop');
   b.classList.toggle('portrait', portrait);
