@@ -1,5 +1,6 @@
 // Title, character and world selection/creation screens.
 import { store } from '../core/storage.js';
+import { makeBackup, deliver, readBackup, restoreBackup } from '../core/backup.js';
 import { newPlayerData } from '../game/player.js';
 import { WORLD_SIZES } from '../world/worldgen.js';
 import { drawHumanoid } from '../gfx/sprites.js';
@@ -27,6 +28,7 @@ export class Menus {
       <div class="logo">NEON STRATA<small>DIG · BUILD · FIGHT · ASCEND</small></div>
       <div class="menu-buttons">
         <button class="primary" id="m-play">Play</button>
+        <button id="m-saves">Saves &amp; iCloud Backup</button>
         <button id="m-settings">Settings</button>
         <button id="m-help">Field Guide</button>
       </div>
@@ -35,7 +37,51 @@ export class Menus {
     $('#m-play').onclick = () => { this.env.audio.unlock(); this.env.audio.play('ui'); this.characters(); };
     $('#m-settings').onclick = () => { this.env.audio.unlock(); this.settings(); };
     $('#m-help').onclick = () => this.help();
+    $('#m-saves').onclick = () => { this.env.audio.unlock(); this.saves(); };
     this.env.audio.setTheme('title');
+  }
+
+  async saves(msg = '') {
+    const [players, worlds] = await Promise.all([store.all('players'), store.all('worlds')]);
+    $('#menu').innerHTML = `<div class="screen"><div class="card"><h3 style="margin:0 0 8px;color:#2ef2ff">Saves &amp; iCloud Backup</h3>
+      <div class="help">This device has ${players.length} character${players.length === 1 ? '' : 's'} and ${worlds.length} world${worlds.length === 1 ? '' : 's'}.<br>
+      <b>Back up:</b> creates one file with all of them. On iPhone, choose <b>Save to Files</b> in the share sheet, then <b>iCloud Drive</b>.<br>
+      <b>Restore:</b> pick a backup file from Files (iCloud Drive). Characters and worlds in it replace their older copies on this device; everything else stays.</div>
+      <div id="m-msg" style="font-size:12px;color:#3dff6a;min-height:16px;margin:6px 0">${esc(msg)}</div>
+      <div class="menu-buttons" style="margin:0 auto">
+        <button class="primary" id="m-export">Back up all saves</button>
+        <button id="m-import">Restore from backup</button>
+        <input type="file" id="m-file" style="display:none">
+        <button id="m-back">Back</button>
+      </div></div></div>`;
+    const note = (t, c = '#3dff6a') => { const m = $('#m-msg'); m.textContent = t; m.style.color = c; };
+    const exp = $('#m-export');
+    exp.onclick = async () => {
+      exp.disabled = true; exp.textContent = 'Preparing backup…';
+      try {
+        const b = await makeBackup();
+        // Sharing has to start from a tap, so the ready file gets its own button.
+        exp.disabled = false; exp.textContent = `Save to Files (${(b.file.size / 1048576).toFixed(1)} MB)`;
+        exp.onclick = async () => {
+          const r = await deliver(b.file);
+          if (r === 'shared') note('Done. If you chose Save to Files → iCloud Drive, the backup is in iCloud.');
+          else if (r === 'downloaded') note('Backup downloaded: ' + b.file.name);
+        };
+      } catch (e) { exp.disabled = false; exp.textContent = 'Back up all saves'; note('Backup failed: ' + e.message, '#ff8fa8'); }
+    };
+    $('#m-import').onclick = () => $('#m-file').click();
+    $('#m-file').onchange = async (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      try {
+        const b = await readBackup(f);
+        const when = b.created ? new Date(b.created).toLocaleString() : 'an unknown date';
+        if (!confirm(`Restore ${b.players.length} character(s) and ${b.worlds.length} world(s) from ${when}? Older copies of them on this device will be replaced.`)) return;
+        await restoreBackup(b);
+        this.saves(`Restored ${b.players.length} character(s) and ${b.worlds.length} world(s).`);
+      } catch (err) { note('Could not restore: ' + err.message, '#ff8fa8'); }
+    };
+    $('#m-back').onclick = () => this.title();
   }
 
   settings() {

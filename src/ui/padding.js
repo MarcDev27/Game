@@ -5,6 +5,8 @@
 // strip, and eases toward it so the strip doesn't flicker. A side strip can only take one color,
 // so it matches the upper part of the edge, beside the status icons: the sky in daylight, the dark
 // of night or the underground otherwise.
+import { pageSize } from './layout.js';
+
 const ROWS = 64;
 
 function dominant(data) {
@@ -29,11 +31,12 @@ export function startPadding(canvas, getState) {
   const tick = () => {
     if (!canvas.width || !canvas.height) return;
     const st = getState();
-    const W = window.innerWidth, H = window.innerHeight;
+    const { W, H } = pageSize();
     let sw = screen.width, sh = screen.height;
     if ((W > H) !== (sw > sh)) [sw, sh] = [sh, sw];
-    // Which edge has the strip: whichever dimension the page is short of, or a best guess.
-    const bottom = sh - H > 2 ? true : sw - W > 2 ? false : H > W && W >= 600;
+    // Which edge has the strip: a side strip if the page is narrower than the screen, a bottom
+    // strip if it is only shorter, otherwise a best guess.
+    const bottom = sw - W > 2 ? false : sh - H > 2 ? true : H > W && W >= 600;
     const cw = canvas.width, ch = canvas.height;
     let target;
     if (bottom) {

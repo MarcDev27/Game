@@ -8,12 +8,18 @@ import { ITEMS } from '../content/items.js';
 
 const center = (x, y) => ({ x: x * TILE + TILE / 2, y: y * TILE + TILE / 2 });
 
-function nearestEnemy(game, p, maxDist) {
-  let best = null, bd = maxDist;
+// Nearest enemy, favoring the side the player faces. With `aheadOnly` (melee while walking),
+// enemies behind are ignored so the player never spins around mid-stride.
+function nearestEnemy(game, p, maxDist, aheadOnly = false) {
+  let best = null, bs = Infinity;
   for (const m of game.monsters) {
     if (m.dead || m.def.friendly || m.allied || m.grabbed) continue;
     const d = Math.hypot(m.cx - p.cx, m.cy - p.cy);
-    if (d < bd) { bd = d; best = m; }
+    if (d > maxDist) continue;
+    const behind = (m.cx - p.cx) * p.dir < -6;
+    if (behind && aheadOnly) continue;
+    const score = d + (behind ? maxDist * 0.6 : 0);
+    if (score < bs) { bs = score; best = m; }
   }
   return best;
 }
@@ -46,7 +52,7 @@ export function smartAim(game, p, drag, move) {
   const w = game.world;
 
   if (!it) {
-    const m = !steer && nearestEnemy(game, p, 60);
+    const m = !steer && nearestEnemy(game, p, 60, !!(move && Math.abs(move.x) > 0.3));
     return m ? { x: m.cx, y: m.cy } : along(40);
   }
   const reach = p.reachTiles(it);
@@ -117,7 +123,9 @@ export function smartAim(game, p, drag, move) {
   const tech = it.tech;
   const dist = tech && tech.kind === 'portal' ? Math.min(tech.range, 12) * TILE : tech && tech.kind === 'grab' ? 110 : 220;
   if (!steer && !it.fishing && !(tech && tech.kind === 'portal')) {
-    const m = nearestEnemy(game, p, it.useStyle === 'swing' || it.useStyle === 'thrust' ? 140 : 520);
+    const melee = it.useStyle === 'swing' || it.useStyle === 'thrust';
+    const walking = move && Math.abs(move.x) > 0.3;
+    const m = nearestEnemy(game, p, melee ? 140 : 520, melee && walking);
     if (m) return { x: m.cx, y: m.cy };
   }
   if (it.fishing && !steer) return { x: hand.x + p.dir * 120, y: hand.y - 60 };

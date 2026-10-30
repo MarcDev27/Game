@@ -18,6 +18,20 @@ const MQ = {
   folded: mq('(device-posture: folded)'),
 };
 
+// The size of the page as fixed-position content sees it. On iOS, innerWidth/innerHeight can lag
+// behind or differ from the area a full-page fixed element covers (for example right after
+// rotating), which would leave a band of page background uncovered.
+let pageProbe = null;
+export function pageSize() {
+  if (!pageProbe && document.body) {
+    pageProbe = document.createElement('div');
+    pageProbe.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;visibility:hidden;pointer-events:none;z-index:-1';
+    document.body.appendChild(pageProbe);
+  }
+  const r = pageProbe ? pageProbe.getBoundingClientRect() : null;
+  return r && r.width > 0 && r.height > 0 ? { W: Math.round(r.width), H: Math.round(r.height) } : { W: window.innerWidth, H: window.innerHeight };
+}
+
 let probe = null;
 function cssSegments() {
   const book = MQ.hseg && MQ.hseg.matches, laptop = MQ.vseg && MQ.vseg.matches;
@@ -61,7 +75,7 @@ function screenMiddle(W, H) {
 let lastFold = { mode: 'none' };
 // Everything the browser reports about the screen, shown in Settings for troubleshooting.
 window.__neonDisplay = () => {
-  const W = window.innerWidth, H = window.innerHeight, { sw, sh } = screenSize(W, H);
+  const { W, H } = pageSize(), { sw, sh } = screenSize(W, H);
   let ins = '?';
   try {
     const pr = document.createElement('div');
@@ -79,7 +93,7 @@ window.__neonDisplay = () => {
   const f = lastFold;
   return {
     Build: window.__neonBuild || '?',
-    Page: `${W} × ${H}`, Screen: `${sw} × ${sh}`, 'Pixel ratio': window.devicePixelRatio,
+    Page: `${W} × ${H} (inner ${window.innerWidth} × ${window.innerHeight})`, Screen: `${sw} × ${sh}`, 'Pixel ratio': window.devicePixelRatio,
     'Safe area (t/r/b/l)': ins, 'Display mode': dm + (navigator.standalone ? ' (Home Screen)' : ''),
     Posture: posture, Segments: segs,
     Fold: f.mode === 'book' ? `book at x=${Math.round(f.x)}` : f.mode === 'laptop' ? `laptop at y=${Math.round(f.y)}` : 'none',
@@ -87,7 +101,7 @@ window.__neonDisplay = () => {
 };
 
 export function detectFold(settings) {
-  const W = window.innerWidth, H = window.innerHeight;
+  const { W, H } = pageSize();
   const pref = settings.foldMode || 'auto';
   if (pref === 'off') return { mode: 'none' };
   const mid = screenMiddle(W, H);
@@ -119,7 +133,7 @@ export function detectFold(settings) {
 
 // Applies body classes and CSS variables. Returns the rectangle the game canvas should fill.
 export function applyLayout(settings) {
-  const W = window.innerWidth, H = window.innerHeight;
+  const { W, H } = pageSize();
   const fold = detectFold(settings);
   lastFold = fold;
   const b = document.body, st = document.documentElement.style;
@@ -166,4 +180,12 @@ export function watchLayout(onChange) {
   try { if (navigator.devicePosture) navigator.devicePosture.addEventListener('change', onChange); } catch (e) { /* ignore */ }
   try { if (window.viewport && window.viewport.addEventListener) window.viewport.addEventListener('segmentschange', onChange); } catch (e) { /* ignore */ }
   for (const m of Object.values(MQ)) try { if (m) m.addEventListener('change', onChange); } catch (e) { /* ignore */ }
+  // Safety net: iOS doesn't always fire resize when a rotation or fold settles.
+  let last = '';
+  setInterval(() => {
+    const { W, H } = pageSize();
+    const key = `${W}x${H}x${window.screen ? screen.width + 'x' + screen.height : ''}`;
+    if (last && key !== last) onChange();
+    last = key;
+  }, 500);
 }

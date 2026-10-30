@@ -52,6 +52,8 @@ Controls:
 - **Buttons:** JUMP, HOOK, STIM (quick heal), CELL (quick energy), DASH. RIDE appears when a vehicle is equipped, and AUG appears when a neural implant is installed.
 - **Top-right buttons:** inventory and crafting, map, and menu (field guide, Archive, achievements, settings, save).
 
+**Backups to iCloud:** on the title screen, open **Saves & iCloud Backup → Back up all saves → Save to Files** and choose **iCloud Drive**. You can also do this during play from **Menu → Back up to iCloud / Files**. **Restore from backup** picks the file back up from Files, for example on a new phone.
+
 Keyboard and mouse also work: WASD or arrows, Space, mouse, right-click to interact, 1–0 for the hotbar, E (inventory), M (map), F (hook), H (heal), J (energy), Shift (dash), R (ride) and Q (augment).
 
 ## Develop
@@ -74,7 +76,7 @@ Run `npm run build` after changing files so the service worker caches the new ve
 ### Code layout
 
 ```
-src/core     util, noise, input (touch + keyboard), audio synth, storage (IndexedDB)
+src/core     util, noise, input (touch + keyboard), audio synth, storage (IndexedDB), backups
 src/content  tiles, items, recipes, monsters, projectiles, buffs, loot, prefixes, achievements, lore
 src/world    world grid, procedural generator, lighting, liquids
 src/game     game loop, player, entities, AI, bosses, spawner, events, colonists, fishing,

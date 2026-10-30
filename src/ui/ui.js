@@ -11,6 +11,7 @@ import { addItem, countItem, removeItem, sortInventory, maxStack, HOTBAR } from 
 import { COLONISTS } from '../game/town.js';
 import { WorldMap } from './map.js';
 import { ACHIEVEMENTS } from '../content/achievements.js';
+import { makeBackup, deliver } from '../core/backup.js';
 import { LORE } from '../content/lore.js';
 import { IMPLANT_SLOTS, IMPLANT_SLOT_NAMES } from '../content/items.js';
 import { capacity, usedCapacity, canInstall, activeImplant } from '../game/implants.js';
@@ -570,6 +571,16 @@ export class UI {
       case 'help': this.panel = 'help'; this.renderHelp(); return;
       case 'back': this.panel = 'pause'; this.renderPause(); return;
       case 'save': this.env.save().then(() => this.toast('Game saved', '#3dff6a')); return;
+      case 'backup': {
+        el.disabled = true; el.textContent = 'Preparing backup…';
+        this.env.save().then(() => makeBackup()).then((b) => {
+          // Sharing must start from a tap, so the prepared file gets its own button.
+          el.disabled = false; el.textContent = `Save to Files (${b.players} characters, ${b.worlds} worlds)`;
+          el.classList.add('primary');
+          el.onclick = (e) => { e.stopPropagation(); deliver(b.file).then((r) => { if (r !== 'cancelled') this.toast(r === 'shared' ? 'Backup ready — choose Save to Files → iCloud Drive' : 'Backup downloaded', '#3dff6a'); }); };
+        }).catch((err) => { el.disabled = false; el.textContent = 'Back up to iCloud / Files'; this.toast('Backup failed: ' + err.message, '#ff8fa8'); });
+        return;
+      }
       case 'quit': this.env.saveAndQuit(); return;
       default: this.pickAction(act);
     }
@@ -654,7 +665,7 @@ export class UI {
     const bosses = Object.keys(w.flags.bosses).length;
     const html = `<div class="win" style="width:min(360px,94vw)"><h2><span>PAUSED</span><button data-act="close">&times;</button></h2><div class="body">
       <div class="help">${esc(p.name)} · ${p.maxLife} max integrity · ${bosses} bosses defeated${w.flags.hardmode ? ' · <b>Singularity</b>' : ''}<br>${esc(w.name)} · Day ${w.day}</div>
-      <div class="menu-buttons" style="margin:10px auto"><button class="primary" data-act="resume">Resume</button><button data-act="help">Field Guide</button><button data-act="archive">Archive (${p.lore.length}/${LORE.length})</button><button data-act="achievements">Achievements (${p.achievements.size}/${ACHIEVEMENTS.length})</button><button data-act="settings">Settings</button><button data-act="save">Save</button><button data-act="quit">Save &amp; Exit</button></div></div></div>`;
+      <div class="menu-buttons" style="margin:10px auto"><button class="primary" data-act="resume">Resume</button><button data-act="help">Field Guide</button><button data-act="archive">Archive (${p.lore.length}/${LORE.length})</button><button data-act="achievements">Achievements (${p.achievements.size}/${ACHIEVEMENTS.length})</button><button data-act="settings">Settings</button><button data-act="save">Save</button><button data-act="backup">Back up to iCloud / Files</button><button data-act="quit">Save &amp; Exit</button></div></div></div>`;
     this.show(html); this.bindPanel();
   }
 
@@ -724,7 +735,7 @@ export const HELP_HTML = `
 <b>Cyberware.</b> Install implants at a Surgery Bay (or next to the Ripperdoc) into six body slots: Neural, Optics, Arms, Spine, Legs, Core. Each costs capacity; capacity grows with max integrity. Neural implants give an AUG ability: time dilation, drone command, machine hijacking or overdrive.<br><br>
 <b>Tech.</b> Beam weapons fire while held. Coilguns charge while held and fire on release. The Gravity Gun lifts enemies — release to throw them. The Wormhole Projector opens two linked portals. Quantum Beacons form a fast-travel network.<br><br>
 <b>iPhone Duo.</b> The layout follows the device: unfolded it uses the full inner display; folded like a book the controls stay clear of the fold; folded like a laptop the game sits on top with the controls below. Safari only reports the fold when its Device Posture and Viewport Segments feature flags are on (Settings → Apps → Safari → Advanced → Feature Flags); otherwise choose Settings → Fold layout.<br><br>
-<b>Saving.</b> The game autosaves every 2 minutes and when you leave. Use Share → Add to Home Screen to play full-screen and offline.`;
+<b>Saving.</b> The game autosaves every 2 minutes and when you leave. To keep a copy in iCloud, use Back up to iCloud / Files in the menu (or Saves &amp; iCloud Backup on the title screen) and choose Save to Files → iCloud Drive. Use Share → Add to Home Screen to play full-screen and offline.`;
 
 // What the browser reports about the screen, to diagnose layouts on new devices.
 function displayInfo() {
