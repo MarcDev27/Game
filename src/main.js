@@ -179,7 +179,13 @@ function step() {
     lastAim = { x: wp.x, y: wp.y, show: input.mouse.inside, fromMouse: true };
     useHeld = input.mouse.left && !blocked;
   } else {
-    lastAim.show = false;
+    // Touch play with a tool or block in hand: preview the block the USE button would target.
+    const held = p.held();
+    if (!blocked && !p.dead && held && (held.pick || held.axe || held.hammer || held.place || held.placeWall)) {
+      const j = input.joy;
+      const a = smartAim(game, p, null, j.active && Math.hypot(j.x, j.y) > 0.4 ? { x: j.x, y: j.y } : null);
+      lastAim = { x: a.x, y: a.y, show: true, fromMouse: false, preview: true };
+    } else lastAim.show = false;
     if (!input.touch.active) consumedTouch = false;
   }
   if (!input.touch.active) consumedTouch = false;

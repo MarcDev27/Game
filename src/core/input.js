@@ -28,9 +28,16 @@ export class Input {
     });
     window.addEventListener('keyup', (e) => { const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; this.keys.delete(k); });
     window.addEventListener('blur', () => { this.keys.clear(); this.mouse.left = this.mouse.right = false; this.releaseAll(); });
-    c.addEventListener('mousemove', (e) => { this.mouse.x = e.clientX; this.mouse.y = e.clientY; this.mouse.inside = true; });
+    // Browsers fire emulated mouse events after a tap; ignore those so touch play isn't
+    // mistaken for a mouse (which would pin the cursor to the last tap).
+    this.lastTouchT = -1e9;
+    window.addEventListener('touchstart', () => { this.lastTouchT = performance.now(); this.mouse.inside = false; }, { capture: true, passive: true });
+    window.addEventListener('touchend', () => { this.lastTouchT = performance.now(); }, { capture: true, passive: true });
+    const emulated = () => performance.now() - this.lastTouchT < 1000;
+    c.addEventListener('mousemove', (e) => { if (emulated()) return; this.mouse.x = e.clientX; this.mouse.y = e.clientY; this.mouse.inside = true; });
     c.addEventListener('mouseleave', () => { this.mouse.inside = false; });
     c.addEventListener('mousedown', (e) => {
+      if (emulated()) return;
       this.mouse.x = e.clientX; this.mouse.y = e.clientY;
       if (e.button === 0) { this.mouse.left = true; this.taps.push({ x: e.clientX, y: e.clientY, mouse: true }); }
       if (e.button === 2) { this.mouse.right = true; this.pressed.add('MouseRight'); }

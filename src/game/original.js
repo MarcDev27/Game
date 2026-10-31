@@ -5,7 +5,7 @@
 // your own past movements, and a void that swallows all light.
 import { TILE, rng, sign, clamp } from '../core/util.js';
 import { moveEntity } from './physics.js';
-import { TILES } from '../content/tiles.js';
+import { TILES, T, W } from '../content/tiles.js';
 import { addHazard } from './hazards.js';
 import { toggleRide } from './vehicles.js';
 
@@ -57,9 +57,27 @@ function breakArea(game, cx, cy, r) {
   }
 }
 
+// EMP pulses don't reach a player standing in front of Faraday mesh walls (a shielded room),
+// or with a Faraday plate between them and the drone.
+export function empShielded(game, p, src) {
+  const w = game.world;
+  const x0 = Math.floor(p.x / TILE), x1 = Math.floor((p.x + p.w - 1) / TILE);
+  const y0 = Math.floor(p.y / TILE), y1 = Math.floor((p.y + p.h - 1) / TILE);
+  let mesh = 0, cells = 0;
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { cells++; if (w.getWall(x, y) === W.faraday_wall) mesh++; }
+  if (mesh * 2 >= cells) return true;
+  const n = Math.ceil(Math.hypot(p.cx - src.cx, p.cy - src.cy) / 8);
+  for (let i = 1; i < n; i++) {
+    const x = Math.floor((src.cx + (p.cx - src.cx) * i / n) / TILE), y = Math.floor((src.cy + (p.cy - src.cy) * i / n) / TILE);
+    if (w.get(x, y) === T.faraday_plate) return true;
+  }
+  return false;
+}
+
 export function jam(game, p, ticks) {
   if (p.s.jamImmune) { game.fx.text(p.cx, p.y - 8, 'Shielded', '#66ccff'); return; }
   p.addBuff('jammed', ticks);
+  p.stats.jammed = (p.stats.jammed || 0) + 1;
   if (p.vehicle) toggleRide(game, p);
   game.fx.text(p.cx, p.y - 8, 'JAMMED', '#66ccff');
 }
@@ -155,7 +173,11 @@ export const ORIGINAL_AI = {
       a.charge = 0; a.cd = 240;
       game.fx.burst(m.cx, m.cy, '#66ccff', 30, 5);
       game.audio.play('laser');
-      if (d < 160) { jam(game, game.player, 360); game.hurtPlayer(Math.round(m.dmg * 0.8), m.cx, 2, m.def.name); }
+      const p = game.player;
+      if (d < 160) {
+        if (empShielded(game, p, m)) { game.fx.text(p.cx, p.y - 8, 'EMP blocked', '#d08a4a'); game.fx.burst(p.cx, p.cy, '#d08a4a', 10, 2); }
+        else { jam(game, p, 360); game.hurtPlayer(Math.round(m.dmg * 0.8), m.cx, 2, m.def.name); }
+      }
     }
   },
 

@@ -472,18 +472,40 @@ export class Renderer {
     const it = p.held();
     if (!it) return;
     const tx = Math.floor(aim.x / TILE), ty = Math.floor(aim.y / TILE);
+    const pulse = 0.65 + 0.35 * Math.sin(game.tick * 0.18);
     if (it.pick || it.axe || it.hammer) {
       const tgt = game.toolTarget(p, it, tx, ty);
-      if (tgt) {
-        ctx.strokeStyle = 'rgba(255,240,150,0.9)'; ctx.lineWidth = 1;
-        ctx.strokeRect(tgt.x * TILE + 0.5, tgt.y * TILE + 0.5, TILE - 1, TILE - 1);
-      }
+      if (tgt) this.drawTarget(ctx, tgt.x * TILE, tgt.y * TILE, TILE, TILE, `rgba(255,236,140,${(aim.preview ? 0.7 : 1) * pulse})`, true);
     } else if (it.place || it.placeWall) {
       const ok = p.inReach(tx, ty, it);
-      ctx.strokeStyle = ok ? 'rgba(46,242,255,0.8)' : 'rgba(255,51,85,0.6)';
+      const col = ok ? `rgba(46,242,255,${0.9 * pulse})` : 'rgba(255,51,85,0.6)';
       const f = it.place && TILES[T[it.place]].furn;
-      if (f) ctx.strokeRect((tx - Math.floor((f.w - 1) / 2)) * TILE + 0.5, (ty - f.h + 1) * TILE + 0.5, f.w * TILE - 1, f.h * TILE - 1);
-      else ctx.strokeRect(tx * TILE + 0.5, ty * TILE + 0.5, TILE - 1, TILE - 1);
+      if (f) this.drawTarget(ctx, (tx - Math.floor((f.w - 1) / 2)) * TILE, (ty - f.h + 1) * TILE, f.w * TILE, f.h * TILE, col, false);
+      else this.drawTarget(ctx, tx * TILE, ty * TILE, TILE, TILE, col, false);
     }
   }
+
+  // Bracketed corners and a crosshair through the targeted block, so it is easy to see what a
+  // tool will hit or where a block will go.
+  drawTarget(ctx, x, y, w, h, color, cross) {
+    const L = 5, o = 2;
+    ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 3;
+    const corners = () => {
+      ctx.beginPath();
+      ctx.moveTo(x - o, y - o + L); ctx.lineTo(x - o, y - o); ctx.lineTo(x - o + L, y - o);
+      ctx.moveTo(x + w + o - L, y - o); ctx.lineTo(x + w + o, y - o); ctx.lineTo(x + w + o, y - o + L);
+      ctx.moveTo(x - o, y + h + o - L); ctx.lineTo(x - o, y + h + o); ctx.lineTo(x - o + L, y + h + o);
+      ctx.moveTo(x + w + o - L, y + h + o); ctx.lineTo(x + w + o, y + h + o); ctx.lineTo(x + w + o, y + h + o - L);
+      if (cross) {
+        const cx = x + w / 2, cy = y + h / 2, a = w / 2 + 6, b = 3;
+        ctx.moveTo(cx - a, cy); ctx.lineTo(cx - b, cy); ctx.moveTo(cx + b, cy); ctx.lineTo(cx + a, cy);
+        ctx.moveTo(cx, cy - a); ctx.lineTo(cx, cy - b); ctx.moveTo(cx, cy + b); ctx.lineTo(cx, cy + a);
+      }
+      ctx.stroke();
+    };
+    corners();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.2;
+    corners();
+  }
+
 }

@@ -183,6 +183,7 @@ furniture('core_chest', 'Core Chest', 'chest', 2, 2, { mat: { color: '#3a2a4f', 
 furniture('cache_chest', 'Cache Chest', 'chest', 2, 2, { mat: { color: '#8a7a5a', accent: '#ffd27a' }, container: true, interact: 'chest', map: '#8a7a5a' });
 furniture('temple_door', 'Ancient Door', 'door', 1, 3, { mat: { color: '#8a6a2e', accent: '#ffcc33' }, solid: true, door: true, opaque: false, anchor: 'door', interact: 'door', tool: 'none', drop: null, locked: 'temple_key', map: '#8a6a2e' });
 tile('lockdown_field', { name: 'Lockdown Field', tool: 'none', drop: null, hp: 99, opaque: false, light: [0.15, 0.4, 0.7], tex: { style: 'glass', c: '#66ccff' }, map: '#66ccff' });
+tile('faraday_plate', { name: 'Faraday Plate', hp: 2, tex: { style: 'plate', c: '#9a5f33' }, map: '#9a5f33' });
 
 // ---------- walls ----------
 wall('regolith_wall', { name: 'Regolith Wall', tex: { c: '#3b2c27' }, map: '#3b2c27', natural: true });
@@ -204,6 +205,7 @@ wall('glass_wall', { name: 'Glass Wall', tex: { c: '#5f8aa0', style: 'glass' }, 
 wall('carbon_wall', { name: 'Carbon Brick Wall', tex: { c: '#24262c', style: 'brick' }, map: '#24262c' });
 wall('circuit_wall', { name: 'Circuit Wall', tex: { c: '#0e1e24', style: 'circuit' }, map: '#0e1e24' });
 wall('ferrocrete_brick_wall', { name: 'Ferrocrete Brick Wall', tex: { c: '#454b55', style: 'brick' }, map: '#454b55' });
+wall('faraday_wall', { name: 'Faraday Mesh Wall', tex: { c: '#5a3a22', style: 'grid' }, map: '#5a3a22' });
 
 // ---------- lookup tables for hot loops ----------
 export const SOLID = new Uint8Array(TILES.length); // 1 solid, 2 platform, 3 door

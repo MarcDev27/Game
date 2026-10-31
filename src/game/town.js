@@ -264,6 +264,7 @@ export class Town {
     if (!f.gel_sovereign && !f.overseer) return 'You could challenge the Gel Sovereign (craft a Gel Beacon from 30 Nanogel) or the Overseer (Optic Lure from 6 Optic Lenses, at night).';
     if (!f.overseer) return BOSS_INFO.overseer.hint;
     if (!discovered('surgery_bay') && this.has('ripperdoc')) return 'A Ripperdoc has moved in. Build a Surgery Bay to install cyberware — body mods in six slots. Your cyberware capacity grows with your max integrity.';
+    if (p.stats.jammed && !discovered('faraday_plate')) return 'EMP Drones jam vehicles and implants even through walls. Fabricate Faraday Plates (Cuprite Bar + Ferrocrete) and turn them into Faraday Mesh Walls: inside a room backed by them, EMPs can\'t reach you.';
     if (!f.data_wyrm) return 'Lumenite Ore from the Overseer makes strong gear. Next, venture into the Blight: ' + BOSS_INFO.data_wyrm.hint;
     if (!f.firewall) return 'Something guards the Strata\'s data core. ' + BOSS_INFO.firewall.hint;
     if (!f.swarm_mother) return 'Deep in the Overgrowth lies a hive. ' + BOSS_INFO.swarm_mother.hint;

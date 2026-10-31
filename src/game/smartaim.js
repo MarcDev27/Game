@@ -76,6 +76,12 @@ export function smartAim(game, p, drag, move) {
     if (!diagonal) {
       for (const [x, y] of bodyScan(p, d, reach + 1, it.hammer && !it.pick ? 0 : 1)) if (hit(x, y)) return center(x, y);
     }
+    if (!steer && it.pick) {
+      // nothing at body height: dig the floor just ahead (also gives the crosshair a target)
+      const feet = Math.floor((p.y + p.h + 2) / TILE);
+      const fx = p.dir > 0 ? Math.floor((p.x + p.w - 1) / TILE) + 1 : Math.floor(p.x / TILE) - 1;
+      if (hit(fx, feet)) return center(fx, feet);
+    }
     return along(reach * TILE);
   }
 

@@ -503,4 +503,7 @@ melee('temporal_edge', { name: 'Temporal Edge', damage: 36, useTime: 20, size: 4
 summon('legion_remote', { name: 'Legion Remote', damage: 40, shoot: 'minion_legion', energyCost: 10, icon: { s: 'remote', c: '#ff3355', c2: '#aeb7c2' }, value: 60000, rarity: 6, tip: 'Commands a fast Legion unit that rams your enemies.' });
 acc('umbral_veil', 'Umbral Veil', { dodge: 0.1, nightVision: 1 }, { s: 'cloth', c: '#1a1030', c2: '#b06bff' }, 80000, 6, '10% chance to phase through attacks. See in the dark.');
 techw('null_beam', { name: 'Null Beam', dmgType: 'energy', damage: 64, useTime: 4, energyCost: 2, tech: { kind: 'beam', range: 28, rate: 4, pierce: 2, color: '#b06bff', width: 3 }, icon: { s: 'raygun', c: '#b06bff', c2: '#1a1030' }, value: 90000, rarity: 7, tip: 'A beam of darkness that pierces two targets. Hold to fire.' });
+// EMP shielding: a room backed by Faraday mesh walls, or a Faraday plate between you and the drone, blocks EMP pulses.
+blockItem('faraday_plate', { value: 60, tip: 'Copper-mesh plating. Blocks EMP pulses that would pass through it.' });
+wallItem('faraday_wall', { value: 20, tip: 'Background mesh wall. Stand in front of it (for example inside a house built with it) and EMP pulses can\'t reach you.' });
 

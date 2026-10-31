@@ -431,7 +431,7 @@ export class UI {
     }
     const craft = this.renderCraft();
     const html = `<div class="win"><h2><span>${this.chest ? 'STORAGE' : 'INVENTORY'} · ${formatCredits(p.credits)} cr</span><span><button data-act="housing">Housing</button> <button data-act="sort">Sort</button> <button data-act="close">&times;</button></span></h2>
-      <div class="body"><div class="cols">
+      <div class="body" data-inv="1"><div class="cols">
         <div class="col">${chestHtml}<div class="label">Inventory</div><div class="grid">${inv}</div>
           <div class="tip">${tip}</div><div class="row">${acts}</div></div>
         <div class="col"><div class="label">Equipment · ${p.s.defense} DEF</div><div class="equip">${eq}</div>${p.s.setBonus ? `<div class="label" style="color:#3dff6a">Set bonus active</div>` : ''}
@@ -440,8 +440,21 @@ export class UI {
           <div style="font-size:10px;color:#8aa0c0;max-width:96px">${g.nearbyStations().has('surgery') ? '<span style="color:#3dff6a">Surgery Bay ready</span>' : 'Install at a Surgery Bay'}</div></div>
         <div class="col" style="min-width:200px;max-width:300px">${craft}</div>
       </div></div></div>`;
+    // Re-rendering replaces the panel; keep where the player had scrolled to.
+    const body = $('#panel .win .body'), list = $('#panel .craftlist');
+    const keep = body && body.dataset.inv ? [body.scrollTop, list ? list.scrollTop : 0] : null;
     this.show(html);
     this.bindPanel();
+    if (keep) {
+      const b2 = $('#panel .win .body'), l2 = $('#panel .craftlist');
+      if (b2) b2.scrollTop = keep[0];
+      if (l2) l2.scrollTop = keep[1];
+    }
+    if (this.revealCraft) {
+      this.revealCraft = false;
+      const d = $('#craftdetail');
+      if (d) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
   }
 
   // ---------------- crafting ----------------
@@ -490,8 +503,8 @@ export class UI {
       const stOk = !r.at || st.has(r.at);
       const station = r.at ? `<div class="ing ${stOk ? '' : 'miss'}">At: ${STATION_NAMES[r.at]}</div>` : '<div class="ing">By hand</div>';
       const can = stOk && r.ing.every(([k, n]) => countItem(p.inv, k) >= n);
-      detail = `<div class="tip" style="margin-top:4px">${itemTooltip({ k: r.out, n: r.n }, p)}<hr style="border-color:#1e2e46">${ing}${station}</div>
-        <div class="row" style="margin-top:4px"><button class="primary" data-act="craft" ${can ? '' : 'disabled'}>Craft</button><button data-act="craft10" ${can ? '' : 'disabled'}>×10</button></div>`;
+      detail = `<div id="craftdetail"><div class="tip" style="margin-top:4px">${itemTooltip({ k: r.out, n: r.n }, p)}<hr style="border-color:#1e2e46">${ing}${station}</div>
+        <div class="row" style="margin-top:4px"><button class="primary" data-act="craft" ${can ? '' : 'disabled'}>Craft</button><button data-act="craft10" ${can ? '' : 'disabled'}>×10</button></div></div>`;
     }
     return `<div class="label">Crafting</div><div class="tabs">${tabs}</div><div class="craftlist">${items}</div>${detail}`;
   }
@@ -531,7 +544,7 @@ export class UI {
       d.onpointerup = (e) => { e.preventDefault(); this.tapSlot(d.dataset.src, d.dataset.src === 'eq' ? d.dataset.i : +d.dataset.i); };
     });
     el.querySelectorAll('[data-recipe]').forEach((d) => {
-      d.onpointerup = (e) => { e.preventDefault(); this.craftSel = +d.dataset.recipe; this.env.audio.play('ui'); this.renderInventory(); };
+      d.onpointerup = (e) => { e.preventDefault(); this.craftSel = +d.dataset.recipe; this.revealCraft = true; this.env.audio.play('ui'); this.renderInventory(); };
     });
     el.querySelectorAll('[data-tab]').forEach((d) => {
       d.onclick = () => { this.craftTab = d.dataset.tab; this.renderInventory(); };
@@ -733,7 +746,7 @@ export const HELP_HTML = `
 <b>First steps.</b> 1) Chop Lattice trees with the Scrap Cutter for Fiber. 2) Craft an Assembly Bench by hand (10 Fiber). 3) Kill Nanoslimes for Nanogel → Glowsticks. 4) Dig for ore, build a Smelter and Fabricator. 5) Build a house (enclosed room, background wall, door, light, table and chair) so colonists move in — use the Housing button in the inventory to check a room.<br><br>
 <b>Vehicles.</b> Equip one in the Vehicle slot and tap RIDE: Scrap Hoverbike, Bore Pod (drills through rock), Aerodyne Sky Car (flying car), Titan Walker mech and the Starjumper shuttle.<br><br>
 <b>Cyberware.</b> Install implants at a Surgery Bay (or next to the Ripperdoc) into six body slots: Neural, Optics, Arms, Spine, Legs, Core. Each costs capacity; capacity grows with max integrity. Neural implants give an AUG ability: time dilation, drone command, machine hijacking or overdrive.<br><br>
-<b>Bosses.</b> Every guardian has a trick of its own: watch for red warning lines and outlines before strikes, beams and vents. The Firewall has to be hacked (stand next to each port), the Echo Engine replays your past movements, Legion changes shape, and Blackout eats light, so bring Thermal Optics. Dash to shake off pheromone marks, and move away from a Tether Leech to break its line.<br><br>
+<b>Bosses.</b> Every guardian has a trick of its own: watch for red warning lines and outlines before strikes, beams and vents. The Firewall has to be hacked (stand next to each port), the Echo Engine replays your past movements, Legion changes shape, and Blackout eats light, so bring Thermal Optics. Dash to shake off pheromone marks, and move away from a Tether Leech to break its line. EMP Drones reach through walls: build with Faraday Mesh Walls (or put Faraday Plates between you and them) to stay shielded.<br><br>
 <b>Tech.</b> Beam weapons fire while held. Coilguns charge while held and fire on release. The Gravity Gun lifts enemies — release to throw them. The Wormhole Projector opens two linked portals. Quantum Beacons form a fast-travel network.<br><br>
 <b>iPhone Duo.</b> The layout follows the device: unfolded it uses the full inner display; folded like a book the controls stay clear of the fold; folded like a laptop the game sits on top with the controls below. Safari only reports the fold when its Device Posture and Viewport Segments feature flags are on (Settings → Apps → Safari → Advanced → Feature Flags); otherwise choose Settings → Fold layout.<br><br>
 <b>Saving.</b> The game autosaves every 2 minutes and when you leave. To keep a copy in iCloud, use Back up to iCloud / Files in the menu (or Saves &amp; iCloud Backup on the title screen) and choose Save to Files → iCloud Drive. Use Share → Add to Home Screen to play full-screen and offline.`;

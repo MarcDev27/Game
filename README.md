@@ -48,7 +48,7 @@ Every other boss also has a signature mechanic:
 New regular enemies:
 - **Maintenance Drones** heal other enemies and rebuild the tunnels you dug.
 - **Phase Stalkers** stay invisible until they blink behind you.
-- **EMP Drones** jam your vehicle and implants.
+- **EMP Drones** jam your vehicle and implants, even through walls. Shield yourself with Faraday Mesh Walls behind you (for example a house built with them), or Faraday Plates between you and the drone.
 - **Cache Mimics** pose as supply crates.
 - **Tether Leeches** drain you until you break the line.
 - **Sappers** blast craters into the terrain.

@@ -66,6 +66,8 @@ r('glass_wall', 4, [['glass', 1]], 'bench');
 r('carbon_wall', 4, [['carbon_brick', 1]], 'bench');
 r('circuit_wall', 4, [['circuit_block', 1]], 'bench');
 r('ferrocrete_brick_wall', 4, [['ferrocrete_brick', 1]], 'bench');
+r('faraday_plate', 4, [['cuprite_bar', 1], ['ferrocrete', 2]], 'fabricator');
+r('faraday_wall', 4, [['faraday_plate', 1]], 'bench');
 r('glowstick_cyan', 3, [['glowstick', 3], ['glowcap', 1]], 'bench');
 r('glowstick_magenta', 3, [['glowstick', 3], ['gloomspore', 1]], 'bench');
 r('glowstick_lime', 3, [['glowstick', 3], ['voltleaf', 1]], 'bench');
