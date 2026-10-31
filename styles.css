@@ -32,7 +32,7 @@ input[type=text] { font-family: var(--font); font-size: 16px; background: #0a122
 .hidden { display: none !important; }
 
 /* ---------- HUD ---------- */
-#hud { position: fixed; left: 0; top: 0; width: var(--app-w, 100vw); height: var(--app-h, 100vh); pointer-events: none; z-index: 5; }
+#hud { position: fixed; left: 0; top: 0; width: var(--app-w, 100vw); height: var(--app-h, 100vh); pointer-events: none; z-index: 6; }
 #hud * { pointer-events: auto; }
 #leftcol { position: absolute; left: calc(8px + var(--safe-l)); top: calc(6px + var(--safe-t)); display: flex; flex-direction: column; gap: 3px; pointer-events: none !important; }
 #bars { width: 160px; pointer-events: none !important; }
@@ -74,7 +74,7 @@ input[type=text] { font-family: var(--font); font-size: 16px; background: #0a122
 #death .sub { margin-top: 8px; color: #ffb0c0; }
 
 /* ---------- touch controls ---------- */
-#touch { position: fixed; left: 0; top: 0; width: var(--app-w, 100vw); height: var(--app-h, 100vh); pointer-events: none; z-index: 6; }
+#touch { position: fixed; left: 0; top: 0; width: var(--app-w, 100vw); height: var(--app-h, 100vh); pointer-events: none; z-index: 5; }
 #joyzone { position: absolute; left: 0; bottom: 0; width: 38vw; height: 62vh; pointer-events: auto; }
 #joybase { position: absolute; width: 110px; height: 110px; margin: -55px 0 0 -55px; left: calc(80px + var(--safe-l)); top: calc(100% - 90px - var(--safe-b)); border-radius: 50%; border: 2px solid rgba(46, 242, 255, 0.35); background: rgba(10, 30, 50, 0.25); opacity: 0.55; transition: opacity 0.1s; }
 #joybase.active { opacity: 1; }
