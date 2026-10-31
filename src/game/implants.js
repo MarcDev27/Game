@@ -33,6 +33,7 @@ export function activeImplant(p) {
 export function activateAug(game, p) {
   const it = activeImplant(p);
   if (!it || !it.active) return;
+  if (p.buffs.has('jammed')) { game.fx.text(p.cx, p.y - 6, 'Augment jammed', '#66ccff'); return; }
   if (p.augCd > 0) { game.fx.text(p.cx, p.y - 6, 'Recharging ' + Math.ceil(p.augCd / 60) + 's', '#8aa0c0'); return; }
   p.augCd = it.cooldown;
   game.audio.play('summon');

@@ -13,7 +13,7 @@ const center = (x, y) => ({ x: x * TILE + TILE / 2, y: y * TILE + TILE / 2 });
 function nearestEnemy(game, p, maxDist, aheadOnly = false) {
   let best = null, bs = Infinity;
   for (const m of game.monsters) {
-    if (m.dead || m.def.friendly || m.allied || m.grabbed) continue;
+    if (m.dead || m.def.friendly || m.allied || m.grabbed || m.def.immune || m.cloak || m.ai.dormant || m.ai.inactive) continue;
     const d = Math.hypot(m.cx - p.cx, m.cy - p.cy);
     if (d > maxDist) continue;
     const behind = (m.cx - p.cx) * p.dir < -6;

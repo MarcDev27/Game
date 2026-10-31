@@ -13,7 +13,7 @@ export class Lighting {
     if (this.R.length < n) { this.R = new Float32Array(n); this.G = new Float32Array(n); this.B = new Float32Array(n); this.D = new Float32Array(n); }
   }
 
-  compute(x0, y0, w, h, lights, amb, skyLimit, quality = 2) {
+  compute(x0, y0, w, h, lights, amb, skyLimit, quality = 2, dark = null) {
     const world = this.world, W = world.w, H = world.h;
     const fg = world.fg, wall = world.wall, liq = world.liq, liqT = world.liqT;
     this.x0 = x0; this.y0 = y0; this.w = w; this.h = h;
@@ -35,11 +35,14 @@ export class Lighting {
           else if (lt === LIQ.gel) { if (r < 0.15) r = 0.15; if (g < 0.1) g = 0.1; }
         }
         if (!op && wall[idx] === 0 && y < skyLimit) { if (r < amb[0]) r = amb[0]; if (g < amb[1]) g = amb[1]; if (b < amb[2]) b = amb[2]; }
+        // Blackout's field smothers tile lights and daylight around it
+        if (dark && (x - dark.x) * (x - dark.x) + (y - dark.y) * (y - dark.y) < dark.r * dark.r) r = g = b = 0;
         R[k] = r; G[k] = g; B[k] = b;
         D[k] = op ? 0.66 : (l > 100 && liqT[idx] === LIQ.water ? 0.8 : 0.875);
       }
     }
     for (const L of lights) {
+      if (dark && !L.keep && (L.x - dark.x) * (L.x - dark.x) + (L.y - dark.y) * (L.y - dark.y) < dark.r * dark.r) continue;
       const i = L.x - x0, j = L.y - y0;
       if (i < 0 || j < 0 || i >= w || j >= h) continue;
       const k = j * w + i;

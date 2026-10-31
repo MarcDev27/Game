@@ -5,6 +5,7 @@ import { ITEMS } from '../content/items.js';
 import { ATLAS } from './textures.js';
 import { Background } from './background.js';
 import { drawHumanoid, drawArm, drawHeldItem, drawMonster, drawMonsterGlow, drawProjectile, drawVehicle } from './sprites.js';
+import { drawHazards } from '../game/hazards.js';
 import { VEHICLES } from '../content/items.js';
 import { iconCanvas } from './icons.js';
 import { LIQ, DOOR_OPEN } from '../world/world.js';
@@ -124,7 +125,7 @@ export class Renderer {
     const ambient = this.ambient(game);
     const lights = this.collectLights(game);
     const lx0 = tx0 - MARGIN, ly0 = ty0 - MARGIN, lw = tx1 - tx0 + MARGIN * 2, lh = ty1 - ty0 + MARGIN * 2;
-    game.lighting.compute(lx0, ly0, lw, lh, lights, ambient, w.layers.rock, settings.lightQuality || 2);
+    game.lighting.compute(lx0, ly0, lw, lh, lights, ambient, w.layers.rock, settings.lightQuality || 2, game.darkField);
 
     // ---- background ----
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -247,7 +248,9 @@ export class Renderer {
     }
     game.fx.draw(ctx, true);
     this.drawTech(ctx, game, p);
-    for (const m of game.monsters) if (m.def.light || m.def.boss) drawMonsterGlow(ctx, m);
+    drawHazards(ctx, game);
+    this.drawLinks(ctx, game, p);
+    for (const m of game.monsters) if ((m.def.light || m.def.boss) && !m.owner && !m.cloak && !m.ai.inactive && !(m.ai.dormant)) drawMonsterGlow(ctx, m);
     for (const d of game.drops) if (d.star || d.k === 'star_shard') { ctx.globalAlpha = 0.5; ctx.fillStyle = '#fff38a'; ctx.fillRect(d.x - 2, d.y - 2, 16, 16); ctx.globalAlpha = 1; }
     if (p.s.scanner) this.drawScanner(ctx, w, tx0, ty0, tx1, ty1, game.tick);
     ctx.globalCompositeOperation = 'source-over';
@@ -257,7 +260,7 @@ export class Renderer {
     // ---- overlays: cursor, health bars, texts ----
     if (aim && aim.show && !p.dead) this.drawCursor(ctx, game, aim);
     for (const m of game.monsters) {
-      if (m.def.boss || m.head || m.hp >= m.maxHp || m.def.friendly) continue;
+      if (m.def.boss || m.head || m.hp >= m.maxHp || m.def.friendly || m.cloak) continue;
       const bw = Math.max(16, m.w);
       ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(m.cx - bw / 2, m.y + m.h + 3, bw, 3);
       ctx.fillStyle = m.hp / m.maxHp > 0.5 ? '#3dff6a' : m.hp / m.maxHp > 0.25 ? '#ffcc33' : '#ff3355';
@@ -326,10 +329,31 @@ export class Renderer {
     return [r, g, b];
   }
 
+  // Beams and tethers between enemies, their targets and the player.
+  drawLinks(ctx, game, p) {
+    ctx.lineWidth = 1.5;
+    for (const m of game.monsters) {
+      if (m.dead) continue;
+      const a = m.ai;
+      if (a.beam && !a.beam.dead) { ctx.strokeStyle = 'rgba(61,255,106,0.8)'; ctx.beginPath(); ctx.moveTo(m.cx, m.cy); ctx.lineTo(a.beam.cx, a.beam.cy); ctx.stroke(); }
+      if (a.beamTile) { ctx.strokeStyle = 'rgba(61,255,106,0.8)'; ctx.beginPath(); ctx.moveTo(m.cx, m.cy); ctx.lineTo(a.beamTile[0], a.beamTile[1]); ctx.stroke(); }
+      if (a.tether && !p.dead) {
+        ctx.strokeStyle = 'rgba(255,90,138,0.85)'; ctx.beginPath(); ctx.moveTo(m.cx, m.cy);
+        ctx.quadraticCurveTo((m.cx + p.cx) / 2, Math.max(m.cy, p.cy) + 12 + Math.sin(game.tick * 0.2) * 4, p.cx, p.cy); ctx.stroke();
+      }
+    }
+    if (game.magnet) {
+      const [x1, y1, x2, y2] = game.magnet;
+      ctx.strokeStyle = 'rgba(102,204,255,0.6)'; ctx.setLineDash([4, 4]); ctx.lineDashOffset = -game.tick;
+      for (const o of [-6, 0, 6]) { ctx.beginPath(); ctx.moveTo(x1 + o, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+      ctx.setLineDash([]);
+    }
+  }
+
   collectLights(game) {
     const out = [];
     const p = game.player;
-    const add = (x, y, r, g, b) => out.push({ x: Math.floor(x / TILE), y: Math.floor(y / TILE), r, g, b });
+    const add = (x, y, r, g, b, keep = false) => out.push({ x: Math.floor(x / TILE), y: Math.floor(y / TILE), r, g, b, keep });
     if (!p.dead) {
       const held = p.held();
       if (held && held.place && TILES[T[held.place]]?.light) { const l = TILES[T[held.place]].light; add(p.cx + p.dir * 10, p.y + 14, l[0], l[1], l[2]); }
@@ -337,7 +361,7 @@ export class Renderer {
       add(p.cx, p.cy, 0.3, 0.33, 0.38);
       if (p.flying) add(p.cx, p.y + p.h, 0.5, 0.3, 0.1);
     }
-    for (const pr of game.projectiles) if (pr.def.light) add(pr.cx, pr.cy, pr.def.light[0], pr.def.light[1], pr.def.light[2]);
+    for (const pr of game.projectiles) if (pr.def.light) add(pr.cx, pr.cy, pr.def.light[0], pr.def.light[1], pr.def.light[2], pr.def.keepLight);
     for (const m of game.monsters) if (m.def.light) add(m.cx, m.cy, m.def.light[0], m.def.light[1], m.def.light[2]);
     for (const d of game.drops) if (d.k === 'star_shard') add(d.x + 6, d.y + 6, 0.5, 0.5, 0.2);
     return out;

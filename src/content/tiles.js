@@ -182,6 +182,7 @@ furniture('derelict_chest', 'Derelict Chest', 'chest', 2, 2, { mat: { color: '#c
 furniture('core_chest', 'Core Chest', 'chest', 2, 2, { mat: { color: '#3a2a4f', accent: '#ff3fa4' }, container: true, interact: 'chest', map: '#3a2a4f', locked: 'core_key' });
 furniture('cache_chest', 'Cache Chest', 'chest', 2, 2, { mat: { color: '#8a7a5a', accent: '#ffd27a' }, container: true, interact: 'chest', map: '#8a7a5a' });
 furniture('temple_door', 'Ancient Door', 'door', 1, 3, { mat: { color: '#8a6a2e', accent: '#ffcc33' }, solid: true, door: true, opaque: false, anchor: 'door', interact: 'door', tool: 'none', drop: null, locked: 'temple_key', map: '#8a6a2e' });
+tile('lockdown_field', { name: 'Lockdown Field', tool: 'none', drop: null, hp: 99, opaque: false, light: [0.15, 0.4, 0.7], tex: { style: 'glass', c: '#66ccff' }, map: '#66ccff' });
 
 // ---------- walls ----------
 wall('regolith_wall', { name: 'Regolith Wall', tex: { c: '#3b2c27' }, map: '#3b2c27', natural: true });

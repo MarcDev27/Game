@@ -288,6 +288,15 @@ r('tachyon_lance', 1, [['aetherium_bar', 16], ['circuitry', 10], ['photon_core',
 // ---- boss and event summons ----
 r('optic_lure', 1, [['optic_lens', 6], ['scrap', 3]], 'fabricator');
 r('gel_beacon', 1, [['nanogel', 30], ['scrap', 5]], 'fabricator');
+r('intrusion_key', 1, [['circuitry', 6], ['battery', 2], ['ferrite_bar', 8]], 'fabricator');
+r('chrono_seed', 1, [['bone_alloy', 12], ['battery', 3], ['optic_lens', 4]], 'fabricator');
+r('legion_seed', 1, [['quantum_dust', 10], ['nano_filament', 20], ['circuitry', 6]], 'nanoforge');
+r('null_lantern', 1, [['void_core', 5], ['phase_residue', 3], ['exalted_bar', 5]], 'nanoforge');
+r('proxy_drive', 1, [['firewall_core', 8], ['circuitry', 4]], 'fabricator');
+r('chrono_loop', 1, [['chrono_shard', 10], ['battery', 2]], 'fabricator');
+r('legion_remote', 1, [['legion_cell', 14]], 'nanoforge');
+r('umbral_veil', 1, [['umbral_core', 10]], 'nanoforge');
+r('null_beam', 1, [['umbral_core', 14], ['photon_core', 6]], 'nanoforge');
 r('corrupt_datachip', 1, [['blight_shard', 15], ['circuitry', 1]], 'fabricator');
 r('pheromone_chip', 1, [['nano_stinger', 10], ['bio_spore', 5], ['circuitry', 1]], 'fabricator');
 r('archon_key', 1, [['bone_alloy', 10], ['circuitry', 5], ['lumenite_bar', 3]], 'fabricator');

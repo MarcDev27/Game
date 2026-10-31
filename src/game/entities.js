@@ -24,6 +24,7 @@ export class Monster {
     this.hp = this.maxHp;
     this.dmg = Math.round(d.dmg * mult);
     this.defense = d.def;
+    if (d.hardScale && game.world.flags.hardmode) { this.maxHp *= 3; this.hp = this.maxHp; this.dmg = Math.round(this.dmg * 1.8); this.defense += 12; }
     this.kbRes = d.kbRes;
     this.ai = {}; this.timer = rng.int(0, 60); this.anim = 0; this.hitFlash = 0;
     this.onGround = false; this.buffs = new Map(); this.dead = false; this.rot = 0; this.phase = 1;

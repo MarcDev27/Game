@@ -1,4 +1,5 @@
 // Procedural sprites for the player, town NPCs, monsters, bosses and projectiles.
+import { drawOriginal } from './sprites2.js';
 import { shade, rgba } from '../core/util.js';
 import { iconCanvas } from './icons.js';
 import { ITEMS } from '../content/items.js';
@@ -180,6 +181,7 @@ export function drawMonster(ctx, m, t, target) {
   const look = target ? [Math.sign(target.x - cx), Math.sign(target.y - cy) * 0.6] : [m.dir, 0];
   ctx.save();
   if (flash) ctx.globalAlpha = 0.6;
+  if (drawOriginal(ctx, m, t, look)) { ctx.restore(); return; }
   switch (d.sprite) {
     case 'slime': {
       const squash = m.onGround ? 1 : 0.85;

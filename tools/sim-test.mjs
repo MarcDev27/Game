@@ -148,16 +148,21 @@ const result = await page.evaluate(async () => {
   run(30);
   log.push('monsters tested ' + mcount + ' alive ' + g.monsters.length + ' drops ' + g.drops.length);
   // bosses
-  for (const k of ['overseer', 'gel_sovereign', 'data_wyrm', 'swarm_mother', 'archon', 'core_warden', 'twin_lancers', 'leviathan', 'prime_archon', 'bloom_titan', 'gravity_golem', 'architect']) {
+  for (const k of ['overseer', 'gel_sovereign', 'firewall', 'data_wyrm', 'swarm_mother', 'archon', 'echo_engine', 'core_warden', 'twin_lancers', 'leviathan', 'prime_archon', 'legion', 'blackout', 'bloom_titan', 'gravity_golem', 'architect']) {
     guard('boss ' + k, () => {
       g.world.time = 23 * 3600;
       const b = B.summonBoss(g, k);
       if (!b) { fail.push('no boss ' + k); return; }
-      for (let t = 0; t < 400; t++) { p.life = p.s.maxLife; g.update(none, { x: p.cx, y: p.cy }, false); }
+      for (let t = 0; t < 1000; t++) { p.life = p.s.maxLife; p.dead = false; g.update(none, { x: p.cx, y: p.cy }, false); if (t === 500) for (const m of g.monsters) if (m.def.boss && !m.owner) m.hp = Math.round(m.maxHp * 0.2); }
+      // shields and immune parts: hack the Firewall's ports, break Legion's units
+      for (const m of g.monsters) { if (m.key === 'fw_node') m.ai.breached = true; if (m.key === 'legion_bot') g.damageMonster(m, 1e8, 0, 1, false, null); }
+      for (let t = 0; t < 5; t++) g.update(none, { x: p.cx, y: p.cy }, false);
       for (const m of [...g.monsters]) if (m.def.boss && !m.head && !m.owner) g.damageMonster(m, 1e8, 0, 1, false, null);
       for (let t = 0; t < 30; t++) g.update(none, { x: p.cx, y: p.cy }, false);
       for (const m of [...g.monsters]) if (m.def.boss && !m.head && !m.dead) g.damageMonster(m, 1e8, 0, 1, false, null);
       for (let t = 0; t < 5; t++) g.update(none, { x: p.cx, y: p.cy }, false);
+      if (!g.world.flags.bosses[k]) fail.push('boss not defeated ' + k);
+      if (g.hazards.length) for (let t = 0; t < 200; t++) g.update(none, { x: p.cx, y: p.cy }, false);
     });
   }
   log.push('bosses: ' + Object.keys(g.world.flags.bosses).join(',') + ' hardmode ' + g.world.flags.hardmode);

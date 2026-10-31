@@ -23,6 +23,8 @@ import { ACHIEVEMENTS } from '../content/achievements.js';
 import { tryRevive } from './implants.js';
 import { updateThrown } from './tech.js';
 import { LORE } from '../content/lore.js';
+import { updateHazards } from './hazards.js';
+import { clearLockdown } from './bosses.js';
 
 const TREE_HP = 220;
 
@@ -41,6 +43,10 @@ export class Game {
     this.cam = { x: 0, y: 0 };
     this.view = { w: 800, h: 450 };
     this.tileDmg = new Map();
+    this.hazards = [];      // telegraphed boss attacks (hazards.js)
+    this.minedLog = [];     // recently dug tiles, which Maintenance Drones put back
+    this.darkField = null;  // Blackout's light-smothering field, set each tick while it lives
+    this.gravField = null;  // Gravity Golem's gravity shifts
     this.biome = 'plains'; this.layer = 'surface';
     this.bosses = [];
     this.openChest = null;
@@ -80,8 +86,10 @@ export class Game {
     this.events.update();
     // biome sensing every half second
     if (this.tick % 30 === 1) this.senseBiome();
+    if (p.s.chronoLoop && this.tick % 10 === 0) { (p.chronoHist = p.chronoHist || []).push([p.x, p.y, p.life]); if (p.chronoHist.length > 20) p.chronoHist.shift(); }
     p.update(this, intents, aim, useHeld);
     if (this.slowmo > 0) this.slowmo--;
+    this.darkField = null;
     const frozen = this.slowmo > 0 && this.tick % 3 !== 0;
     for (const m of this.monsters) if (!m.dead) {
       if (frozen && !m.allied) continue;
@@ -94,7 +102,10 @@ export class Game {
     }
     for (const pr of this.projectiles) if (!pr.dead && !(frozen && pr.owner === 'enemy')) updateProjectile(pr, this);
     for (const d of this.drops) if (!d.dead) updateDrop(d, this);
+    updateHazards(this);
     this.monsters = this.monsters.filter((m) => !m.dead);
+    // boss parts are spawned before their owner is set; keep only the main bodies listed
+    this.bosses = this.bosses.filter((b) => !b.dead && !b.owner);
     this.projectiles = this.projectiles.filter((q) => !q.dead);
     this.drops = this.drops.filter((d) => !d.dead);
     this.town.update();
@@ -296,7 +307,7 @@ export class Game {
 
   monsterContact(m) {
     const p = this.player;
-    if (p.dead || m.def.friendly || m.allied || m.dmg <= 0) return;
+    if (p.dead || m.def.friendly || m.allied || m.dmg <= 0 || m.ai.dormant || m.ai.inactive) return;
     if (rectsOverlap(m, p)) {
       this.hurtPlayer(m.dmg, m.cx, 5, m.def.name);
       if (m.def.contactBuff) p.addBuff(m.def.contactBuff.buff, m.def.contactBuff.time);
@@ -319,6 +330,7 @@ export class Game {
   }
 
   despawnBoss(m) {
+    clearLockdown(this, m);
     this.removeMonster(m);
     for (const o of this.monsters) if (o.owner === m || o.head === m) o.dead = true;
     if (!this.bosses.some((b) => !b.dead && b !== m)) this.notify(m.def.name + ' has departed...', '#aeb7c2');
@@ -333,7 +345,12 @@ export class Game {
   }
 
   applyDamage(m, shown, dmg, kb, dir, crit) {
+    if (m.def.immune || m.ai.shielded) {
+      if (this.tick % 8 === 0) this.fx.text(shown.cx, shown.y - 2, m.ai.shielded ? 'SHIELDED' : 'IMMUNE', '#8aa0c0');
+      return 0;
+    }
     let d = dmg * rng.float(0.88, 1.12);
+    if (m.ai.exposed) d *= 1.5;
     if (crit) d *= 2;
     d = Math.max(1, Math.round(d - m.defense * 0.5));
     m.hp -= d;
@@ -392,6 +409,7 @@ export class Game {
     this.notify((BOSS_INFO[key] ? BOSS_INFO[key].name : m.def.name) + ' has been defeated!', '#ffcc33');
     this.audio.play('levelup');
     for (const o of this.monsters) if (o.owner === m) o.dead = true;
+    clearLockdown(this, m);
     if (key === 'core_warden' && !w.flags.hardmode) this.events.startHardmode();
     if (first && key === 'gravity_golem') this.notify('Sentinels now descend at night, carrying fragments...', '#d0a0ff');
     if (first && key === 'architect') this.notify('You have conquered the Strata. The Singularity is yours.', '#d0a0ff');
@@ -422,6 +440,17 @@ export class Game {
   killPlayer(cause) {
     const p = this.player;
     if (p.dead) return;
+    // Chrono Loop: rewind three seconds instead of dying
+    if (p.s.chronoLoop && !p.buffs.has('chrono_cd') && p.chronoHist && p.chronoHist.length > 2) {
+      const [x, y, life] = p.chronoHist[0];
+      this.fx.burst(p.cx, p.cy, '#3dffb0', 30, 4);
+      p.x = x; p.y = y; p.vx = p.vy = 0; p.life = Math.max(life, p.s.maxLife * 0.3); p.immune = 90; p.chronoHist = [];
+      p.addBuff('chrono_cd', 10800);
+      this.fx.burst(p.cx, p.cy, '#3dffb0', 30, 4);
+      this.notify('Chrono Loop: rewound three seconds.', '#3dffb0');
+      this.audio.play('summon');
+      return;
+    }
     if (tryRevive(this, p)) return;
     if (p.vehicle) { p.vehicle = null; p.y += p.h - 42; p.w = 20; p.h = 42; }
     p.dead = true; p.life = 0; p.hook = null;
@@ -637,6 +666,7 @@ export class Game {
       return true;
     }
     w.set(x, y, 0);
+    if (t.solid && !t.cut && !t.platform && t.tool !== 'none') { this.minedLog.push([x, y, id, this.tick]); if (this.minedLog.length > 300) this.minedLog.shift(); }
     if (drop && t.cut && t.key.startsWith('tallgrass') && this.rng.chance(0.04)) this.dropItem(x * TILE + 8, y * TILE + 8, 'bio_worm', 1);
     if (drop && t.key === 'herb_glowcap' && this.rng.chance(0.3)) this.dropItem(x * TILE + 8, y * TILE + 8, 'glow_grub', 1);
     if (drop && t.key === 'swarmcomb' && this.rng.chance(0.05)) this.dropItem(x * TILE + 8, y * TILE + 8, 'nano_larva', 1);

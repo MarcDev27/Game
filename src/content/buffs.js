@@ -8,6 +8,10 @@ export const BUFFS = {
   corrode: { name: 'Corroded', debuff: true, color: '#7d7590', stats: { defense: -12 }, desc: 'Defense reduced' },
   slow: { name: 'Entangled', debuff: true, color: '#e0e8f0', stats: { moveSpeed: -0.5 }, desc: 'Movement greatly slowed' },
   potion_sick: { name: 'Stim Cooldown', debuff: true, color: '#ff8fa8', desc: 'Cannot use healing stims' },
+  jammed: { name: 'Jammed', debuff: true, color: '#66ccff', desc: 'EMP: vehicle and neural augment offline' },
+  glitch: { name: 'Glitched', debuff: true, color: '#b06bff', desc: 'Motor routines scrambled: left and right are swapped' },
+  marked: { name: 'Pheromone Mark', debuff: true, color: '#ffcc33', desc: 'Hornet drones hunt you faster. Dash to shake it off' },
+  chrono_cd: { name: 'Chrono Loop Recharging', debuff: true, color: '#3dffb0', desc: 'Chrono Loop cannot rewind yet' },
   dark: { name: 'Sensor Static', debuff: true, color: '#555', desc: 'Vision impaired' },
   // buffs
   plating: { name: 'Armor Plating', color: '#aeb7c2', stats: { defense: 8 }, desc: '+8 defense' },

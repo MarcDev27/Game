@@ -486,3 +486,21 @@ tool('nano_disassembler', { name: 'Nano Disassembler', pick: 70, axe: 60, damage
 tool('matter_disassembler', { name: 'Matter Disassembler', pick: 160, axe: 120, damage: 24, useTime: 9, area: 1, reach: 4, icon: { s: 'raygun', c: '#3dffb0', c2: '#118a5a' }, value: 90000, rarity: 8, tip: 'Industrial-grade 3×3 matter disassembly.' });
 furnItem('quantum_beacon', { name: 'Quantum Beacon', stack: 99, value: 4000, tip: 'Tap a beacon to teleport to any other beacon or your landing site.' });
 item('memory_shard', { name: 'Memory Shard', icon: { s: 'shard', c: '#2ef2ff', c2: '#ff3ddc' }, value: 0, rarity: 3, tip: 'A recovered fragment of the Strata archive.' });
+
+// ---------------- Strata originals: boss summons and rewards ----------------
+sum('intrusion_key', 'Intrusion Key', 'firewall', { s: 'key', c: '#ff3355', c2: '#ffcc33' }, 4000, 2, 'Summons the Firewall. Hack its four ports to break the shield.');
+sum('chrono_seed', 'Chrono Seed', 'echo_engine', { s: 'seed', c: '#3dffb0', c2: '#e8f6ff' }, 6000, 3, 'Summons the Echo Engine, which replays your own past movements.');
+sum('legion_seed', 'Legion Seed', 'legion', { s: 'seed', c: '#ff3355', c2: '#aeb7c2' }, 25000, 5, 'Summons Legion, a swarm of forty units with one mind.');
+sum('null_lantern', 'Null Lantern', 'blackout', { s: 'flare', c: '#1a1030', c2: '#b06bff' }, 40000, 6, 'Summons Blackout at night. It swallows all light.');
+mat('firewall_core', 'Firewall Core', { s: 'core', c: '#ff3355', c2: '#ffcc33' }, 400, 2, 'Dropped by the Firewall');
+mat('chrono_shard', 'Chrono Shard', { s: 'shard', c: '#3dffb0', c2: '#e8f6ff' }, 600, 3, 'Dropped by the Echo Engine');
+mat('legion_cell', 'Legion Cell', { s: 'cell', c: '#ff3355', c2: '#aeb7c2' }, 1500, 5, 'Dropped by Legion');
+mat('umbral_core', 'Umbral Core', { s: 'core', c: '#1a1030', c2: '#b06bff' }, 2500, 6, 'Dropped by Blackout');
+energy('packet_rifle', { name: 'Packet Rifle', damage: 24, useTime: 12, shoot: 'data_packet', energyCost: 4, shootSpeed: 12, icon: { s: 'rifle', c: '#ffcc33', c2: '#ff3355' }, value: 15000, rarity: 3, tip: 'Fires data packets that pierce three targets.' });
+acc('proxy_drive', 'Proxy Drive', { damageReduce: 0.06, jamImmune: 1 }, { s: 'chip', c: '#ff3355', c2: '#ffcc33' }, 15000, 3, '6% less damage taken. Immune to EMP jamming.');
+acc('chrono_loop', 'Chrono Loop', { chronoLoop: 1 }, { s: 'meter', c: '#3dffb0', c2: '#e8f6ff' }, 25000, 4, 'If you would be destroyed, rewind three seconds instead (3 minute recharge).');
+melee('temporal_edge', { name: 'Temporal Edge', damage: 36, useTime: 20, size: 40, onHit: { buff: 'slow', time: 120 }, icon: { s: 'blade', c: '#3dffb0', c2: '#e8f6ff' }, value: 25000, rarity: 4, tip: 'Hits slow enemies down in time.' });
+summon('legion_remote', { name: 'Legion Remote', damage: 40, shoot: 'minion_legion', energyCost: 10, icon: { s: 'remote', c: '#ff3355', c2: '#aeb7c2' }, value: 60000, rarity: 6, tip: 'Commands a fast Legion unit that rams your enemies.' });
+acc('umbral_veil', 'Umbral Veil', { dodge: 0.1, nightVision: 1 }, { s: 'cloth', c: '#1a1030', c2: '#b06bff' }, 80000, 6, '10% chance to phase through attacks. See in the dark.');
+techw('null_beam', { name: 'Null Beam', dmgType: 'energy', damage: 64, useTime: 4, energyCost: 2, tech: { kind: 'beam', range: 28, rate: 4, pierce: 2, color: '#b06bff', width: 3 }, icon: { s: 'raygun', c: '#b06bff', c2: '#1a1030' }, value: 90000, rarity: 7, tip: 'A beam of darkness that pierces two targets. Hold to fire.' });
+

@@ -229,8 +229,11 @@ export class Player {
     if (inWater && !s.swim) { grav = 0.15; maxFall = 3.5; maxRun *= liquid === LIQ.gel ? 0.35 : 0.55; }
     if (liquid === LIQ.plasma) { grav = 0.2; maxFall = 3; maxRun *= 0.5; }
     if (s.featherFall && !inp.down) maxFall = 2.4;
+    // Gravity Golem shifts gravity: heavy (short jumps, hard falls) or nearly weightless
+    const gf = game.gravField && game.tick <= game.gravField.until ? game.gravField.mul : 1;
+    grav *= gf; if (gf > 1) maxFall *= 1.3;
 
-    const mx = inp.mx;
+    const mx = this.buffs.has('glitch') ? -inp.mx : inp.mx;
     if (mx !== 0) {
       if (sign(mx) !== sign(this.vx) && this.onGround) this.vx *= 0.7;
       this.vx += mx * accel * (sign(mx) === sign(this.vx) ? 1 : 1.6);
@@ -265,7 +268,7 @@ export class Player {
     } else {
       if (inp.jumpPressed) {
         if (this.coyote > 0 || (inWater && !this.onGround)) {
-          this.vy = inWater ? -4.2 : -jumpSpeed; this.jumpTimer = inWater ? 6 : holdTicks; this.coyote = 0;
+          this.vy = inWater ? -4.2 : -jumpSpeed * (gf > 1 ? 0.8 : 1); this.jumpTimer = inWater ? 6 : holdTicks; this.coyote = 0;
           game.audio.play('jump');
         } else if (s.wallClimb && this.hitWallDir) {
           this.vy = -jumpSpeed; this.vx = -this.hitWallDir * 5; this.jumpTimer = holdTicks; this.dir = -this.hitWallDir;
@@ -276,7 +279,7 @@ export class Player {
           game.audio.play('jump2');
         }
       }
-      if (inp.jump && this.jumpTimer > 0) { this.vy = Math.min(this.vy, -jumpSpeed * (inWater ? 0.8 : 1)); this.jumpTimer--; }
+      if (inp.jump && this.jumpTimer > 0) { this.vy = Math.min(this.vy, -jumpSpeed * (inWater ? 0.8 : gf > 1 ? 0.8 : 1)); this.jumpTimer--; }
       else if (!inp.jump) this.jumpTimer = 0;
       if (inp.jump && this.jumpTimer === 0 && !this.onGround && this.coyote === 0) {
         if (s.flight && this.flightTime > 0) {
@@ -304,6 +307,7 @@ export class Player {
     if (inp.dash && s.dash && this.dashCd === 0) {
       const d = mx !== 0 ? sign(mx) : this.dir;
       this.vx = d * 11; this.dashCd = 45; this.immune = Math.max(this.immune, 8);
+      if (this.buffs.has('marked')) { this.buffs.delete('marked'); game.fx.text(this.cx, this.y - 6, 'Mark shaken off', '#ffcc33'); }
       game.fx.burst(this.cx, this.cy, '#3dffb0', 12, 3);
       game.audio.play('dash');
     }

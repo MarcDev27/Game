@@ -138,13 +138,29 @@ for (const [k, n, c, frag] of [['flux_sentinel', 'Flux Sentinel', '#ff8a3d', 'fr
     shoot: { proj: 'e_beam', rate: 90, speed: 8, dmg: 60 }, drops: [[frag, 1, 2, 5]], spawn: [S(ANY, ['surface', 'space'], 'night', 2, { hard: true, after: 'gravity_golem' })] });
 }
 
+// ---------------- Strata originals: enemies with mechanics of their own ----------------
+// hardScale: stronger versions once the Singularity begins.
+m('repair_drone', { name: 'Maintenance Drone', hp: 70, dmg: 10, def: 6, w: 22, h: 18, ai: 'repair', sprite: 'repair', color: '#3dff6a', c2: '#e8f6ff', speed: 2.4, gravity: false, tileCollide: false, credits: 90, light: [0.1, 0.4, 0.15], hardScale: true,
+  drops: [['circuitry', 0.4, 1, 2], ['battery', 0.15, 1, 1], ['nano_mender', 0.01, 1, 1]], spawn: [S(ANY, UG, 'any', 1.6)] });
+m('phase_stalker', { name: 'Phase Stalker', hp: 110, dmg: 30, def: 8, w: 20, h: 40, ai: 'stalker', sprite: 'stalker', color: '#9ff4e8', c2: '#ff3ddc', speed: 2.2, credits: 140, hardScale: true,
+  drops: [['nano_filament', 0.5, 1, 3], ['phase_residue', 0.04, 1, 1]], spawn: [S(ANY, CAV, 'any', 1.4), S(ANY, SURF, 'night', 0.6, { hard: true })] });
+m('emp_drone', { name: 'EMP Drone', hp: 60, dmg: 12, def: 6, w: 24, h: 20, ai: 'emp', sprite: 'emp', color: '#66ccff', c2: '#e8ff4a', speed: 2.4, gravity: false, credits: 100, light: [0.15, 0.3, 0.5], hardScale: true,
+  drops: [['battery', 0.4, 1, 1], ['circuitry', 0.2, 1, 1]], spawn: [S(ANY, SURF, 'night', 1.2), S(ANY, UG, 'any', 1)] });
+m('cache_mimic', { name: 'Cache Mimic', hp: 260, dmg: 34, def: 14, w: 28, h: 24, ai: 'mimic', sprite: 'mimic', color: '#7a8a9a', c2: '#ffcc33', speed: 3, credits: 900, hardScale: true,
+  drops: [['memory_shard', 0.12, 1, 1], ['battery', 0.6, 1, 3], ['stim_pack', 0.6, 2, 4], ['grapple_hook', 0.15, 1, 1], ['magnet_module', 0.15, 1, 1], ['jump_module', 0.15, 1, 1], ['regen_band', 0.15, 1, 1]],
+  spawn: [S(ANY, UG, 'any', 0.35, { ground: true })] });
+m('tether_leech', { name: 'Tether Leech', hp: 90, dmg: 14, def: 4, w: 20, h: 20, ai: 'leech', sprite: 'leech', color: '#ff5a8a', c2: '#5b5770', speed: 1.5, gravity: false, tileCollide: false, credits: 90, hardScale: true,
+  drops: [['bio_spore', 0.3, 1, 2], ['vital_core', 0.01, 1, 1]], spawn: [S(['jungle', 'blight'], UG, 'any', 1.5), S(ANY, CAV, 'any', 0.6)] });
+m('sapper', { name: 'Sapper Unit', hp: 50, dmg: 45, def: 4, w: 18, h: 24, ai: 'sapper', sprite: 'sapper', color: '#c7854f', c2: '#ff3355', speed: 2.8, credits: 80, hardScale: true,
+  drops: [['demo_charge', 0.6, 1, 3]], spawn: [S(['desert', 'plains'], SURF, 'night', 1), S(ANY, UG, 'any', 0.8), S(ANY, SURF, 'any', 2, { event: 'invasion' })], invader: 1 });
+
 // ---------------- bosses ----------------
 const B = (key, d) => m(key, Object.assign({ boss: true, gravity: false, tileCollide: false, kbRes: 1, spawn: [] }, d));
 B('overseer', { name: 'The Overseer', hp: 2800, dmg: 18, def: 12, w: 70, h: 70, ai: 'boss_overseer', sprite: 'eye', color: '#e8e8e8', c2: '#ff3355', speed: 4, credits: 3000, light: [0.5, 0.2, 0.2],
   drops: [['lumenite_ore', 1, 30, 80], ['optic_lens', 1, 4, 8], ['optic_shield', 0.15, 1, 1], ['micro_stim', 1, 5, 10]], minion: 'sight_drone', music: 'boss1' });
 B('gel_sovereign', { name: 'Gel Sovereign', hp: 2000, dmg: 30, def: 10, w: 120, h: 90, ai: 'boss_sovereign', sprite: 'slime', color: '#4ad9ff', speed: 4, gravity: true, tileCollide: true, credits: 3000,
   drops: [['nanogel', 1, 40, 80], ['sovereign_core', 0.5, 1, 1], ['gel_beacon', 0.1, 1, 1], ['ion_boomerang', 0.2, 1, 1]], minion: 'gel_cube', music: 'boss1' });
-B('data_wyrm', { name: 'Data Wyrm', hp: 160, dmg: 22, def: 6, w: 26, h: 26, ai: 'boss_worm', sprite: 'worm', color: '#7a5aa8', c2: '#b06bff', speed: 8, credits: 300, segments: 40, segmentHp: true,
+B('data_wyrm', { name: 'Data Wyrm', hp: 160, dmg: 22, def: 6, w: 26, h: 26, ai: 'boss_worm', contactBuff: { buff: 'glitch', time: 150 }, sprite: 'worm', color: '#7a5aa8', c2: '#b06bff', speed: 8, credits: 300, segments: 40, segmentHp: true,
   drops: [['wyrm_scale', 0.6, 1, 2], ['lumenite_ore', 0.3, 2, 5]], music: 'boss1' });
 B('swarm_mother', { name: 'Swarm Mother', hp: 3400, dmg: 30, def: 10, w: 80, h: 64, ai: 'boss_swarm', sprite: 'queen', color: '#ffcc33', c2: '#333', speed: 6, credits: 5000,
   drops: [['swarm_chitin', 1, 15, 30], ['nano_stinger', 1, 10, 20], ['swarm_blade', 0.3, 1, 1], ['swarm_gun', 0.3, 1, 1], ['swarm_remote', 0.3, 1, 1], ['swarm_cloak', 0.3, 1, 1]], minion: 'hornet_drone', music: 'boss1' });
@@ -170,6 +186,20 @@ B('architect', { name: 'The Architect', hp: 145000, dmg: 80, def: 50, w: 140, h:
   drops: [['singularity_bar', 1, 70, 90], ['fragment_flux', 1, 10, 20], ['fragment_volt', 1, 10, 20], ['fragment_nova', 1, 10, 20], ['fragment_drift', 1, 10, 20], ['gravity_hook', 0.3, 1, 1]], music: 'boss4' });
 B('architect_hand', { name: 'Architect Hand', hp: 50000, dmg: 70, def: 40, w: 60, h: 60, ai: 'boss_hand', sprite: 'ahand', color: '#d0a0ff', c2: '#2ef2ff', speed: 5, credits: 0, drops: [], architect: true });
 
+// Strata originals: bosses built around mechanics of their own.
+B('firewall', { name: 'The Firewall', hp: 4200, dmg: 0, def: 14, w: 64, h: 64, ai: 'boss_firewall', sprite: 'firewall', color: '#ff3355', c2: '#ffcc33', speed: 1.5, credits: 9000, light: [0.5, 0.15, 0.1],
+  drops: [['firewall_core', 1, 6, 10], ['circuitry', 1, 8, 14], ['packet_rifle', 0.35, 1, 1], ['proxy_drive', 0.25, 1, 1]], music: 'boss2' });
+B('fw_node', { name: 'Firewall Port', hp: 1, dmg: 0, def: 0, w: 26, h: 26, ai: 'boss_fwnode', sprite: 'fw_node', color: '#ff3355', c2: '#3dff6a', immune: true, credits: 0, drops: [] });
+B('echo_engine', { name: 'The Echo Engine', hp: 7500, dmg: 30, def: 14, w: 70, h: 70, ai: 'boss_echo', sprite: 'echo', color: '#3dffb0', c2: '#e8f6ff', speed: 4, credits: 14000, light: [0.15, 0.5, 0.4],
+  drops: [['chrono_shard', 1, 8, 14], ['chrono_loop', 0.35, 1, 1], ['temporal_edge', 0.35, 1, 1]], music: 'boss2' });
+B('echo_ghost', { name: 'Echo', hp: 1, dmg: 32, def: 0, w: 20, h: 42, ai: 'boss_echoghost', sprite: 'echo_ghost', color: '#3dffb0', c2: '#e8f6ff', immune: true, credits: 0, drops: [] });
+B('echo_anchor', { name: 'Time Anchor', hp: 600, dmg: 0, def: 0, w: 24, h: 24, ai: 'boss_anchor', sprite: 'anchor', color: '#ffcc33', c2: '#3dffb0', credits: 0, drops: [], light: [0.5, 0.45, 0.1] });
+B('legion', { name: 'Legion', hp: 1, dmg: 0, def: 0, w: 26, h: 26, ai: 'boss_legion', sprite: 'legion_core', color: '#aeb7c2', c2: '#ff3355', immune: true, speed: 5, credits: 40000, light: [0.4, 0.1, 0.1],
+  drops: [['legion_cell', 1, 12, 20], ['exalted_bar', 1, 10, 20], ['legion_remote', 0.4, 1, 1]], music: 'boss3' });
+B('legion_bot', { name: 'Legion Unit', hp: 500, dmg: 45, def: 18, w: 14, h: 14, ai: 'boss_legionbot', sprite: 'legion_bot', color: '#aeb7c2', c2: '#ff3355', credits: 0, drops: [] });
+B('blackout', { name: 'Blackout', hp: 52000, dmg: 70, def: 30, w: 90, h: 90, ai: 'boss_blackout', sprite: 'blackout', color: '#1a1030', c2: '#b06bff', speed: 3, credits: 60000,
+  drops: [['umbral_core', 1, 12, 20], ['umbral_veil', 0.35, 1, 1], ['null_beam', 0.35, 1, 1]], music: 'boss3' });
+
 export const BOSS_INFO = {
   overseer: { name: 'The Overseer', summon: 'optic_lure', night: true, hint: 'Craft an Optic Lure from 6 Optic Lenses (dropped by Sight Drones at night).' },
   gel_sovereign: { name: 'Gel Sovereign', summon: 'gel_beacon', hint: 'Craft a Gel Beacon from 30 Nanogel.' },
@@ -182,5 +212,9 @@ export const BOSS_INFO = {
   prime_archon: { name: 'Prime Archon', summon: 'mech_skull', night: true, hard: true },
   bloom_titan: { name: 'Bloom Titan', biome: 'jungle', hard: true, hint: 'After the three mechanical bosses, Bloom Bulbs appear deep in the Overgrowth.' },
   gravity_golem: { name: 'Gravity Golem', summon: 'power_cell', hard: true, hint: 'Use a Power Cell at the Ancient Altar in the Overgrowth temple.' },
+  firewall: { name: 'The Firewall', summon: 'intrusion_key', hint: 'Craft an Intrusion Key at the Fabricator. Its shield only drops once you hack all four of its ports: stand next to each one.' },
+  echo_engine: { name: 'The Echo Engine', summon: 'chrono_seed', hint: 'Craft a Chrono Seed from Derelict alloy. It replays your own movements against you, so keep changing your path.' },
+  legion: { name: 'Legion', summon: 'legion_seed', hard: true, hint: 'Craft a Legion Seed at the Nano Forge. Forty units, one mind: watch the shape it takes.' },
+  blackout: { name: 'Blackout', summon: 'null_lantern', night: true, hard: true, hint: 'Craft a Null Lantern after the mechanical bosses. It swallows all light, so bring Thermal Optics.' },
   architect: { name: 'The Architect', summon: 'architect_sigil', hard: true, hint: 'Gather fragments from the Sentinels that appear after the Golem falls.' },
 };

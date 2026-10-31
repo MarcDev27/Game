@@ -11,6 +11,7 @@ export function vehicleDef(p) { return p.vehicle ? VEHICLES[p.vehicle.key] : nul
 
 export function toggleRide(game, p) {
   const w = game.world;
+  if (!p.vehicle && p.buffs.has('jammed')) { game.fx.text(p.cx, p.y - 6, 'Jammed', '#66ccff'); return; }
   if (p.vehicle) {
     // dismount: find room for the on-foot body
     const ox = p.cx - 10;

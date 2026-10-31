@@ -265,12 +265,16 @@ export class Town {
     if (!f.overseer) return BOSS_INFO.overseer.hint;
     if (!discovered('surgery_bay') && this.has('ripperdoc')) return 'A Ripperdoc has moved in. Build a Surgery Bay to install cyberware — body mods in six slots. Your cyberware capacity grows with your max integrity.';
     if (!f.data_wyrm) return 'Lumenite Ore from the Overseer makes strong gear. Next, venture into the Blight: ' + BOSS_INFO.data_wyrm.hint;
+    if (!f.firewall) return 'Something guards the Strata\'s data core. ' + BOSS_INFO.firewall.hint;
     if (!f.swarm_mother) return 'Deep in the Overgrowth lies a hive. ' + BOSS_INFO.swarm_mother.hint;
     if (!f.archon) return 'Wyrm Scales + Lumenite make Blight Shell armor. When ready: ' + BOSS_INFO.archon.hint;
     if (!discovered('skycar') && discovered('xenometal_ore')) return 'Xenometal from an Orbital Drop can be fabricated into an Aerodyne Sky Car — a flying car whose antigrav field works up to 34 tiles above the ground.';
+    if (!f.echo_engine) return 'With the Archon gone, its alloy can wake an old timekeeper. ' + BOSS_INFO.echo_engine.hint;
     if (!discovered('plasmite_ore')) return 'The Derelict Station holds Access Keys and loot. Then dig to the Reactor Core at the bottom of the world for Plasmite (needs a Cryonite Pick).';
     if (!f.core_warden) return 'Plasmite gear will protect you in the Core. ' + BOSS_INFO.core_warden.hint + ' Build a long bridge first!';
     if (!f.twin_lancers || !f.leviathan || !f.prime_archon) return 'The Singularity has begun. Smash new Neutronium ore with a Plasmite Pick. Mechanical bosses await: Mechanical Optic, Worm Chip and Skull (Photon/Void Cores from Prism/Blight caves).';
+    if (!f.legion) return 'A swarm stirs in the Singularity. ' + BOSS_INFO.legion.hint;
+    if (!f.blackout) return 'Lights have been failing in the deep orbit. ' + BOSS_INFO.blackout.hint;
     if (!f.bloom_titan) return 'Forge Exalted gear from the mechanical bosses, and mine Chronite with a Neutronium Drill. ' + BOSS_INFO.bloom_titan.hint;
     if (!f.gravity_golem) return 'The Ancient Key opens the Temple door in the Overgrowth caverns. ' + BOSS_INFO.gravity_golem.hint;
     if (!f.architect) return BOSS_INFO.architect.hint + ' Craft a Quantum Assembler and an Architect Sigil.';

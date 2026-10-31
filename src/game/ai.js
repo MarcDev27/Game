@@ -3,6 +3,7 @@ import { TILE, rng, sign, clamp } from '../core/util.js';
 import { moveEntity, liquidAt, rectSolid } from './physics.js';
 import { BOSS_AI } from './bosses.js';
 import { alliedTarget, alliedContact } from './implants.js';
+import { ORIGINAL_AI, ORIGINAL_BOSS_AI } from './original.js';
 
 function target(game) { return game.player.dead ? null : game.player; }
 
@@ -35,8 +36,9 @@ export function updateMonster(m, game) {
     alliedContact(game, m);
     if (m.allied <= 0) { m.allied = 0; game.fx.burst(m.cx, m.cy, '#ff3355', 10, 2); }
   }
-  if (BOSS_AI[d.ai]) { BOSS_AI[d.ai](m, game, tgt); return; }
-  const fn = AI[d.ai] || AI.walker;
+  const boss = BOSS_AI[d.ai] || ORIGINAL_BOSS_AI[d.ai];
+  if (boss) { boss(m, game, tgt); return; }
+  const fn = AI[d.ai] || ORIGINAL_AI[d.ai] || AI.walker;
   fn(m, game, tgt, slow);
 }
 
@@ -102,7 +104,7 @@ const AI = {
 
   flyer(m, game, tgt, slow) {
     const d = m.def;
-    const sp = d.speed * slow;
+    const sp = d.speed * slow * (tgt && m.key === 'hornet_drone' && tgt.buffs && tgt.buffs.has('marked') ? 1.8 : 1);
     let tx = m.cx + m.dir * 100, ty = m.cy;
     if (tgt) { tx = tgt.cx; ty = tgt.cy - 10; }
     // day: surface flyers that only come out at night retreat upward

@@ -9,18 +9,49 @@ It is more than Terraria with a sci-fi skin. Neon Strata has its own systems:
 - **Cyberware:** 22 body-mod implants in six slots (Neural, Optics, Arms, Spine, Legs, Core), installed at a Surgery Bay. Each implant costs capacity. Neural implants give active abilities: time dilation, drone command, machine hijacking and overdrive. Other implants include mantis blades, a grapple arm, a shoulder missile launcher, kinetic legs and a Nano-Heart that revives you.
 - **Tech weapons:** photon and graviton beams, coilguns you charge before firing, a gravity gun that picks up enemies and throws them, a wormhole projector that opens two linked portals, monofilament whips, smart pistols with homing rounds, black-hole charges and hard-light barriers.
 - **Quantum Beacons:** a fast-travel network you build yourself.
-- **The Archive:** 12 Memory Shards, found in chests and dropped by bosses. Together they tell what happened to the Concord, the Strata Engine and the Architect.
+- **Original opponents:** see below.
+- **The Archive:** 16 Memory Shards, found in chests and dropped by bosses. Together they tell what happened to the Concord, the Strata Engine and the Architect.
 
 ## Content
 
 | | |
 |---|---|
-| Items | 555 (10 metal tiers, 8 furniture sets, 16 armor sets, 50+ accessories, 5 vehicles, 22 implants, 7 fishing rods) |
-| Crafting recipes | 390 across 12 crafting stations |
-| Enemies | 61, spawning by biome, depth, time of day and event |
-| Bosses | 12: Overseer, Gel Sovereign, Data Wyrm, Swarm Mother, Archon, Core Warden, Twin Lancers, Leviathan, Prime Archon, Bloom Titan, Gravity Golem, The Architect |
+| Items | 570 (10 metal tiers, 8 furniture sets, 16 armor sets, 50+ accessories, 5 vehicles, 22 implants, 7 fishing rods) |
+| Crafting recipes | 399 across 12 crafting stations |
+| Enemies | 67, spawning by biome, depth, time of day and event |
+| Bosses | 16: Overseer, Gel Sovereign, Firewall, Data Wyrm, Swarm Mother, Archon, Echo Engine, Core Warden, Twin Lancers, Leviathan, Prime Archon, Legion, Blackout, Bloom Titan, Gravity Golem, The Architect |
 | Biomes | Synth Plains, Rust Wastes, Cryo Fields, Overgrowth, Nanite Blight, Prism (hardmode), Coolant Sea, Orbit islands, Derelict Station, Ancient Temple, Swarm Hive, Reactor Core |
-| Systems | Procedural worlds in 3 sizes, colored lighting, liquids (coolant, plasma, gel), day/night, Red Shift, Drone Invasion, Solar Flare, Orbital Drops, star showers, 9 colonists (including a Ripperdoc) with housing, shops, healing and reforging, item modifiers, grappling hooks, jetpacks, minions, fishing and crates, 53 achievements, Softcore/Mediumcore/Hardcore characters, Normal/Expert worlds |
+| Systems | Procedural worlds in 3 sizes, colored lighting, liquids (coolant, plasma, gel), day/night, Red Shift, Drone Invasion, Solar Flare, Orbital Drops, star showers, 9 colonists (including a Ripperdoc) with housing, shops, healing and reforging, item modifiers, grappling hooks, jetpacks, minions, fishing and crates, 57 achievements, Softcore/Mediumcore/Hardcore characters, Normal/Expert worlds |
+
+## Opponents of its own
+
+Four bosses are built entirely around their own mechanics:
+- **The Firewall** can't be damaged until you hack its four ports by standing next to each one, while scan beams sweep the area. Hacked ports turn their guns on its core, and then it reboots.
+- **The Echo Engine** records your movement and replays it as damaging echoes of yourself, so you have to avoid where you were a few seconds ago. Near the end it tries to rewind its own damage unless you destroy its Time Anchor in time.
+- **Legion** is forty units sharing one health pool. They re-form into a swarm, a sweeping blade, closing walls, a shrinking ring and a lance, and get faster the fewer are left.
+- **Blackout** smothers every light around it. Its own flare orbs are the only light, unless you bring Thermal Optics.
+
+Every other boss also has a signature mechanic:
+- **Overseer:** orbital strikes that track you, then lock on.
+- **Gel Sovereign:** reabsorbs its gel cubes to heal, and leaves slowing gel where it lands.
+- **Data Wyrm:** contact glitches your controls, swapping left and right.
+- **Swarm Mother:** pheromone marks that make her drones hunt you faster until you dash.
+- **Archon:** locks the area down inside hard-light walls.
+- **Core Warden:** reactor vents erupt from the floor.
+- **Twin Lancers:** an energy link between them that they sweep across you.
+- **Leviathan:** a magnetic hull that drags you in.
+- **Prime Archon:** a repair crew that rebuilds its arms unless you destroy it first.
+- **Bloom Titan:** charges a solar beam that you can interrupt with enough damage.
+- **Gravity Golem:** switches between crushing and near-zero gravity, and sends shockwaves along the floor.
+- **The Architect:** remixes the Firewall's beam and the Echo Engine's echoes.
+
+New regular enemies:
+- **Maintenance Drones** heal other enemies and rebuild the tunnels you dug.
+- **Phase Stalkers** stay invisible until they blink behind you.
+- **EMP Drones** jam your vehicle and implants.
+- **Cache Mimics** pose as supply crates.
+- **Tether Leeches** drain you until you break the line.
+- **Sappers** blast craters into the terrain.
 
 Defeating the Core Warden starts the **Singularity** (hardmode). It spreads Prism and Blight across the world and seeds three new ore tiers.
 
@@ -79,8 +110,9 @@ Run `npm run build` after changing files so the service worker caches the new ve
 src/core     util, noise, input (touch + keyboard), audio synth, storage (IndexedDB), backups
 src/content  tiles, items, recipes, monsters, projectiles, buffs, loot, prefixes, achievements, lore
 src/world    world grid, procedural generator, lighting, liquids
-src/game     game loop, player, entities, AI, bosses, spawner, events, colonists, fishing,
-             vehicles, implants (cyberware), tech weapons, smart aim for the USE button
+src/game     game loop, player, entities, AI, bosses, original enemies and bosses, hazards,
+             spawner, events, colonists, fishing, vehicles, implants (cyberware), tech weapons,
+             smart aim for the USE button
 src/gfx      procedural textures and sprites, renderer, backgrounds, icons
 src/ui       HUD, inventory/crafting/shops, map, menus, layout (safe areas, iPhone Duo fold),
              strip colour for system bars

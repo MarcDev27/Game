@@ -87,3 +87,9 @@ p('e_web', { w: 10, h: 10, sprite: 'orb', color: '#e0e8f0', hostile: true, life:
 p('e_goo', { w: 10, h: 10, sprite: 'orb', color: '#7d7590', hostile: true, gravity: 0.2, life: 200, onHit: { buff: 'corrode', time: 300 } });
 p('e_skull', { w: 16, h: 16, sprite: 'skull', color: '#66ccff', hostile: true, ai: 'homing', homing: 0.05, tileCollide: false, life: 220, light: [0.2, 0.4, 0.6] });
 p('e_fireball', { w: 12, h: 12, sprite: 'orb', color: '#ffb12e', hostile: true, life: 200, tileCollide: false, light: [0.6, 0.4, 0.1], onHit: { buff: 'burn', time: 300 } });
+p('e_stinger_mark', { w: 7, h: 7, sprite: 'needle', color: '#ffe27a', hostile: true, life: 150, light: [0.4, 0.35, 0.05], onHit: { buff: 'marked', time: 420 } });
+p('e_chrono', { w: 12, h: 12, sprite: 'orb', color: '#3dffb0', hostile: true, life: 240, tileCollide: false, ai: 'homing', homing: 0.02, light: [0.1, 0.45, 0.35], onHit: { buff: 'slow', time: 90 } });
+p('e_lumen', { w: 14, h: 14, sprite: 'orb', color: '#fff1a8', hostile: true, life: 300, tileCollide: false, ai: 'homing', homing: 0.015, light: [0.75, 0.65, 0.45], keepLight: true });
+p('fw_shot', { w: 10, h: 4, sprite: 'laser', color: '#3dff6a', life: 90, tileCollide: false, light: [0.1, 0.5, 0.15] });
+p('data_packet', { w: 10, h: 6, sprite: 'laser', color: '#ffcc33', life: 90, pierce: 3, light: [0.45, 0.35, 0.05] });
+p('minion_legion', { w: 12, h: 12, sprite: 'minion', ai: 'minion', minion: { speed: 12, shoot: null, rate: 0, contact: true }, color: '#ff3355', life: 1e9, tileCollide: false, pierce: 99, light: [0.4, 0.1, 0.1] });
