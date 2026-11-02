@@ -6,7 +6,7 @@ export const METALS = [
   { key: 'ferrite', name: 'Ferrite', color: '#aeb7c2', dark: '#59616c', glow: null, tier: 2, pick: 45, minPick: 0, hp: 1.6, hard: false },
   { key: 'titanite', name: 'Titanite', color: '#f2dd7a', dark: '#8f7a2a', glow: null, tier: 3, pick: 55, minPick: 40, hp: 1.9, hard: false },
   { key: 'lumenite', name: 'Lumenite', color: '#a46bff', dark: '#4b2a8a', glow: [0.35, 0.18, 0.6], tier: 4, pick: 65, minPick: 55, hp: 2.3, hard: false },
-  { key: 'xenometal', name: 'Xenometal', color: '#ff6a3d', dark: '#8a2a12', glow: [0.4, 0.12, 0.05], tier: 4, pick: 65, minPick: 55, hp: 2.3, hard: false },
+  { key: 'xenometal', name: 'Starsteel', color: '#ff6a3d', dark: '#8a2a12', glow: [0.4, 0.12, 0.05], tier: 4, pick: 65, minPick: 55, hp: 2.3, hard: false },
   { key: 'cryonite', name: 'Cryonite', color: '#7ff0ff', dark: '#2a7a8a', glow: [0.15, 0.45, 0.55], tier: 5, pick: 75, minPick: 65, hp: 2.7, hard: false },
   { key: 'plasmite', name: 'Plasmite', color: '#ff3fa4', dark: '#8a1150', glow: [0.6, 0.12, 0.35], tier: 6, pick: 100, minPick: 75, hp: 3.0, hard: false },
   { key: 'neutronium', name: 'Neutronium', color: '#5a78ff', dark: '#1d2a7a', glow: [0.12, 0.2, 0.6], tier: 7, pick: 130, minPick: 100, hp: 3.5, hard: true },

@@ -190,7 +190,7 @@ export const ORIGINAL_AI = {
       moveEntity(game.world, m, { platforms: true });
       if ((tgt && dist(m, tgt) < 56) || m.hp < m.maxHp) {
         a.dormant = false; a.t = 0;
-        game.notify('The supply crate was a Cache Mimic!', '#ffcc33');
+        game.notify('That beacon was a decoy!', '#ffcc33');
         game.audio.play('roar');
       }
       return;

@@ -111,6 +111,7 @@ export class Game {
     for (const d of this.drops) if (!d.dead) updateDrop(d, this);
     updateHazards(this);
     updateColony(this);
+    if (this.events.active === 'eclipse' && this.tick % 60 === 0 && !p.dead) this.radiation(p);
     this.monsters = this.monsters.filter((m) => !m.dead);
     // boss parts are spawned before their owner is set; keep only the main bodies listed
     this.bosses = this.bosses.filter((b) => !b.dead && !b.owner);
@@ -247,6 +248,20 @@ export class Game {
     if (rectSolid(this.world, p.x, p.y, p.w, p.h)) p.y = this.findStandY(tx) * TILE - p.h - 1;
     this.fx.burst(p.cx, p.cy, '#66ccff', 30, 3);
     this.audio.play('summon');
+  }
+
+  // Coronal Ejection: the surface is irradiated. A roof overhead and a back wall (any shelter) protect you.
+  radiation(p) {
+    const w = this.world;
+    if (!w.isDay() || p.cy / TILE > w.layers.rock) return;
+    const tx = Math.floor(p.cx / TILE), ty = Math.floor(p.cy / TILE);
+    let roof = false;
+    for (let y = ty - 1; y > ty - 14 && !roof; y--) if (w.solidAt(tx, y)) roof = true;
+    if (roof && w.getWall(tx, ty)) return;
+    const d = 10 + 4 * (w.flags.alert || 1);
+    p.life -= d; this.fx.text(p.cx, p.y - 6, d + ' rad', '#ffb12e');
+    if (!this.radWarned) { this.radWarned = true; this.notify('Radiation! Get under a roof with a back wall until the ejection passes.', '#ffb12e'); }
+    if (p.life <= 0) this.killPlayer('radiation');
   }
 
   exposed(x, y) { const w = this.world; return w.isAir(x - 1, y) || w.isAir(x + 1, y) || w.isAir(x, y - 1) || w.isAir(x, y + 1); }
@@ -428,7 +443,7 @@ export class Game {
     if (key === 'core_warden' && !w.flags.hardmode) rebootReactor(this);
     if (this.events.active === 'siege' && ['twin_lancers', 'leviathan', 'prime_archon'].includes(key)) { this.events.active = null; this.notify('The siege is broken!', '#3dff6a'); }
     if (first && key === 'gravity_golem') this.notify('The Precursor credentials work on the Architect\'s relays now. Capture all four on the orbital ring.', '#d0a0ff');
-    if (first && key === 'architect') this.notify('You have conquered the Strata. The Singularity is yours.', '#d0a0ff');
+    if (first && key === 'architect') this.notify('You have conquered the Strata. The Engine is yours.', '#d0a0ff');
     if (first && key === 'archon') this.notify('The Derelict Station is now safe to explore.', '#66ccff');
     if (first && key === 'bloom_titan') this.notify('The Ancient Temple stirs...', '#ffaa22');
     this.town.checkArrivals(true);
@@ -735,7 +750,7 @@ export class Game {
         const n = w.flags.nodesSmashed;
         if (n % 3 === 0 && summonBlocked(w, 'data_wyrm')) this.notify('The Foundry stirs, but its guardian is sealed behind the Firewall.', '#b06bff');
         else if (n % 3 === 0) { this.notify('A horrible chill goes down your spine...', '#b06bff'); setTimeout(() => summonBoss(this, 'data_wyrm'), 0); }
-        else if (n === 1) { this.notify('A data packet streaks across the sky... (an Orbital Drop may land tonight)', '#ff6a3d'); w.flags.meteorPending = true; }
+        else if (n === 1) { this.notify('A supply pod streaks across the sky... (it may crash tonight)', '#ff6a3d'); w.flags.meteorPending = true; }
         else this.notify('Something stirs in the Blight...', '#b06bff');
         break;
       }

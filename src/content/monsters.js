@@ -14,7 +14,7 @@ const SURF = ['surface'];
 const UG = ['underground', 'cavern'];
 const CAV = ['cavern'];
 
-// ---------------- pre-Singularity ----------------
+// ---------------- before the Reactor ----------------
 m('nanoslime', { name: 'Nanoslime', hp: 14, dmg: 6, w: 22, h: 16, ai: 'hopper', sprite: 'slime', color: '#2fe0a8', speed: 2, credits: 25,
   drops: [['nanogel', 1, 1, 2]], spawn: [S(['plains'], SURF, 'day', 3, { pre: true })] });
 m('gel_cube', { name: 'Gel Cube', hp: 25, dmg: 7, def: 2, w: 24, h: 18, ai: 'hopper', sprite: 'slime', color: '#4ad9ff', speed: 2.2, credits: 30,
@@ -83,9 +83,9 @@ m('shark_drone', { name: 'Shark Drone', hp: 300, dmg: 40, def: 2, w: 60, h: 24, 
   drops: [['hydro_fins', 0.05, 1, 1], ['scrap', 1, 3, 6]], spawn: [S(['ocean'], ANY, 'any', 1, { water: true })] });
 
 // ---------------- events ----------------
-m('blood_husk', { name: 'Red Husk', hp: 70, dmg: 20, def: 8, w: 20, h: 40, ai: 'walker', sprite: 'husk', color: '#a83a3a', c2: '#ff2244', speed: 1.6, credits: 90,
+m('blood_husk', { name: 'Static Husk', hp: 70, dmg: 20, def: 8, w: 20, h: 40, ai: 'walker', sprite: 'husk', color: '#a83a3a', c2: '#ff2244', speed: 1.6, credits: 90,
   drops: [['scrap', 0.6, 1, 2], ['optic_lens', 0.1, 1, 1], ['red_shift_beacon', 0.005, 1, 1]], spawn: [S(ANY, SURF, 'night', 6, { event: 'redshift' })] });
-m('blood_eye', { name: 'Red Sight Drone', hp: 80, dmg: 22, def: 6, w: 26, h: 26, ai: 'flyer', sprite: 'eye', color: '#ffcccc', c2: '#ff2244', speed: 3, gravity: false, credits: 100,
+m('blood_eye', { name: 'Static Eye', hp: 80, dmg: 22, def: 6, w: 26, h: 26, ai: 'flyer', sprite: 'eye', color: '#ffcccc', c2: '#ff2244', speed: 3, gravity: false, credits: 100,
   drops: [['optic_lens', 0.6, 1, 1]], spawn: [S(ANY, SURF, 'night', 4, { event: 'redshift' })] });
 m('swarm_drone', { name: 'Swarm Drone', hp: 40, dmg: 18, def: 4, w: 22, h: 16, ai: 'flyer', sprite: 'drone', color: '#ff3355', c2: '#aeb7c2', speed: 3.4, gravity: false, credits: 40,
   drops: [['scrap', 0.4, 1, 1]], spawn: [S(ANY, SURF, 'any', 5, { event: 'invasion' })], invader: 1 });
@@ -96,7 +96,7 @@ m('shield_bot', { name: 'Shield Bot', hp: 180, dmg: 26, def: 24, kbRes: 0.6, w: 
 m('sniper_bot', { name: 'Sniper Bot', hp: 70, dmg: 18, def: 6, w: 20, h: 40, ai: 'shooter', sprite: 'bot', color: '#3dff6a', c2: '#333', speed: 1.2, credits: 140,
   shoot: { proj: 'e_laser_g', rate: 150, speed: 12, dmg: 34 }, drops: [['targeting_scope', 0.01, 1, 1], ['circuitry', 0.3, 1, 1]], spawn: [S(ANY, SURF, 'any', 2, { event: 'invasion' })], invader: 2 });
 
-// ---------------- Singularity (hardmode) ----------------
+// ---------------- Reactor online ----------------
 m('rogue_mech', { name: 'Rogue Mech', hp: 420, dmg: 50, def: 24, kbRes: 0.4, w: 30, h: 46, ai: 'walker', sprite: 'mech', color: '#5a6b7a', c2: '#ff3355', speed: 1.6, credits: 600,
   drops: [['scrap', 1, 4, 8], ['quantum_dust', 0.3, 1, 2], ['power_glove', 0.02, 1, 1]], spawn: [S(['plains', 'desert', 'snow', 'jungle'], SURF, 'night', 4, { hard: true })] });
 m('plasma_wraith', { name: 'Plasma Wraith', hp: 220, dmg: 50, def: 18, w: 24, h: 40, ai: 'floater', sprite: 'wraith', color: '#ff5ab0', c2: '#ffffff', speed: 1.6, gravity: false, tileCollide: false, credits: 500, light: [0.5, 0.1, 0.3],
@@ -129,7 +129,7 @@ m('temple_crawler', { name: 'Ancient Crawler', hp: 500, dmg: 70, def: 30, w: 36,
   drops: [['battery', 0.3, 1, 1]], spawn: [S(['temple'], ANY, 'any', 3, { hard: true })] });
 m('bloom_thorn', { name: 'Bloom Thorn', hp: 450, dmg: 60, def: 24, w: 30, h: 30, ai: 'flyer', sprite: 'pod', color: '#ff5aa8', c2: '#3a8a2a', speed: 2.6, gravity: false, credits: 800,
   shoot: { proj: 'e_seed', rate: 100, speed: 6, dmg: 40 }, drops: [['biofiber', 1, 1, 3], ['overcharge_capsule', 0.03, 1, 1]], spawn: [S(['jungle'], UG, 'any', 3, { hard: true })] });
-m('reaper_unit', { name: 'Reaper Unit', hp: 1800, dmg: 90, def: 30, kbRes: 0.8, w: 34, h: 50, ai: 'walker', sprite: 'mech', color: '#222', c2: '#ffb12e', speed: 2.6, credits: 3000,
+m('reaper_unit', { name: 'Corona Hulk', hp: 1800, dmg: 90, def: 30, kbRes: 0.8, w: 34, h: 50, ai: 'walker', sprite: 'mech', color: '#222', c2: '#ffb12e', speed: 2.6, credits: 3000,
   drops: [['berserker_core', 0.05, 1, 1], ['star_veil', 0.05, 1, 1], ['quantum_dust', 1, 3, 6]], spawn: [S(ANY, SURF, 'day', 3, { event: 'eclipse' })] });
 m('eclipse_eye', { name: 'Flare Eye', hp: 700, dmg: 70, def: 20, w: 36, h: 36, ai: 'flyer', sprite: 'eye', color: '#ffb12e', c2: '#222', speed: 3.4, gravity: false, credits: 1500,
   shoot: { proj: 'e_fireball', rate: 90, speed: 6, dmg: 50 }, drops: [['nano_mender', 0.04, 1, 1], ['terror_matrix', 0.3, 1, 2]], spawn: [S(ANY, SURF, 'day', 3, { event: 'eclipse' })] });
@@ -139,14 +139,14 @@ for (const [k, n, c, frag] of [['flux_sentinel', 'Kinetic Warden', '#ff8a3d', 'f
 }
 
 // ---------------- Strata originals: enemies with mechanics of their own ----------------
-// hardScale: stronger versions once the Singularity begins.
+// hardScale: stronger versions once the Reactor is back online.
 m('repair_drone', { name: 'Maintenance Drone', hp: 70, dmg: 10, def: 6, w: 22, h: 18, ai: 'repair', sprite: 'repair', color: '#3dff6a', c2: '#e8f6ff', speed: 2.4, gravity: false, tileCollide: false, credits: 90, light: [0.1, 0.4, 0.15], hardScale: true,
   drops: [['circuitry', 0.4, 1, 2], ['battery', 0.15, 1, 1], ['nano_mender', 0.01, 1, 1]], spawn: [S(ANY, UG, 'any', 1.6)] });
 m('phase_stalker', { name: 'Phase Stalker', hp: 110, dmg: 30, def: 8, w: 20, h: 40, ai: 'stalker', sprite: 'stalker', color: '#9ff4e8', c2: '#ff3ddc', speed: 2.2, credits: 140, hardScale: true,
   drops: [['nano_filament', 0.5, 1, 3], ['phase_residue', 0.04, 1, 1]], spawn: [S(ANY, CAV, 'any', 1.4), S(ANY, SURF, 'night', 0.6, { hard: true })] });
 m('emp_drone', { name: 'EMP Drone', hp: 60, dmg: 12, def: 6, w: 24, h: 20, ai: 'emp', sprite: 'emp', color: '#66ccff', c2: '#e8ff4a', speed: 2.4, gravity: false, credits: 100, light: [0.15, 0.3, 0.5], hardScale: true,
   drops: [['battery', 0.4, 1, 1], ['circuitry', 0.2, 1, 1]], spawn: [S(ANY, SURF, 'night', 1.2), S(ANY, UG, 'any', 1)] });
-m('cache_mimic', { name: 'Cache Mimic', hp: 260, dmg: 34, def: 14, w: 28, h: 24, ai: 'mimic', sprite: 'mimic', color: '#7a8a9a', c2: '#ffcc33', speed: 3, credits: 900, hardScale: true,
+m('cache_mimic', { name: 'Decoy Beacon', hp: 260, dmg: 34, def: 14, w: 30, h: 46, ai: 'mimic', sprite: 'mimic', color: '#7a8a9a', c2: '#ffcc33', speed: 3, credits: 900, hardScale: true,
   drops: [['memory_shard', 0.12, 1, 1], ['battery', 0.6, 1, 3], ['stim_pack', 0.6, 2, 4], ['grapple_hook', 0.15, 1, 1], ['magnet_module', 0.15, 1, 1], ['jump_module', 0.15, 1, 1], ['regen_band', 0.15, 1, 1]],
   spawn: [S(ANY, UG, 'any', 0.35, { ground: true })] });
 m('tether_leech', { name: 'Tether Leech', hp: 90, dmg: 14, def: 4, w: 20, h: 20, ai: 'leech', sprite: 'leech', color: '#ff5a8a', c2: '#5b5770', speed: 1.5, gravity: false, tileCollide: false, credits: 90, hardScale: true,
@@ -155,7 +155,9 @@ m('sapper', { name: 'Sapper Unit', hp: 50, dmg: 45, def: 4, w: 18, h: 24, ai: 's
   drops: [['demo_charge', 0.6, 1, 3]], spawn: [S(['desert', 'plains'], SURF, 'night', 1), S(ANY, UG, 'any', 0.8), S(ANY, SURF, 'any', 2, { event: 'invasion' })], invader: 1 });
 m('patrol_drone', { name: 'Security Drone', hp: 600, dmg: 30, def: 20, w: 22, h: 18, ai: 'patrol', sprite: 'drone', color: '#66ccff', c2: '#3dff6a', speed: 3.4, gravity: false, tileCollide: false, credits: 0, light: [0.15, 0.35, 0.5], drops: [], spawn: [] });
 // Engine Siege: the defense grid's ground forces
-for (const k of ['sapper', 'assault_bot', 'swarm_drone', 'emp_drone', 'shield_bot']) MONSTERS[k].spawn.push(S(ANY, SURF, 'any', k === 'sapper' ? 4 : 3, { event: 'siege' }));
+for (const k of ['sapper', 'assault_bot', 'swarm_drone', 'emp_drone', 'shield_bot']) MONSTERS[k].spawn.unshift(S(ANY, SURF, 'any', k === 'sapper' ? 4 : 3, { event: 'siege' }));
+// Signal Storms bring EMP Drones
+MONSTERS.emp_drone.spawn.unshift(S(ANY, SURF, 'night', 5, { event: 'redshift' }));
 // Sentinels only appear to defend the Architect's relays while you hack them
 for (const k of ['flux_sentinel', 'volt_sentinel', 'nova_sentinel', 'drift_sentinel']) MONSTERS[k].spawn = [];
 

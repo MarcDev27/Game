@@ -175,7 +175,14 @@ export class UI {
       if (p.dead && p.mode !== 'hard') { de.classList.remove('hidden'); de.querySelector('.sub').textContent = 'Reassembling in ' + Math.ceil(p.respawn / 60) + 's'; }
       else if (p.mode !== 'hard') de.classList.add('hidden');
     }
-    if (this.frame % 20 === 0 && this.env.settings.minimap) { this.map.flushDirty(); this.map.drawMini($('#minimap')); }
+    if (this.frame % 20 === 0 && this.env.settings.minimap) {
+      this.map.flushDirty(); this.map.drawMini($('#minimap'));
+      if (g.events.active === 'redshift') {
+        // Signal Storm: static over the minimap
+        const mc = $('#minimap'), mx = mc.getContext('2d');
+        for (let i = 0; i < 90; i++) { mx.fillStyle = rng.chance(0.5) ? 'rgba(176,107,255,0.7)' : 'rgba(0,0,0,0.8)'; mx.fillRect(rng.int(0, mc.width), rng.int(0, mc.height), rng.int(4, 22), rng.int(1, 3)); }
+      }
+    }
     $('#minimap-wrap').style.display = this.env.settings.minimap ? '' : 'none';
     if (this.map.open && this.frame % 2 === 0) { this.map.flushDirty(); this.map.drawFull($('#mapcanvas')); }
     // hotbar
@@ -779,7 +786,9 @@ export const HELP_HTML = `
 <b>Goal.</b> You are a synthetic consciousness, rebooted on the Strata Engine — a machine-world built around a dying star. Dig, build, craft, chrome yourself up, defeat 12 bosses, and uncover what happened to the Concord through the Archive.<br><br>
 <b>Touch controls.</b> Left stick: move (push up to jump / climb, down to drop through platforms). Hold <b>USE</b> to use the selected item without touching the world: weapons lock onto the nearest enemy, pickaxes dig the way you are walking (push the stick down to dig down), axes find the nearest tree and blocks build in front of you. Drag USE to aim in any direction. You can also tap or hold anywhere in the world to use the item exactly there. Tap doors, chests, beds, beacons, terminals and colonists to interact. Buttons: JUMP, HOOK, STIM (quick heal), CELL (quick energy), DASH, RIDE (enter/exit your vehicle) and AUG (your neural implant's ability). Tap a hotbar slot to select it.<br><br>
 <b>Keyboard.</b> A/D move, W/Space jump, S drop, mouse to aim/use, right-click to interact, 1-0 or wheel for hotbar, E inventory, M map, F hook, H heal, J energy, Shift dash, R ride, Q augment, Esc menu.<br><br>
-<b>First steps.</b> 1) Chop Lattice trees with the Scrap Cutter for Fiber. 2) Craft an Assembly Bench by hand (10 Fiber). 3) Kill Nanoslimes for Nanogel → Glowsticks. 4) Dig for ore, build a Smelter and Fabricator. 5) Build a house (enclosed room, background wall, door, light, table and chair) so colonists move in — use the Housing button in the inventory to check a room.<br><br>
+<b>First steps.</b> 1) Chop Lattice trees with the Scrap Cutter for Fiber. 2) Craft an Assembly Bench by hand (10 Fiber). 3) Kill Nanoslimes for Nanogel → Glowsticks. 4) Dig for ore, build a Smelter and Fabricator. 5) Build a Scrap Generator and a house (enclosed room, background wall, door, light and a Colony Terminal, within the generator's range) so colonists move in. Each colonist has a wish too: use the Housing button in the inventory to check a room.<br><br>
+<b>Taking over the Engine.</b> Hack the Firewall (Intrusion Key) for Clearance 1. Then take the four subsystems in any order: the Nanite Foundry (Data Wyrm), the Bio-Dome (Swarm Mother), the Security Grid (Archon) and the Chronometer (Echo Engine). Each guardian grants Clearance and a permanent override choice in Menu → Engine. At Clearance 3 the Core Warden can be challenged; beating it brings the Reactor online. That raises the Alert Level, sends the Engine's defense grid to besiege your colony at night, and powers the Orbital Lift to the orbital ring, the Precursor Vault and the Architect's relays.<br><br>
+<b>Events.</b> Signal Storms bring EMP Drones and scramble your minimap (Faraday rooms are safe). A Coronal Ejection irradiates the surface: get under a roof with a back wall. Supply Pods crash with loot and Starsteel, guarded by a drone.<br><br>
 <b>Vehicles.</b> Equip one in the Vehicle slot and tap RIDE: Scrap Hoverbike, Bore Pod (drills through rock), Aerodyne Sky Car (flying car), Titan Walker mech and the Starjumper shuttle.<br><br>
 <b>Cyberware.</b> Install implants at a Surgery Bay (or next to the Ripperdoc) into six body slots: Neural, Optics, Arms, Spine, Legs, Core. Each costs capacity; capacity grows with max integrity. Neural implants give an AUG ability: time dilation, drone command, machine hijacking or overdrive.<br><br>
 <b>Bosses.</b> Every guardian has a trick of its own: watch for red warning lines and outlines before strikes, beams and vents. The Firewall has to be hacked (stand next to each port), the Echo Engine replays your past movements, Legion changes shape, and Blackout eats light, so bring Thermal Optics. Dash to shake off pheromone marks, and move away from a Tether Leech to break its line. EMP Drones reach through walls: build with Faraday Mesh Walls (or put Faraday Plates between you and them) to stay shielded.<br><br>

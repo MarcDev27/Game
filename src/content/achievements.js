@@ -34,7 +34,7 @@ export const ACHIEVEMENTS = [
   { key: 'b_echo', name: 'Outrun Yourself', desc: 'Defeat the Echo Engine', check: boss('echo_engine') },
   { key: 'b_legion', name: 'Divide and Conquer', desc: 'Defeat Legion', check: boss('legion') },
   { key: 'b_blackout', name: 'Lights Out', desc: 'Defeat Blackout', check: boss('blackout') },
-  { key: 'invasion', name: 'Firewall', desc: 'Repel a Drone Invasion', check: (g) => (g.world.flags.invasionsDone || 0) > 0 },
+  { key: 'invasion', name: 'Swept Clean', desc: 'Repel a Security Sweep', check: (g) => (g.world.flags.invasionsDone || 0) > 0 },
   { key: 'kill100', name: 'Exterminator', desc: 'Destroy 100 hostiles', check: (g) => g.player.stats.kills >= 100 },
   { key: 'kill1000', name: 'Purge Protocol', desc: 'Destroy 1,000 hostiles', check: (g) => g.player.stats.kills >= 1000 },
   { key: 'kill5000', name: 'Walking Apocalypse', desc: 'Destroy 5,000 hostiles', check: (g) => g.player.stats.kills >= 5000 },

@@ -1,9 +1,10 @@
-// Day/night cycle, world events (Red Shift, Drone Invasion, Solar Flare), star showers,
-// orbital drops and the transition into the Singularity (hardmode).
+// Day/night cycle, world events (Signal Storm, Security Sweep, Coronal Ejection, Engine Siege),
+// star showers and crashing supply pods.
 import { TILE, clamp } from '../core/util.js';
 import { T, W, TILES, CONVERT } from '../content/tiles.js';
 import { Drop } from './entities.js';
 import { summonBoss } from './bosses.js';
+import { fillChest } from '../content/loot.js';
 import { trySiege } from './colony.js';
 
 export class Events {
@@ -37,12 +38,12 @@ export class Events {
 
   onDusk() {
     const g = this.game, w = g.world, p = g.player;
-    if (this.active === 'eclipse') { this.active = null; g.notify('The Solar Flare subsides.', '#ffb12e'); }
+    if (this.active === 'eclipse') { this.active = null; g.notify('The Coronal Ejection passes.', '#ffb12e'); }
     if (w.flags.meteorPending || (w.flags.bosses.data_wyrm && g.rng.chance(1 / 30))) { w.flags.meteorPending = false; this.orbitalDrop(); }
     if (!this.active && trySiege(g)) return;
     if (!this.active && p.maxLife > 120 && g.rng.chance(1 / 9)) {
       this.active = 'redshift';
-      g.notify('A Red Shift is rising...', '#ff2244'); g.audio.play('event');
+      g.notify('A Signal Storm is rolling in: EMP Drones swarm and sensors scramble. Faraday rooms are safe.', '#b06bff'); g.audio.play('event');
     }
   }
 
@@ -65,17 +66,17 @@ export class Events {
       const need = 60 + Math.floor(g.player.maxLife / 10);
       this.active = 'invasion';
       this.invasion = { need, done: 0 };
-      g.notify('A Drone Invasion is approaching from the ' + (g.rng.chance(0.5) ? 'east' : 'west') + '!', '#ff3355');
+      g.notify('A Security Sweep is approaching from the ' + (g.rng.chance(0.5) ? 'east' : 'west') + '!', '#ff3355');
       g.audio.play('event');
       return true;
     }
     if (key === 'event_redshift') {
       if (w.isDay()) { g.notify('Only works at night.', '#ffcc33'); return false; }
-      this.active = 'redshift'; g.notify('The Red Shift is rising...', '#ff2244'); g.audio.play('event'); return true;
+      this.active = 'redshift'; g.notify('A Signal Storm is rolling in...', '#b06bff'); g.audio.play('event'); return true;
     }
     if (key === 'event_eclipse') {
       if (!w.isDay()) { g.notify('Only works during the day.', '#ffcc33'); return false; }
-      this.active = 'eclipse'; g.notify('A Solar Flare is happening!', '#ffb12e'); g.audio.play('event'); return true;
+      this.active = 'eclipse'; g.notify('Coronal Ejection! Radiation floods the surface: get under a roof with a back wall.', '#ffb12e'); g.audio.play('event'); return true;
     }
     return false;
   }
@@ -87,7 +88,7 @@ export class Events {
     if (this.invasion.done >= this.invasion.need) {
       this.active = null; this.invasion = null;
       g.world.flags.invasionsDone = (g.world.flags.invasionsDone || 0) + 1;
-      g.notify('The Drone Invasion has been repelled!', '#3dff6a');
+      g.notify('The Security Sweep has been repelled!', '#3dff6a');
       g.audio.play('levelup');
       g.dropItem(g.player.cx, g.player.cy - 40, g.rng.pick(['rocket_boots', 'kinetic_shield', 'targeting_scope', 'tinker_station']), 1);
       g.town.checkArrivals(true);
@@ -120,7 +121,11 @@ export class Events {
       if (d < r * 0.75 && dy < 3) w.set(x, y, 0);
       else if (d < r + 2 && dy >= -2) w.set(x, y, T.xenometal_ore);
     }
-    g.notify('An Orbital Drop has crashed to the ' + (tx < g.player.cx / TILE ? 'west' : 'east') + '!', '#ff6a3d');
+    // the pod itself: loot inside, a guard drone outside
+    const pod = T.supply_pod, py = Math.min(w.h - 3, sy + Math.floor(r * 0.75) + 2);
+    for (let y = sy; y < py + 3; y++) { const ty = y + 1; if (w.solidAt(tx, ty) || w.solidAt(tx + 1, ty)) { w.placeFurniture(tx, ty - 2, pod); const ch = w.chests.get(w.idx(tx, ty - 2)); if (ch) fillChest(ch, 'derelict', 0.6, g.rng); break; } }
+    g.spawnMonster(w.flags.hardmode ? 'assault_bot' : 'emp_drone', tx * TILE, (sy - 4) * TILE, true);
+    g.notify('A Supply Pod has crashed to the ' + (tx < g.player.cx / TILE ? 'west' : 'east') + ', with Starsteel in its crater!', '#ff6a3d');
     g.audio.play('explode');
   }
 

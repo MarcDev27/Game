@@ -36,18 +36,16 @@ export function drawOriginal(ctx, m, t, look) {
       break;
     }
     case 'mimic': {
+      // Decoy Beacon: a perfect copy of a Quantum Beacon, until it wakes up
       const dormant = m.ai.dormant !== false;
-      const open = dormant ? 0 : 4 + Math.abs(Math.sin(t * 0.3)) * 6;
-      R(ctx, '#4a5568', x, y + 6, w, h - 6);
-      R(ctx, c, x + 2, y + 8, w - 4, h - 10);
-      R(ctx, '#ffcc33', x + 2, y + h - 8, w - 4, 2);
-      R(ctx, '#4a5568', x - 1, y + 6 - open, w + 2, 6); // lid
-      R(ctx, c, x + 1, y + 7 - open, w - 2, 3);
+      const bob = dormant ? 0 : Math.abs(Math.sin(t * 0.3)) * 3;
+      R(ctx, '#3a3d46', x + 3, y + h - 8, w - 6, 8); R(ctx, '#59616c', x + 7, y + h - 12, w - 14, 4); R(ctx, '#59616c', cx - 3, y + 8 - bob, 6, h - 20);
+      ctx.globalAlpha = (ctx.globalAlpha || 1) * 0.35; R(ctx, dormant ? '#66ccff' : '#ff3355', x + 5, y + 2 - bob, w - 10, h - 14); ctx.globalAlpha = m.cloak ? 0.1 : 1;
+      R(ctx, dormant ? '#66ccff' : '#ff3355', cx - 4, y + 4 - bob, 8, 8); R(ctx, '#ffffff', cx - 1, y + 7 - bob, 2, 2);
       if (!dormant) {
-        R(ctx, '#2a0a10', x + 2, y + 9 - open, w - 4, open);
-        for (let k = 0; k < 5; k++) { R(ctx, '#e8e8e8', x + 3 + k * 5, y + 9 - open, 3, 3); R(ctx, '#e8e8e8', x + 3 + k * 5, y + 6 + 0, 3, 2); }
-        R(ctx, '#ff3355', cx - 6, y + 12 - open, 3, 3); R(ctx, '#ff3355', cx + 3, y + 12 - open, 3, 3);
-      } else R(ctx, '#ffcc33', cx - 2, y + 12, 4, 3);
+        for (const sd of [-1, 1]) { R(ctx, '#aeb7c2', cx + sd * (w / 2 - 1) - 1, y + 14, 3, 16); R(ctx, '#e8e8e8', cx + sd * (w / 2 + 2) - 1, y + 28, 3, 6); }
+        R(ctx, '#ff3355', cx - 6, y + 16, 3, 3); R(ctx, '#ff3355', cx + 3, y + 16, 3, 3);
+      }
       break;
     }
     case 'leech': {

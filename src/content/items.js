@@ -70,9 +70,9 @@ ITEMS.smelter.tip = 'Smelts ore into bars';
 ITEMS.fabricator.tip = 'Fabricates metal gear';
 ITEMS.synth_vat.tip = 'Synthesizes stims and injectors';
 ITEMS.tinker_station.tip = 'Combines accessories';
-ITEMS.plasma_forge.tip = 'Smelts Plasmite and hardmode ores';
+ITEMS.plasma_forge.tip = 'Smelts Plasmite and the ores of the orbital ring';
 ITEMS.nano_forge.tip = 'Fabricates advanced alloys';
-ITEMS.quantum_assembler.tip = 'Assembles post-Singularity technology';
+ITEMS.quantum_assembler.tip = 'Assembles technology from the orbital ring';
 ITEMS.singularity_core.tip = 'The final fabrication station';
 ITEMS.trade_terminal.tip = 'Decor. Hums with old market data.';
 
@@ -155,7 +155,7 @@ const summon = (key, d) => weapon(key, Object.assign({ dmgType: 'summon', useSty
 melee('scrap_knife', { name: 'Scrap Knife', damage: 7, useTime: 13, size: 24, icon: { s: 'knife', c: '#aeb7c2' }, value: 40 });
 const BLADE = {
   cuprite: { n: 'Cuprite Blade', d: 9, u: 22 }, ferrite: { n: 'Ferrite Blade', d: 11, u: 21 }, titanite: { n: 'Titanite Blade', d: 14, u: 20 },
-  lumenite: { n: 'Lumen Edge', d: 18, u: 20 }, xenometal: { n: 'Xeno Saber', d: 22, u: 19, proj: 'blade_wave' }, cryonite: { n: 'Cryo Edge', d: 26, u: 21, onHit: { buff: 'chill', time: 180 } },
+  lumenite: { n: 'Lumen Edge', d: 18, u: 20 }, xenometal: { n: 'Starsteel Saber', d: 22, u: 19, proj: 'blade_wave' }, cryonite: { n: 'Cryo Edge', d: 26, u: 21, onHit: { buff: 'chill', time: 180 } },
   plasmite: { n: 'Plasma Cleaver', d: 34, u: 24, onHit: { buff: 'burn', time: 240 }, size: 44 }, neutronium: { n: 'Neutron Saber', d: 44, u: 18 },
   chronite: { n: 'Chrono Blade', d: 56, u: 17, proj: 'chrono_wave' }, aetherium: { n: 'Aether Brand', d: 68, u: 16, proj: 'aether_wave', size: 46 },
 };
@@ -167,7 +167,7 @@ const RIFLE = {
   aetherium: { n: 'Aether Minigun', d: 34, u: 5, s: 'minigun', spread: 0.08, ammoSave: 0.5 },
 };
 const STAFF = {
-  lumenite: { n: 'Lumen Staff', d: 17, u: 24, proj: 'lumen_bolt', cost: 6, s: 'staff' }, xenometal: { n: 'Xeno Blaster', d: 18, u: 12, proj: 'xeno_laser', cost: 4, s: 'raygun', sp: 13 },
+  lumenite: { n: 'Lumen Staff', d: 17, u: 24, proj: 'lumen_bolt', cost: 6, s: 'staff' }, xenometal: { n: 'Star Blaster', d: 18, u: 12, proj: 'xeno_laser', cost: 4, s: 'raygun', sp: 13 },
   cryonite: { n: 'Cryo Lance Staff', d: 25, u: 24, proj: 'ice_lance', cost: 8, s: 'staff', sp: 12 }, plasmite: { n: 'Plasma Projector', d: 32, u: 26, proj: 'plasma_orb', cost: 12, s: 'tome' },
   neutronium: { n: 'Neutron Staff', d: 42, u: 20, proj: 'neutron_bolt', cost: 10, s: 'staff' }, chronite: { n: 'Chrono Prism', d: 48, u: 10, proj: 'chrono_beam', cost: 6, s: 'wand', sp: 15 },
   aetherium: { n: 'Aether Codex', d: 70, u: 18, proj: 'aether_star', cost: 14, s: 'tome', count: 2, spread: 0.2 },
@@ -252,7 +252,7 @@ armorSet('ferrite', 'Ferrite', '#aeb7c2', '#59616c', [2, 3, 2], { defense: 2 }, 
 armorSet('titanite', 'Titanite', '#f2dd7a', '#8f7a2a', [3, 4, 3], { defense: 3 }, '+3 defense', {}, 3);
 armorSet('lumenite', 'Lumenite', '#a46bff', '#4b2a8a', [5, 6, 5], { moveSpeed: 0.15, crit: 7 }, '+15% move speed, +7% crit', { head: { crit: 3 }, body: { crit: 3 }, legs: { moveSpeed: 0.05 } }, 4);
 armorSet('blight', 'Blight Shell', '#7a5aa8', '#3a2a4f', [6, 7, 6], { meleeSpeed: 0.15 }, '+15% melee speed', { head: { meleeDmg: 0.05 }, body: { meleeDmg: 0.05 }, legs: { meleeDmg: 0.05 } }, 4);
-armorSet('xenometal', 'Xeno', '#ff6a3d', '#8a2a12', [5, 6, 5], { energyCost: -0.5 }, 'Energy costs halved', { head: { energyDmg: 0.08 }, body: { energyDmg: 0.08 }, legs: { maxEnergy: 20 } }, 4);
+armorSet('xenometal', 'Starsteel', '#ff6a3d', '#8a2a12', [5, 6, 5], { energyCost: -0.5 }, 'Energy costs halved', { head: { energyDmg: 0.08 }, body: { energyDmg: 0.08 }, legs: { maxEnergy: 20 } }, 4);
 armorSet('swarm', 'Swarm', '#ffcc33', '#c29a2a', [4, 5, 4], { summonDmg: 0.12 }, '+12% summon damage', { head: { minions: 1 }, body: { minions: 1 }, legs: { summonDmg: 0.05 } }, 4);
 armorSet('nanoweave', 'Nanoweave', '#cfd8e0', '#66ccff', [2, 4, 2], { energyCost: -0.15 }, '-15% energy cost', { head: { maxEnergy: 40 }, body: { maxEnergy: 20, energyDmg: 0.05 }, legs: { energyDmg: 0.05 } }, 2, { names: ['Hood', 'Robe', 'Leggings'] });
 armorSet('cryonite', 'Cryonite', '#7ff0ff', '#2a7a8a', [7, 8, 7], { allDmg: 0.1, coldImmune: 1 }, '+10% damage, immune to Chill', { head: { rangedDmg: 0.07 }, body: { crit: 5 }, legs: { moveSpeed: 0.07 } }, 5);
@@ -365,9 +365,9 @@ sum('mech_worm', 'Leviathan Ping', 'leviathan', { s: 'chip', c: '#ff3355', c2: '
 sum('mech_skull', 'Prime Ping', 'prime_archon', { s: 'skull', c: '#aeb7c2', c2: '#ff3355' }, 20000, 5, 'Provokes the defense grid: Prime Archon besieges you now. Use at night.');
 sum('power_cell', 'Precursor Cell', 'gravity_golem', { s: 'cell', c: '#ffaa22', c2: '#8a6a2e' }, 30000, 7, 'Old Precursor energy. Worth a lot to traders; the Vault altar itself needs a generator.');
 sum('architect_sigil', 'Architect Sigil', 'architect', { s: 'emblem', c: '#d0a0ff', c2: '#2ef2ff' }, 100000, 9, 'Summons the Architect. The end of all things.');
-sum('signal_flare', 'Signal Flare', 'invasion_drones', { s: 'flare', c: '#ff3355' }, 3000, 1, 'Calls a Drone Invasion');
-sum('red_shift_beacon', 'Red Shift Beacon', 'event_redshift', { s: 'flare', c: '#ff2244' }, 5000, 2, 'Starts a Red Shift at night');
-sum('eclipse_lens', 'Eclipse Lens', 'event_eclipse', { s: 'lens', c: '#ffb12e', c2: '#222' }, 20000, 5, 'Starts a Solar Flare during the day');
+sum('signal_flare', 'Signal Flare', 'invasion_drones', { s: 'flare', c: '#ff3355' }, 3000, 1, 'Calls a Security Sweep');
+sum('red_shift_beacon', 'Storm Beacon', 'event_redshift', { s: 'flare', c: '#b06bff' }, 5000, 2, 'Starts a Signal Storm at night');
+sum('eclipse_lens', 'Corona Lens', 'event_eclipse', { s: 'lens', c: '#ffb12e', c2: '#222' }, 20000, 5, 'Starts a Coronal Ejection during the day');
 
 export const DEFAULT_START = [
   ['scrap_knife', 1], ['scrap_pick', 1], ['scrap_cutter', 1], ['glowstick', 15], ['micro_stim', 3],

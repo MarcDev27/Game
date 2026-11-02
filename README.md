@@ -16,12 +16,12 @@ It is more than Terraria with a sci-fi skin. Neon Strata has its own systems:
 
 | | |
 |---|---|
-| Items | 570 (10 metal tiers, 8 furniture sets, 16 armor sets, 50+ accessories, 5 vehicles, 22 implants, 7 fishing rods) |
-| Crafting recipes | 399 across 12 crafting stations |
-| Enemies | 67, spawning by biome, depth, time of day and event |
+| Items | 583 (10 metal tiers, 8 furniture sets, 16 armor sets, 50+ accessories, 5 vehicles, 22 implants, 7 fishing rods) |
+| Crafting recipes | 409 across 13 crafting stations |
+| Enemies | 68, spawning by biome, depth, time of day and event |
 | Bosses | 16: Overseer, Gel Sovereign, Firewall, Data Wyrm, Swarm Mother, Archon, Echo Engine, Core Warden, Twin Lancers, Leviathan, Prime Archon, Legion, Blackout, Bloom Titan, Gravity Golem, The Architect |
-| Biomes | Synth Plains, Rust Wastes, Cryo Fields, Overgrowth, Nanite Blight, Prism (hardmode), Coolant Sea, Orbit islands, Derelict Station, Ancient Temple, Swarm Hive, Reactor Core |
-| Systems | Procedural worlds in 3 sizes, colored lighting, liquids (coolant, plasma, gel), day/night, Red Shift, Drone Invasion, Solar Flare, Orbital Drops, star showers, 9 colonists (including a Ripperdoc) with housing, shops, healing and reforging, item modifiers, grappling hooks, jetpacks, minions, fishing and crates, 57 achievements, Softcore/Mediumcore/Hardcore characters, Normal/Expert worlds |
+| Biomes | Synth Plains, Rust Wastes, Cryo Fields, Overgrowth, Nanite Blight, Prism Rift, Coolant Sea, Orbit islands and the orbital ring, Derelict Station, Precursor Vault, Swarm Hive, Reactor Core |
+| Systems | Procedural worlds in 3 sizes, colored lighting, liquids (coolant, plasma, gel), day/night, Clearance and subsystem overrides, colony power, Engine Sieges, Signal Storms, Coronal Ejections, Supply Pods, star showers, 9 colonists (including a Ripperdoc) with powered housing and personal wishes, shops, healing and reforging, item modifiers, grappling hooks, jetpacks, minions, fishing and crates, 57 achievements, Softcore/Mediumcore/Hardcore characters, Normal/Expert worlds |
 
 ## Opponents of its own
 
@@ -49,11 +49,36 @@ New regular enemies:
 - **Maintenance Drones** heal other enemies and rebuild the tunnels you dug.
 - **Phase Stalkers** stay invisible until they blink behind you.
 - **EMP Drones** jam your vehicle and implants, even through walls. Shield yourself with Faraday Mesh Walls behind you (for example a house built with them), or Faraday Plates between you and the drone.
-- **Cache Mimics** pose as supply crates.
+- **Decoy Beacons** pose as Quantum Beacons.
 - **Tether Leeches** drain you until you break the line.
 - **Sappers** blast craters into the terrain.
 
-Defeating the Core Warden starts the **Singularity** (hardmode). It spreads Prism and Blight across the world and seeds three new ore tiers.
+## Progression: taking over the Strata Engine
+
+Progress isn't a single boss flipping the world into a harder mode. You take the Engine over piece by piece:
+
+1. **Reboot (Act I).** Power a colony with generators. Colonists need a powered room with a Colony Terminal, and each has a wish of their own. Then hack **the Firewall** for **Clearance 1**.
+2. **Overrides (Act II).** Take the four subsystems **in any order**:
+   - the Nanite Foundry (Data Wyrm);
+   - the Bio-Dome (Swarm Mother);
+   - the Security Grid (Archon);
+   - the Chronometer (Echo Engine).
+
+   Each guardian grants Clearance and a **permanent choice between two overrides**: Purge or Repurpose, Climate Control or Hive Treaty, Turret Control or Patrol, Time Dial or Rewind Beacon. They change how your world plays; switching later costs 50,000 credits.
+3. **The Reactor.** At Clearance 3 the Core Warden can be challenged. Beating it brings the Reactor back online, which:
+   - raises the **Alert Level**;
+   - opens a local Prism Rift and Neutronium reactor vents;
+   - powers the **Orbital Lift**.
+
+   The Engine's defense grid (Twin Lancers, Leviathan, Prime Archon) now **besieges your colony** at night as the Alert Level rises.
+4. **Ascent (Act III).** The orbital ring has asteroid ores, Legion's shipyard and Blackout in the deep orbit. Decode Signal Fragments at a Colony Terminal to open the **Precursor Vault**, whose Gravity Golem wakes only when you bring power to its altar. Then **hack and hold the four Architect relays** to reach the Architect.
+
+Events of its own:
+- **Signal Storms:** EMP Drones and a scrambled minimap.
+- **Coronal Ejections:** radiation on the surface; take shelter.
+- **Security Sweeps.**
+- **Engine Sieges.**
+- **Supply Pod crashes.**
 
 ## Play on iPhone
 
@@ -111,6 +136,7 @@ src/core     util, noise, input (touch + keyboard), audio synth, storage (Indexe
 src/content  tiles, items, recipes, monsters, projectiles, buffs, loot, prefixes, achievements, lore
 src/world    world grid, procedural generator, lighting, liquids
 src/game     game loop, player, entities, AI, bosses, original enemies and bosses, hazards,
+             progression (Clearance, overrides, reactor, orbit), colony (power, turrets, sieges, relays),
              spawner, events, colonists, fishing, vehicles, implants (cyberware), tech weapons,
              smart aim for the USE button
 src/gfx      procedural textures and sprites, renderer, backgrounds, icons
