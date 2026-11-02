@@ -470,7 +470,7 @@ export class Game {
     if (key === 'core_warden' && !w.flags.hardmode) rebootReactor(this);
     if (this.events.active === 'siege' && ['twin_lancers', 'leviathan', 'prime_archon'].includes(key)) { this.events.active = null; this.notify('The siege is broken!', '#3dff6a'); }
     if (first && key === 'gravity_golem') this.notify('The Precursor credentials work on the Architect\'s relays now. Capture all four on the orbital ring.', '#d0a0ff');
-    if (first && key === 'architect') this.notify('You have conquered the Strata. The Engine is yours.', '#d0a0ff');
+    if (first && key === 'architect') this.notify('You have conquered the Lattice. The Engine is yours.', '#d0a0ff');
     if (first && key === 'archon') this.notify('The Derelict Station is now safe to explore.', '#66ccff');
     if (first && key === 'bloom_titan') this.notify('The Ancient Temple stirs...', '#ffaa22');
     this.town.checkArrivals(true);

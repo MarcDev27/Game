@@ -2,7 +2,7 @@
 import { TILES, T, WALLS, W } from '../content/tiles.js';
 import { World } from '../world/world.js';
 
-const DB_NAME = 'neon-strata';
+const DB_NAME = 'neon-strata'; // the game's original name; kept so existing saves stay readable
 const VERSION = 1;
 let dbp = null;
 
@@ -105,7 +105,7 @@ export function deserializeWorld(o) {
   return w;
 }
 
-const SETTINGS_KEY = 'neon-strata-settings';
+const SETTINGS_KEY = 'neon-strata-settings'; // kept from the original name, like DB_NAME
 export const DEFAULT_SETTINGS = { foldMode: 'auto', foldShift: 0, layoutRev: 2, resolution: 2, sfx: 0.6, music: 0.35, zoom: 1, lightQuality: 2, smoothLight: true, minimap: true, leftHanded: false, showFps: false, autoPause: true, controlScale: 1 };
 export function loadSettings() {
   try {

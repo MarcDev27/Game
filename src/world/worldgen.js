@@ -23,7 +23,7 @@ export async function generateWorld(opts, onProgress = () => {}) {
   world.setLayers();
   const g = new Gen(world, seed);
   const passes = [
-    ['Mapping strata', () => g.layout()],
+    ['Mapping rock layers', () => g.layout()],
     ['Pouring regolith', () => g.terrain(0, 0.5)],
     ['Compressing bedrock', () => g.terrain(0.5, 1)],
     ['Igniting the Reactor Core', () => g.core()],

@@ -1,4 +1,4 @@
-// Sprites for the Strata's original enemies and bosses (see game/original.js).
+// Sprites for the Lattice's original enemies and bosses (see game/original.js).
 const R = (ctx, c, x, y, w, h) => { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
 const circle = (ctx, c, x, y, r) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); };
 

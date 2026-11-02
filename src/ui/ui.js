@@ -726,7 +726,7 @@ export class UI {
     }).join('');
     const pend = pendingChoices(w).length;
     const reactor = reactorOnline(w) ? `<b style="color:#ff8a3d">Reactor online · Alert Level ${alertLevel(w)}</b>` : c >= REACTOR_CLEARANCE ? '<b style="color:#ffcc33">Reactor unlocked: challenge the Core Warden</b>' : `Reactor locked (needs Clearance ${REACTOR_CLEARANCE})`;
-    const html = `<div class="win dialog" style="width:min(520px,96vw)"><h2><span>STRATA ENGINE</span><button data-act="close">&times;</button></h2><div class="body">
+    const html = `<div class="win dialog" style="width:min(520px,96vw)"><h2><span>LATTICE ENGINE</span><button data-act="close">&times;</button></h2><div class="body">
       <div class="help">Clearance <b>${c}</b>/5 · ${reactor}<br>${w.flags.bosses.firewall ? '' : 'Hack the Firewall (Intrusion Key) to open the Engine\'s subsystems. '}${pend ? '<span style="color:#ffcc33">Choose an override for each subsystem you have taken. Choices are permanent; switching later costs ' + SWITCH_COST + ' credits.</span>' : 'Each subsystem guardian you defeat grants Clearance and an override.'}</div>
       ${rows}</div></div>`;
     this.show(html); this.bindPanel();
@@ -783,7 +783,7 @@ export class UI {
 }
 
 export const HELP_HTML = `
-<b>Goal.</b> You are a synthetic consciousness, rebooted on the Strata Engine — a machine-world built around a dying star. Dig, build, craft, chrome yourself up, defeat 12 bosses, and uncover what happened to the Concord through the Archive.<br><br>
+<b>Goal.</b> You are a synthetic consciousness, rebooted on the Lattice Engine — a machine-world built around a dying star. Dig, build, craft, chrome yourself up, defeat 12 bosses, and uncover what happened to the Concord through the Archive.<br><br>
 <b>Touch controls.</b> Left stick: move (push up to jump / climb, down to drop through platforms). Hold <b>USE</b> to use the selected item without touching the world: weapons lock onto the nearest enemy, pickaxes dig the way you are walking (push the stick down to dig down), axes find the nearest tree and blocks build in front of you. Drag USE to aim in any direction. You can also tap or hold anywhere in the world to use the item exactly there. Tap doors, chests, beds, beacons, terminals and colonists to interact. Buttons: JUMP, HOOK, STIM (quick heal), CELL (quick energy), DASH, RIDE (enter/exit your vehicle) and AUG (your neural implant's ability). Tap a hotbar slot to select it.<br><br>
 <b>Keyboard.</b> A/D move, W/Space jump, S drop, mouse to aim/use, right-click to interact, 1-0 or wheel for hotbar, E inventory, M map, F hook, H heal, J energy, Shift dash, R ride, Q augment, Esc menu.<br><br>
 <b>First steps.</b> 1) Chop Lattice trees with the Scrap Cutter for Fiber. 2) Craft an Assembly Bench by hand (10 Fiber). 3) Kill Nanoslimes for Nanogel → Glowsticks. 4) Dig for ore, build a Smelter and Fabricator. 5) Build a Scrap Generator and a house (enclosed room, background wall, door, light and a Colony Terminal, within the generator's range) so colonists move in. Each colonist has a wish too: use the Housing button in the inventory to check a room.<br><br>

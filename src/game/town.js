@@ -14,7 +14,7 @@ export const COLONISTS = {
   archivist: {
     title: 'Archivist', names: ['Ada', 'Lumen', 'Orrin', 'Vesper', 'Kael'], look: { chassis: '#d8c6ef', suit: '#3a2a4f', visor: '#9dff3d', hair: '#ffffff', style: 3 },
     cond: () => true, noHouse: true,
-    lines: ['I archive everything that falls from orbit. Ask me for a hint whenever you are lost.', 'These Strata were a terraforming engine once. Now they are... wild.', 'Tap a crafting station while standing near it to see what it can make.'],
+    lines: ['I archive everything that falls from orbit. Ask me for a hint whenever you are lost.', 'The Lattice was a terraforming engine once. Now it is... wild.', 'Tap a crafting station while standing near it to see what it can make.'],
   },
   trader: {
     wish: { text: 'a storage container in the room', ok: (r) => r.container },

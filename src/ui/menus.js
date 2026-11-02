@@ -16,7 +16,7 @@ const SUITS = ['#2a3a4f', '#3a2a4f', '#4f2a3a', '#2a4f3a', '#4f4a2a', '#1a1a22',
 const HAIR = ['#ff3ddc', '#2ef2ff', '#ffcc33', '#ffffff', '#222222', '#ff5a2a', '#9dff3d', '#a46bff', '#8a5a3a'];
 const NAMES = ['Nova', 'Kestrel', 'Iota', 'Rhea', 'Cass', 'Juno', 'Orion', 'Vega', 'Lyra', 'Dax', 'Echo', 'Sable', 'Ion', 'Pax', 'Zephyr'];
 const WORLD_NAMES = ['Neon', 'Shattered', 'Silent', 'Iron', 'Crimson', 'Hollow', 'Gleaming', 'Ancient', 'Drifting', 'Burning', 'Frozen', 'Electric'];
-const WORLD_NOUNS = ['Strata', 'Expanse', 'Lattice', 'Reach', 'Spire', 'Abyss', 'Frontier', 'Engine', 'Shelf', 'Ring', 'Basin', 'Crown'];
+const WORLD_NOUNS = ['Mantle', 'Expanse', 'Lattice', 'Reach', 'Spire', 'Abyss', 'Frontier', 'Engine', 'Shelf', 'Ring', 'Basin', 'Crown'];
 
 export class Menus {
   constructor(env) { this.env = env; }
@@ -25,7 +25,7 @@ export class Menus {
 
   title() {
     $('#menu').innerHTML = `<div class="screen">
-      <div class="logo">NEON STRATA<small>DIG · BUILD · FIGHT · ASCEND</small></div>
+      <div class="logo">BACKUP 7105<small>DIG · BUILD · HACK · ASCEND</small></div>
       <div class="menu-buttons">
         <button class="primary" id="m-play">Play</button>
         <button id="m-saves">Saves &amp; iCloud Backup</button>
@@ -212,7 +212,7 @@ export class Menus {
   loading(text, frac) {
     let el = document.getElementById('ld');
     if (!el) {
-      $('#menu').innerHTML = `<div class="screen" id="ld"><div class="logo" style="font-size:28px">NEON STRATA</div><div id="ld-t" style="color:#8aa0c0"></div><div class="progress" style="width:min(400px,80vw)"><div id="ld-p"></div></div></div>`;
+      $('#menu').innerHTML = `<div class="screen" id="ld"><div class="logo" style="font-size:28px">BACKUP 7105</div><div id="ld-t" style="color:#8aa0c0"></div><div class="progress" style="width:min(400px,80vw)"><div id="ld-p"></div></div></div>`;
     }
     $('#ld-t').textContent = text;
     $('#ld-p').style.width = Math.round(frac * 100) + '%';

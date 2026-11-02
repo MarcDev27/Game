@@ -41,7 +41,7 @@ tile('graysand', { name: 'Gray Sand', tex: { style: 'sand', c: '#7d7590' }, map:
 tile('prismstone', { name: 'Prism Stone', hp: 1.5, tex: { style: 'crystal', c: '#c9b5ff' }, map: '#c9b5ff', biome: 'prism', prism: true, light: [0.08, 0.05, 0.12] });
 tile('prismturf', { name: 'Prism Turf', drop: 'regolith', grassOf: 'regolith', tex: { style: 'soil', c: '#6e5148', grass: '#ff9ee8' }, map: '#ff9ee8', biome: 'prism', prism: true });
 tile('prismsand', { name: 'Pearl Sand', tex: { style: 'sand', c: '#f0dcf5' }, map: '#f0dcf5', biome: 'prism', prism: true, sand: true });
-tile('basalt', { name: 'Strata Basalt', hp: 1.6, tex: { style: 'rock', c: '#3f4552' }, map: '#3f4552', stone: true });
+tile('basalt', { name: 'Deep Basalt', hp: 1.6, tex: { style: 'rock', c: '#3f4552' }, map: '#3f4552', stone: true });
 tile('slag', { name: 'Slag Rock', hp: 1.3, tex: { style: 'rock', c: '#4b3b3b' }, map: '#4b3b3b', biome: 'core' });
 tile('vitrislag', { name: 'Vitrified Slag', hp: 3, minPick: 55, tex: { style: 'crystal', c: '#2b1f3a' }, map: '#2b1f3a' });
 tile('aerogel', { name: 'Aerogel', tex: { style: 'cloud', c: '#e9f2ff' }, map: '#e9f2ff', biome: 'space' });

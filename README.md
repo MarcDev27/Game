@@ -1,16 +1,16 @@
-# Neon Strata
+# Backup 7105
 
-A Terraria-inspired 2D sandbox survival game set on a shattered terraforming world in a hyper-technological far future. You dig, build, craft, fish, colonize and fight your way from scrap tools to Singularity-grade technology.
+A Terraria-inspired 2D sandbox survival game. You wake up as backup 7,105 of a synthetic consciousness, on the Lattice Engine, a shattered terraforming world in a hyper-technological far future. You dig, build, craft, fish, colonize and fight your way from scrap tools to Singularity-grade technology.
 
 It runs in any modern browser. It is designed for every current iPhone, including iPhone Duo: touch controls with 44-pt targets, safe-area layout in portrait and landscape, fold-aware layouts, and full-screen play offline once you add it to your Home Screen.
 
-It is more than Terraria with a sci-fi skin. Neon Strata has its own systems:
+It is more than Terraria with a sci-fi skin. Backup 7105 has its own systems:
 - **Vehicles:** a Scrap Hoverbike, a Bore Pod that drills through rock, the Aerodyne Sky Car (a flying car), a Titan Walker mech and the Starjumper shuttle.
 - **Cyberware:** 22 body-mod implants in six slots (Neural, Optics, Arms, Spine, Legs, Core), installed at a Surgery Bay. Each implant costs capacity. Neural implants give active abilities: time dilation, drone command, machine hijacking and overdrive. Other implants include mantis blades, a grapple arm, a shoulder missile launcher, kinetic legs and a Nano-Heart that revives you.
 - **Tech weapons:** photon and graviton beams, coilguns you charge before firing, a gravity gun that picks up enemies and throws them, a wormhole projector that opens two linked portals, monofilament whips, smart pistols with homing rounds, black-hole charges and hard-light barriers.
 - **Quantum Beacons:** a fast-travel network you build yourself.
 - **Original opponents:** see below.
-- **The Archive:** 16 Memory Shards, found in chests and dropped by bosses. Together they tell what happened to the Concord, the Strata Engine and the Architect.
+- **The Archive:** 16 Memory Shards, found in chests and dropped by bosses. Together they tell what happened to the Concord, the Lattice Engine and the Architect.
 
 ## Content
 
@@ -53,7 +53,7 @@ New regular enemies:
 - **Tether Leeches** drain you until you break the line.
 - **Sappers** blast craters into the terrain.
 
-## Progression: taking over the Strata Engine
+## Progression: taking over the Lattice Engine
 
 Progress isn't a single boss flipping the world into a harder mode. You take the Engine over piece by piece:
 

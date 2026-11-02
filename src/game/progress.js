@@ -1,4 +1,4 @@
-// Progression of the Strata Engine. Instead of one boss flipping the world into "hard mode",
+// Progression of the Lattice Engine. Instead of one boss flipping the world into "hard mode",
 // the player takes the Engine over piece by piece:
 //   Act I   – Reboot: power a colony, hack the Firewall (Clearance 1).
 //   Act II  – Overrides: four subsystems in any order; each guardian grants Clearance and a
@@ -193,7 +193,7 @@ export function buildOrbit(game) {
     }
   }
   w.flags.orbit = { hub: [hubX, ry], lift, relays, yard: [yardX, ry + 3], y: ry };
-  game.notify('An orbital ring has lit up high above the Strata.', '#66ccff');
+  game.notify('An orbital ring has lit up high above the Lattice.', '#66ccff');
 }
 
 // ---------------------------------------------------------------- Alert Level and sieges

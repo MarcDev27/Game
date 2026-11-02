@@ -1,4 +1,4 @@
-// Enemies and bosses unique to Neon Strata, built around their own mechanics rather than
+// Enemies and bosses unique to Backup 7105, built around their own mechanics rather than
 // Terraria's: maintenance drones that undo your digging, cloaked stalkers, EMP jamming,
 // mimicking supply crates, life-draining tethers, sappers that blow holes in the terrain,
 // a Firewall you have to hack, a nanobot swarm that changes shape, an engine that replays

@@ -485,9 +485,9 @@ summon('barrier_projector', { name: 'Hardlight Barrier', damage: 10, shoot: 'har
 tool('nano_disassembler', { name: 'Nano Disassembler', pick: 70, axe: 60, damage: 8, useTime: 14, area: 1, reach: 2, icon: { s: 'raygun', c: '#7ff0ff', c2: '#2a7a8a' }, value: 30000, rarity: 4, tip: 'Unbinds matter in a 3×3 area.' });
 tool('matter_disassembler', { name: 'Matter Disassembler', pick: 160, axe: 120, damage: 24, useTime: 9, area: 1, reach: 4, icon: { s: 'raygun', c: '#3dffb0', c2: '#118a5a' }, value: 90000, rarity: 8, tip: 'Industrial-grade 3×3 matter disassembly.' });
 furnItem('quantum_beacon', { name: 'Quantum Beacon', stack: 99, value: 4000, tip: 'Tap a beacon to teleport to any other beacon or your landing site.' });
-item('memory_shard', { name: 'Memory Shard', icon: { s: 'shard', c: '#2ef2ff', c2: '#ff3ddc' }, value: 0, rarity: 3, tip: 'A recovered fragment of the Strata archive.' });
+item('memory_shard', { name: 'Memory Shard', icon: { s: 'shard', c: '#2ef2ff', c2: '#ff3ddc' }, value: 0, rarity: 3, tip: 'A recovered fragment of the Lattice archive.' });
 
-// ---------------- Strata originals: boss summons and rewards ----------------
+// ---------------- Originals: boss summons and rewards ----------------
 sum('intrusion_key', 'Intrusion Key', 'firewall', { s: 'key', c: '#ff3355', c2: '#ffcc33' }, 4000, 2, 'Summons the Firewall. Hack its four ports to break the shield.');
 sum('chrono_seed', 'Chrono Seed', 'echo_engine', { s: 'seed', c: '#3dffb0', c2: '#e8f6ff' }, 6000, 3, 'Summons the Echo Engine, which replays your own past movements.');
 sum('legion_seed', 'Legion Seed', 'legion', { s: 'seed', c: '#ff3355', c2: '#aeb7c2' }, 25000, 5, 'Summons Legion, a swarm of forty units with one mind.');

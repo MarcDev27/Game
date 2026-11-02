@@ -133,7 +133,7 @@ export class Events {
     const g = this.game, w = g.world;
     w.flags.hardmode = true;
     g.notify('The Singularity has awakened!', '#d0a0ff');
-    g.notify('Prism and Blight surge across the Strata. New ores crystallize in the deep.', '#ff9ee8');
+    g.notify('Prism and Blight surge across the Lattice. New ores crystallize in the deep.', '#ff9ee8');
     g.audio.play('event');
     // two diagonal biome stripes
     const L = w.layers;

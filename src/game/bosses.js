@@ -401,7 +401,7 @@ export const BOSS_AI = {
     }
     if (m.phase >= 2 && a.t % 160 === 80) for (let k = -2; k <= 2; k++) shoot(game, m, 'e_beam', tgt.cx + k * 60, tgt.cy, 10, 80);
     if (m.phase === 3 && a.t % 300 === 0) for (const k of ['flux_sentinel', 'drift_sentinel']) game.spawnMonster(k, tgt.cx + rng.int(-300, 300), tgt.cy - 100);
-    // it remixes the Strata's other guardians: the Firewall's scan beam, then the Echo Engine's echoes
+    // it remixes the Lattice's other guardians: the Firewall's scan beam, then the Echo Engine's echoes
     recordHistory(m, game.player);
     a.ang = (a.ang || 0) + 0.009;
     if (m.phase >= 2 && !a.beam) { a.beam = sweepBeam(game, m, 0, '#d0a0ff', m.def.name, 70); game.notify('The Architect runs the Firewall protocol!', '#d0a0ff'); }

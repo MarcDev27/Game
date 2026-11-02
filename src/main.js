@@ -59,7 +59,7 @@ const env = {
   async startGame(pd, worldId) {
     menus.loading('Loading world...', 0.3);
     const o = await store.get('worlds', worldId);
-    menus.loading('Decompressing strata...', 0.7);
+    menus.loading('Decompressing the Lattice...', 0.7);
     await new Promise((r) => setTimeout(r, 0));
     const world = deserializeWorld(o);
     launch(pd, world);
@@ -253,7 +253,7 @@ async function boot() {
       if (reloading || !hadController) return;
       if (state !== 'game') { reloading = true; location.reload(); } else if (ui) ui.toast('Update installed. Return to the title screen to load it.', '#2ef2ff');
     });
-    fetch('sw.js').then((r) => r.text()).then((t) => { const m = t.match(/neon-strata-([0-9a-f]+)/); if (m) window.__neonBuild = m[1]; }).catch(() => {});
+    fetch('sw.js').then((r) => r.text()).then((t) => { const m = t.match(/(?:backup7105|neon-strata)-([0-9a-f]+)/); if (m) window.__neonBuild = m[1]; }).catch(() => {});
   }
   window.__neon = { get game() { return game; }, env, menus, launch };
 }

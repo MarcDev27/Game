@@ -2,7 +2,8 @@
 // share sheet, where "Save to Files" puts it in iCloud Drive; restoring picks it back up from Files.
 import { store } from './storage.js';
 
-const FORMAT = 'neon-strata-backup';
+const FORMAT = 'backup-7105-saves';
+const OLD_FORMATS = ['neon-strata-backup']; // backups made before the game was renamed
 const TYPED = { Uint8Array, Uint16Array, Uint32Array, Int8Array, Int16Array, Int32Array, Float32Array, Float64Array, Uint8ClampedArray };
 
 function toB64(bytes) {
@@ -52,15 +53,15 @@ export async function makeBackup() {
   const date = new Date().toISOString().slice(0, 10);
   const gz = await gzip(text);
   const file = gz
-    ? new File([gz], `neon-strata-${date}.neonsave`, { type: 'application/gzip' })
-    : new File([text], `neon-strata-${date}.json`, { type: 'application/json' });
+    ? new File([gz], `backup-7105-${date}.b7105`, { type: 'application/gzip' })
+    : new File([text], `backup-7105-${date}.json`, { type: 'application/json' });
   return { file, players: players.length, worlds: worlds.length };
 }
 
 // Share sheet when available (iPhone: Save to Files → iCloud Drive), otherwise a download.
 export async function deliver(file) {
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try { await navigator.share({ files: [file], title: 'Neon Strata saves' }); return 'shared'; } catch (e) {
+    try { await navigator.share({ files: [file], title: 'Backup 7105 saves' }); return 'shared'; } catch (e) {
       if (e && e.name === 'AbortError') return 'cancelled';
     }
   }
@@ -75,7 +76,7 @@ export async function readBackup(file) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const text = bytes[0] === 0x1f && bytes[1] === 0x8b ? await gunzip(bytes) : new TextDecoder().decode(bytes);
   const o = JSON.parse(text);
-  if (o.format !== FORMAT) throw new Error('This file is not a Neon Strata backup.');
+  if (o.format !== FORMAT && !OLD_FORMATS.includes(o.format)) throw new Error('This file is not a Backup 7105 save backup.');
   return { players: decode(o.players) || [], worlds: decode(o.worlds) || [], created: o.created };
 }
 

@@ -138,7 +138,7 @@ for (const [k, n, c, frag] of [['flux_sentinel', 'Kinetic Warden', '#ff8a3d', 'f
     shoot: { proj: 'e_beam', rate: 90, speed: 8, dmg: 60 }, drops: [[frag, 1, 2, 5]], spawn: [S(ANY, ['surface', 'space'], 'night', 2, { hard: true, after: 'gravity_golem' })] });
 }
 
-// ---------------- Strata originals: enemies with mechanics of their own ----------------
+// ---------------- Originals: enemies with mechanics of their own ----------------
 // hardScale: stronger versions once the Reactor is back online.
 m('repair_drone', { name: 'Maintenance Drone', hp: 70, dmg: 10, def: 6, w: 22, h: 18, ai: 'repair', sprite: 'repair', color: '#3dff6a', c2: '#e8f6ff', speed: 2.4, gravity: false, tileCollide: false, credits: 90, light: [0.1, 0.4, 0.15], hardScale: true,
   drops: [['circuitry', 0.4, 1, 2], ['battery', 0.15, 1, 1], ['nano_mender', 0.01, 1, 1]], spawn: [S(ANY, UG, 'any', 1.6)] });
@@ -193,7 +193,7 @@ B('architect', { name: 'The Architect', hp: 145000, dmg: 80, def: 50, w: 140, h:
   drops: [['singularity_bar', 1, 70, 90], ['fragment_flux', 1, 10, 20], ['fragment_volt', 1, 10, 20], ['fragment_nova', 1, 10, 20], ['fragment_drift', 1, 10, 20], ['gravity_hook', 0.3, 1, 1]], music: 'boss4' });
 B('architect_hand', { name: 'Architect Hand', hp: 50000, dmg: 70, def: 40, w: 60, h: 60, ai: 'boss_hand', sprite: 'ahand', color: '#d0a0ff', c2: '#2ef2ff', speed: 5, credits: 0, drops: [], architect: true });
 
-// Strata originals: bosses built around mechanics of their own.
+// Originals: bosses built around mechanics of their own.
 B('firewall', { name: 'The Firewall', hp: 4200, dmg: 0, def: 14, w: 64, h: 64, ai: 'boss_firewall', sprite: 'firewall', color: '#ff3355', c2: '#ffcc33', speed: 1.5, credits: 9000, light: [0.5, 0.15, 0.1],
   drops: [['firewall_core', 1, 6, 10], ['circuitry', 1, 8, 14], ['packet_rifle', 0.35, 1, 1], ['proxy_drive', 0.25, 1, 1]], music: 'boss2' });
 B('fw_node', { name: 'Firewall Port', hp: 1, dmg: 0, def: 0, w: 26, h: 26, ai: 'boss_fwnode', sprite: 'fw_node', color: '#ff3355', c2: '#3dff6a', immune: true, credits: 0, drops: [] });

@@ -38,7 +38,7 @@ export const ACHIEVEMENTS = [
   { key: 'kill100', name: 'Exterminator', desc: 'Destroy 100 hostiles', check: (g) => g.player.stats.kills >= 100 },
   { key: 'kill1000', name: 'Purge Protocol', desc: 'Destroy 1,000 hostiles', check: (g) => g.player.stats.kills >= 1000 },
   { key: 'kill5000', name: 'Walking Apocalypse', desc: 'Destroy 5,000 hostiles', check: (g) => g.player.stats.kills >= 5000 },
-  { key: 'mine1k', name: 'Strata Miner', desc: 'Mine 1,000 blocks', check: (g) => g.player.stats.mined >= 1000 },
+  { key: 'mine1k', name: 'Deep Miner', desc: 'Mine 1,000 blocks', check: (g) => g.player.stats.mined >= 1000 },
   { key: 'mine10k', name: 'Tunnel Engine', desc: 'Mine 10,000 blocks', check: (g) => g.player.stats.mined >= 10000 },
   { key: 'craft100', name: 'Maker', desc: 'Craft 100 items', check: (g) => g.player.stats.crafted >= 100 },
   { key: 'craft1000', name: 'Factory', desc: 'Craft 1,000 items', check: (g) => g.player.stats.crafted >= 1000 },
