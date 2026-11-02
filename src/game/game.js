@@ -24,6 +24,7 @@ import { tryRevive } from './implants.js';
 import { updateThrown } from './tech.js';
 import { LORE } from '../content/lore.js';
 import { updateHazards } from './hazards.js';
+import { toggleRide } from './vehicles.js';
 import { migrateWorld, summonBlocked, rebootReactor, onBossDefeated, applyWorldStats, overrideOf, ACT2, buildOrbit, SIEGE_BOSSES } from './progress.js';
 import { updateColony, registerFurniture, poweredAt, startRelayHack, startSiege, useTimeDial, useLift } from './colony.js';
 import { clearLockdown } from './bosses.js';
@@ -68,12 +69,38 @@ export class Game {
     const sx = sp ? sp[0] : w.spawnX, sy = sp ? sp[1] : w.spawnY;
     p.x = sx * TILE + 8 - p.w / 2; p.y = sy * TILE - p.h - 1;
     if (rectSolid(w, p.x, p.y, p.w, p.h)) { p.x = w.spawnX * TILE; p.y = this.findStandY(w.spawnX) * TILE - p.h - 1; }
+    this.resumePosition();
     p.fallStartY = p.y;
     this.cam.x = p.cx - this.view.w / 2; this.cam.y = p.cy - this.view.h / 2;
     this.town.init();
     if (w.flags.hardmode && !w.flags.orbit) buildOrbit(this); // worlds from before the orbital ring existed
     applyWorldStats(this);
     this.notify('Welcome to ' + w.name, '#2ef2ff');
+  }
+
+  // Saving remembers where the player was in this world; rejoining puts them back there
+  // (riding again if they were in a vehicle). Death still respawns at the Rest Pod.
+  recordPosition() {
+    const p = this.player, id = this.world.id;
+    if (p.dead) { delete p.positions[id]; return; }
+    p.positions[id] = { x: Math.round(p.cx), feet: Math.round(p.y + p.h), vehicle: p.vehicle ? p.vehicle.key : null };
+  }
+
+  resumePosition() {
+    const p = this.player, w = this.world, pos = p.positions[w.id];
+    if (!pos) return;
+    const fits = (x, feet) => w.inb(Math.floor(x / TILE), Math.floor(feet / TILE)) && !rectSolid(w, x - p.w / 2, feet - p.h, p.w, p.h);
+    let spot = fits(pos.x, pos.feet) ? [pos.x, pos.feet] : null;
+    // blocked since (rebuilt tunnel, placed blocks): nearest free spot within a few tiles
+    for (let r = 1; r <= 8 && !spot; r++) {
+      for (let dy = -r; dy <= r && !spot; dy++) for (let dx = -r; dx <= r && !spot; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        if (fits(pos.x + dx * TILE, pos.feet + dy * TILE)) spot = [pos.x + dx * TILE, pos.feet + dy * TILE];
+      }
+    }
+    if (!spot) return; // nowhere to stand: keep the Rest Pod / landing site
+    p.x = spot[0] - p.w / 2; p.y = spot[1] - p.h - 0.01; p.vx = p.vy = 0; p.fallStartY = p.y;
+    if (pos.vehicle && p.equip.vehicle && p.equip.vehicle.k === pos.vehicle) toggleRide(this, p);
   }
 
   findStandY(tx) {

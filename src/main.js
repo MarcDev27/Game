@@ -41,6 +41,7 @@ const env = {
     game.town.save(); game.events.save();
     const w = game.world;
     w.lastPlayed = Date.now();
+    game.recordPosition();
     const pd = game.player.serialize();
     pd.lastPlayed = Date.now();
     if (game.player.mode === 'hard' && game.player.dead) return;

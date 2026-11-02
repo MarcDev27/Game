@@ -36,6 +36,7 @@ export class Player {
     this.vehicle = null; this.augCd = 0; this.reviveCd = 0; this.mantisBase = 18;
     if (!this.portals) this.portals = {};
     if (!this.lore) this.lore = [];
+    if (!this.positions) this.positions = {}; // where the player was in each world when last saved
     this.techCd = 0; this.techHeld = false; this.charge = 0; this.grabbed = null; this.portalCd = 0; this.techFx = null;
     this.discovered = new Set(data.discovered);
     this.achievements = new Set(data.achievements || []);
@@ -53,7 +54,7 @@ export class Player {
 
   serialize() {
     const d = this.data;
-    for (const k of ['name', 'look', 'mode', 'inv', 'trash', 'equip', 'maxLife', 'maxEnergy', 'life', 'energy', 'credits', 'accSlots', 'spawns', 'portals', 'lore', 'playTime', 'created', 'id', 'stats']) d[k] = this[k];
+    for (const k of ['name', 'look', 'mode', 'inv', 'trash', 'equip', 'maxLife', 'maxEnergy', 'life', 'energy', 'credits', 'accSlots', 'spawns', 'positions', 'portals', 'lore', 'playTime', 'created', 'id', 'stats']) d[k] = this[k];
     d.discovered = [...this.discovered];
     d.achievements = [...this.achievements];
     return d;
