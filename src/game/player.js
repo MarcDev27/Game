@@ -248,11 +248,19 @@ export class Player {
       if (Math.abs(this.vx) < 0.05) this.vx = 0;
     }
 
-    // climbing cables
-    const ctx0 = Math.floor(this.cx / TILE), cty = Math.floor(this.cy / TILE);
-    const onCable = TILES[world.get(ctx0, cty)]?.climb || TILES[world.get(ctx0, Math.floor((this.y + 4) / TILE))]?.climb;
-    if (onCable && (inp.up || inp.down) && !this.hook) this.climbing = true;
-    if (!onCable || inp.jumpPressed) this.climbing = false;
+    // climbing cables: any cable tile in the player's column, from head to feet, holds them
+    const ctx0 = Math.floor(this.cx / TILE);
+    const isCable = (ty) => !!TILES[world.get(ctx0, ty)]?.climb;
+    const rowTop = Math.floor((this.y + 2) / TILE), rowBot = Math.floor((this.y + this.h + 1) / TILE); // +1: standing on the cable's top
+    let cableRow = -1;
+    for (let ty = rowTop; ty <= rowBot; ty++) if (isCable(ty)) { cableRow = ty; break; }
+    const onCable = cableRow >= 0;
+    if (onCable && (inp.up || inp.down) && !this.hook && !this.vehicle) this.climbing = true;
+    if (this.climbing && !onCable) this.climbing = false;
+    // stepping sideways off the cable (onto a ledge or into a fall)
+    if (this.climbing && mx !== 0 && !inp.up && !inp.down) this.climbing = false;
+    let climbJump = false;
+    if (this.climbing && inp.jumpPressed) { this.climbing = false; climbJump = true; }
 
     if (this.onGround) { this.coyote = 6; this.jumpsUsed = 0; this.flightTime = s.flight; this.rocketTime = s.rocket; }
     else if (this.coyote > 0) this.coyote--;
@@ -261,10 +269,25 @@ export class Player {
     const jumpSpeed = 5.1;
     const holdTicks = Math.round(15 * s.jumpBoost);
     this.flying = false;
+    if (climbJump) {
+      this.vy = -jumpSpeed; this.jumpTimer = Math.round(holdTicks * 0.6); this.coyote = 0;
+      game.audio.play('jump');
+    }
     if (this.climbing) {
-      this.vy = inp.up ? -3 : inp.down ? 3 : 0;
-      this.vx *= 0.5;
-      this.x += ((ctx0 * TILE + TILE / 2) - this.cx) * 0.3;
+      this.vy = inp.up ? -2.6 : inp.down ? 3.2 : 0;
+      this.vx = 0;
+      // centre on the cable, but never into a wall beside it (that used to freeze the player)
+      const want = (ctx0 * TILE + TILE / 2) - this.cx;
+      const step = Math.abs(want) < 0.5 ? want : want * 0.35;
+      if (!rectSolid(world, this.x + step, this.y, this.w, this.h)) this.x += step;
+      // at the top of the cable the player stands on it instead of slipping off and falling back
+      if (inp.up) {
+        let top = cableRow;
+        while (isCable(top - 1)) top--;
+        const topY = top * TILE;
+        if (this.y + this.h + this.vy < topY) { this.vy = Math.min(0, topY - (this.y + this.h)); }
+      }
+      this.climbAnim = (this.climbAnim || 0) + Math.abs(this.vy) * 0.22;
     } else if (this.hook && this.hook.attached) {
       // hanging / pulling
     } else {
@@ -325,7 +348,7 @@ export class Player {
 
     const prevVy = this.vy;
     this.stepOffset = 0;
-    moveEntity(world, this, { platforms: true, step: true, drop: inp.down && !this.climbing });
+    moveEntity(world, this, { platforms: true, step: true, drop: inp.down });
     if (walkOnLiquid) this.onGround = true;
     this.hitWallDir = this.hitWall || 0;
     if (this.stepOffset) game.camShake = Math.max(game.camShake || 0, 0);

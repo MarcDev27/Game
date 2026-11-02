@@ -32,15 +32,23 @@ export function drawHumanoid(ctx, e, look, gear, t) {
   }
   // back arm
   const armSwing = air ? -0.6 : walk * 0.6;
-  // legs
-  const l1 = air ? -3 : Math.round(walk * 4), l2 = air ? 2 : -Math.round(walk * 4);
-  R(ctx, shade(legsC, 0.7), -4 + l2, 28, 5, 13);
-  R(ctx, '#1a1f28', -4 + l2, 40, 6, 2);
-  R(ctx, legsC, -2 + l1, 28, 5, 13);
-  R(ctx, '#1a1f28', -2 + l1, 40, 6, 2);
-  R(ctx, shade(legsC, 1.3), -1 + l1, 29, 1, 9);
+  // legs (on a cable they step up and down in turn instead of swinging)
+  const climb = e.climbing ? Math.sin(e.climbAnim || 0) : null;
+  const l1 = climb !== null ? 0 : air ? -3 : Math.round(walk * 4), l2 = climb !== null ? -1 : air ? 2 : -Math.round(walk * 4);
+  const k1 = climb !== null ? -Math.round(Math.max(0, climb) * 4) : 0, k2 = climb !== null ? -Math.round(Math.max(0, -climb) * 4) : 0;
+  if (climb !== null) {
+    // back arm reaching up the cable, opposite to the front arm
+    const ra = Math.round(-climb * 3);
+    R(ctx, shade(suit, 0.7), -8, 0 + ra, 4, 16 - ra);
+    R(ctx, shade(chassis, 0.85), -8, -3 + ra, 4, 3);
+  }
+  R(ctx, shade(legsC, 0.7), -4 + l2, 28 + k2, 5, 13);
+  R(ctx, '#1a1f28', -4 + l2, 40 + k2, 6, 2);
+  R(ctx, legsC, -2 + l1, 28 + k1, 5, 13);
+  R(ctx, '#1a1f28', -2 + l1, 40 + k1, 6, 2);
+  R(ctx, shade(legsC, 1.3), -1 + l1, 29 + k1, 1, 9);
   if (imp.spine) { R(ctx, '#59616c', -8, 13, 2, 16); R(ctx, imp.spine.c, -8, 15, 2, 1); R(ctx, imp.spine.c, -8, 20, 2, 1); R(ctx, imp.spine.c, -8, 25, 2, 1); }
-  if (imp.legs) { R(ctx, imp.legs.c, -3 + l2, 33, 3, 1); R(ctx, imp.legs.c, -1 + l1, 33, 3, 1); }
+  if (imp.legs) { R(ctx, imp.legs.c, -3 + l2, 33 + k2, 3, 1); R(ctx, imp.legs.c, -1 + l1, 33 + k1, 3, 1); }
   // torso
   R(ctx, suit, -5, 14, 11, 15);
   R(ctx, shade(suit, 1.25), -4, 14, 9, 2);

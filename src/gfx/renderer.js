@@ -463,6 +463,7 @@ export class Renderer {
         if (it.useStyle === 'shoot') drawHeldItem(ctx, p, it.key, a, 'shoot');
       } else if (it.useStyle === 'consume') armAng = -2.5 * p.dir;
     } else if (p.holdTime > 0) armAng = -2.8 * p.dir;
+    else if (p.climbing) armAng = (Math.PI - 0.5 + Math.sin(p.climbAnim || 0) * 0.25) * p.dir;
     drawArm(ctx, p, p.look, gear, armAng);
     ctx.globalAlpha = 1;
   }
