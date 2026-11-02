@@ -27,11 +27,16 @@ export function drawFurniture(t, open) {
       break;
     case 'door':
       if (!open) {
-        R(dark, 2, 0, 12, H); R(base, 3, 1, 10, H - 2); R(light, 3, 1, 1, H - 2);
-        R(dark, 4, 15, 8, 1); R(dark, 4, 31, 8, 1); R(acc, 10, 22, 2, 4);
-        R(acc, 5, 4, 6, 1);
+        // closed: seen edge-on in the wall, a thin slab with hinges and a handle nub
+        R(dark, 5, 0, 6, H); R(base, 6, 1, 4, H - 2); R(light, 6, 1, 1, H - 2);
+        R(acc, 5, 5, 1, 3); R(acc, 5, H - 8, 1, 3);
+        R(shade(acc, 0.8), 10, 22, 2, 3);
       } else {
-        R(dark, 0, 0, 4, H); R(base, 1, 1, 2, H - 2); R(acc, 1, 22, 2, 3);
+        // open: swung toward the viewer, showing its face
+        R(dark, 0, 0, 14, H); R(base, 1, 1, 12, H - 2); R(light, 1, 1, 1, H - 2);
+        R(dark, 3, 4, 8, 10); R(shade(base, 1.1), 4, 5, 6, 8);
+        R(dark, 3, 18, 8, 24); R(shade(base, 1.1), 4, 19, 6, 22);
+        R(acc, 11, 22, 2, 4); R(acc, 3, 2, 8, 1);
       }
       break;
     case 'chest':
