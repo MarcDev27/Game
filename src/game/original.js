@@ -251,6 +251,22 @@ export const ORIGINAL_AI = {
   },
 };
 
+// The Security override's patrol drones: allied, hover around the colony and shoot hostiles.
+ORIGINAL_AI.patrol = function patrol(m, game, tgt) {
+  const a = m.ai;
+  a.t = (a.t || 0) + 1;
+  if (!a.home) a.home = [m.cx, m.cy];
+  const enemy = tgt && tgt !== game.player && Math.hypot(tgt.cx - a.home[0], tgt.cy - a.home[1]) < 60 * TILE ? tgt : null;
+  const tx = enemy ? enemy.cx + Math.cos(a.t * 0.04) * 70 : a.home[0] + Math.cos(a.t * 0.01 + m.id) * 160;
+  const ty = enemy ? enemy.cy - 60 : a.home[1] - 40 + Math.sin(a.t * 0.02) * 30;
+  steer(m, tx, ty, 0.15, m.def.speed);
+  m.x += m.vx; m.y += m.vy; m.dir = sign(m.vx) || m.dir;
+  if (enemy && a.t % 35 === 0) {
+    const s = Math.atan2(enemy.cy - m.cy, enemy.cx - m.cx);
+    game.spawnProjectile('patrol_shot', m.cx, m.cy, Math.cos(s) * 10, Math.sin(s) * 10, 30 + Object.keys(game.world.flags.bosses).length * 6, 2, 'player', { dmgType: 'summon' });
+  }
+};
+
 // ---------------------------------------------------------------- bosses
 function leave(game, m) {
   m.vy -= 0.3; m.y += m.vy;

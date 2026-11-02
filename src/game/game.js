@@ -24,6 +24,8 @@ import { tryRevive } from './implants.js';
 import { updateThrown } from './tech.js';
 import { LORE } from '../content/lore.js';
 import { updateHazards } from './hazards.js';
+import { migrateWorld, summonBlocked, rebootReactor, onBossDefeated, applyWorldStats, overrideOf, ACT2, buildOrbit, SIEGE_BOSSES } from './progress.js';
+import { updateColony, registerFurniture, poweredAt, startRelayHack, startSiege, useTimeDial, useLift } from './colony.js';
 import { clearLockdown } from './bosses.js';
 
 const TREE_HP = 220;
@@ -47,6 +49,9 @@ export class Game {
     this.minedLog = [];     // recently dug tiles, which Maintenance Drones put back
     this.darkField = null;  // Blackout's light-smothering field, set each tick while it lives
     this.gravField = null;  // Gravity Golem's gravity shifts
+    this.relayHack = null;  // an Architect relay being captured
+    this.turretCd = {};
+    migrateWorld(world);
     this.biome = 'plains'; this.layer = 'surface';
     this.bosses = [];
     this.openChest = null;
@@ -66,6 +71,8 @@ export class Game {
     p.fallStartY = p.y;
     this.cam.x = p.cx - this.view.w / 2; this.cam.y = p.cy - this.view.h / 2;
     this.town.init();
+    if (w.flags.hardmode && !w.flags.orbit) buildOrbit(this); // worlds from before the orbital ring existed
+    applyWorldStats(this);
     this.notify('Welcome to ' + w.name, '#2ef2ff');
   }
 
@@ -103,6 +110,7 @@ export class Game {
     for (const pr of this.projectiles) if (!pr.dead && !(frozen && pr.owner === 'enemy')) updateProjectile(pr, this);
     for (const d of this.drops) if (!d.dead) updateDrop(d, this);
     updateHazards(this);
+    updateColony(this);
     this.monsters = this.monsters.filter((m) => !m.dead);
     // boss parts are spawned before their owner is set; keep only the main bodies listed
     this.bosses = this.bosses.filter((b) => !b.dead && !b.owner);
@@ -179,7 +187,7 @@ export class Game {
       if (!id) continue;
       const t = TILES[id];
       if (t.key === 'sapling') {
-        if (this.rng.chance(0.08)) this.growSapling(x, y);
+        if (this.rng.chance(overrideOf(w, 'biodome') === 'climate' ? 0.24 : 0.08)) this.growSapling(x, y);
       } else if (t.key === 'regolith') {
         // grass spreads to exposed regolith from adjacent grass
         if (y < L.rock + 10 && this.exposed(x, y)) for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1], [1, -1], [-1, 1]]) {
@@ -202,7 +210,7 @@ export class Game {
         }
       }
       // hardmode spread
-      if (w.flags.hardmode && (t.blight || t.prism) && this.rng.chance(0.3)) {
+      if (w.flags.hardmode && ((t.blight && overrideOf(w, 'foundry') !== 'purge') || t.prism) && this.rng.chance(0.3)) {
         const nx = x + this.rng.int(-3, 3), ny = y + this.rng.int(-3, 3);
         const conv = (t.blight ? CONVERT.blight : CONVERT.prism).get(w.get(nx, ny));
         if (conv) w.set(nx, ny, conv, w.data[ny * w.w + nx]);
@@ -260,6 +268,7 @@ export class Game {
   // ---------------- entities ----------------
   spawnMonster(key, x, y, force = false) {
     const m = new Monster(key, x, y, this);
+    if (key === 'hornet_drone' && overrideOf(this.world, 'biodome') === 'treaty') m.allied = 1e12; // Hive Treaty
     this.monsters.push(m);
     if (m.def.boss && !m.owner && !m.head) this.bosses.push(m);
     return m;
@@ -387,7 +396,11 @@ export class Game {
       loot(m.cx, m.cy);
       this.dropItem(m.cx, m.cy, m.def.hp > 10000 ? 'mega_stim' : 'stim_pack', this.rng.int(5, 12));
       this.onBossKilled(m);
-    } else if (!d.boss) loot(m.cx, m.cy);
+    } else if (!d.boss) {
+      loot(m.cx, m.cy);
+      if (overrideOf(this.world, 'foundry') === 'repurpose' && d.spawn.some((r) => r.biomes && r.biomes.includes('blight'))) loot(m.cx, m.cy);
+    }
+    if (m.key === 'patrol_drone') this.world.flags.patrolDown = true;
     if (d.invader) this.events.invaderKilled(d.invader);
     // hearts drop from regular enemies when low
     if (!d.boss && p.life < p.s.maxLife * 0.5 && this.rng.chance(0.08)) this.dropItem(m.cx, m.cy, 'micro_stim', 1);
@@ -404,14 +417,17 @@ export class Game {
     this.bosses = this.bosses.filter((b) => !b.dead);
     const first = !w.flags.bosses[key];
     if (first) this.dropItem(m.cx, m.cy, 'memory_shard', 1);
+    if (first && ACT2.includes(key)) this.dropItem(m.cx, m.cy, 'signal_fragment', 1);
     w.flags.bosses[key] = (w.flags.bosses[key] || 0) + 1;
     this.player.stats.bosses++;
     this.notify((BOSS_INFO[key] ? BOSS_INFO[key].name : m.def.name) + ' has been defeated!', '#ffcc33');
     this.audio.play('levelup');
     for (const o of this.monsters) if (o.owner === m) o.dead = true;
     clearLockdown(this, m);
-    if (key === 'core_warden' && !w.flags.hardmode) this.events.startHardmode();
-    if (first && key === 'gravity_golem') this.notify('Sentinels now descend at night, carrying fragments...', '#d0a0ff');
+    onBossDefeated(this, key);
+    if (key === 'core_warden' && !w.flags.hardmode) rebootReactor(this);
+    if (this.events.active === 'siege' && ['twin_lancers', 'leviathan', 'prime_archon'].includes(key)) { this.events.active = null; this.notify('The siege is broken!', '#3dff6a'); }
+    if (first && key === 'gravity_golem') this.notify('The Precursor credentials work on the Architect\'s relays now. Capture all four on the orbital ring.', '#d0a0ff');
     if (first && key === 'architect') this.notify('You have conquered the Strata. The Singularity is yours.', '#d0a0ff');
     if (first && key === 'archon') this.notify('The Derelict Station is now safe to explore.', '#66ccff');
     if (first && key === 'bloom_titan') this.notify('The Ancient Temple stirs...', '#ffaa22');
@@ -459,7 +475,7 @@ export class Game {
     p.respawn = boss ? 60 * 15 : 60 * 5;
     this.fx.burst(p.cx, p.cy, '#ff3355', 40, 4, false);
     this.audio.play('death');
-    const lost = Math.floor(p.credits * (p.mode === 'soft' ? 0.5 : 1));
+    const lost = overrideOf(this.world, 'chrono') === 'rewind' ? 0 : Math.floor(p.credits * (p.mode === 'soft' ? 0.5 : 1));
     if (lost > 0) { p.credits -= lost; this.dropCredits(p.cx, p.cy, lost); }
     if (p.mode === 'medium' || p.mode === 'hard') {
       for (let i = 0; i < p.inv.length; i++) if (p.inv[i]) { const s = p.inv[i]; const d = this.dropItem(p.cx, p.cy, s.k, s.n, s.p || false); if (d) d.delay = 120; p.inv[i] = null; }
@@ -475,7 +491,9 @@ export class Game {
     p.buffs.clear(); p.recalc();
     const sp = p.spawns[w.id];
     let sx = w.spawnX, sy = w.spawnY;
-    if (sp && this.validSpawn(sp[0], sp[1])) { sx = sp[0]; sy = sp[1]; }
+    const beacon = overrideOf(w, 'chrono') === 'rewind' && w.flags.lastBeacon && this.beacons().some(([x, y]) => x + 1 === w.flags.lastBeacon[0] && y + 3 === w.flags.lastBeacon[1]);
+    if (beacon) { [sx, sy] = w.flags.lastBeacon; this.notify('Rewind Beacon: back at your last beacon.', '#3dffb0'); }
+    else if (sp && this.validSpawn(sp[0], sp[1])) { sx = sp[0]; sy = sp[1]; }
     else if (sp) { delete p.spawns[w.id]; this.notify('Your Rest Pod is missing or obstructed.', '#ffcc33'); }
     p.x = sx * TILE + 8 - p.w / 2; p.y = sy * TILE - p.h - 1; p.vx = p.vy = 0; p.fallStartY = p.y;
     if (rectSolid(w, p.x, p.y, p.w, p.h)) p.y = this.findStandY(sx) * TILE - p.h - 1;
@@ -708,19 +726,20 @@ export class Game {
     const w = this.world;
     const depth = clamp((oy - w.layers.surface) / (w.h - w.layers.surface), 0, 1);
     switch (t.key) {
-      case 'vital_core': this.dropItem(cx, cy, 'vital_core', 1); break;
+      case 'vital_core': this.dropItem(cx, cy, 'chassis_part', this.rng.int(1, 2)); break;
       case 'blight_node': {
         w.flags.nodesSmashed = (w.flags.nodesSmashed || 0) + 1;
         const loot = this.rng.pick(['grav_flail', 'void_lance', 'blight_reaper', 'demo_charge', 'plasma_round']);
         this.dropItem(cx, cy, loot, loot === 'demo_charge' ? 10 : loot === 'plasma_round' ? 100 : 1);
         this.dropCredits(cx, cy, 1000);
         const n = w.flags.nodesSmashed;
-        if (n % 3 === 0) { this.notify('A horrible chill goes down your spine...', '#b06bff'); setTimeout(() => summonBoss(this, 'data_wyrm'), 0); }
+        if (n % 3 === 0 && summonBlocked(w, 'data_wyrm')) this.notify('The Foundry stirs, but its guardian is sealed behind the Firewall.', '#b06bff');
+        else if (n % 3 === 0) { this.notify('A horrible chill goes down your spine...', '#b06bff'); setTimeout(() => summonBoss(this, 'data_wyrm'), 0); }
         else if (n === 1) { this.notify('A data packet streaks across the sky... (an Orbital Drop may land tonight)', '#ff6a3d'); w.flags.meteorPending = true; }
         else this.notify('Something stirs in the Blight...', '#b06bff');
         break;
       }
-      case 'hive_pod': this.notify('The hive trembles!', '#ffcc33'); summonBoss(this, 'swarm_mother'); break;
+      case 'hive_pod': if (summonBlocked(w, 'swarm_mother')) this.notify('The hive trembles, but the Bio-Dome is sealed behind the Firewall.', '#ffcc33'); else { this.notify('The hive trembles!', '#ffcc33'); summonBoss(this, 'swarm_mother'); } break;
       case 'bloom_bulb': summonBoss(this, 'bloom_titan'); break;
       default: {
         const kind = t.key === 'canister_core' ? 'core' : 'cave';
@@ -795,6 +814,7 @@ export class Game {
     for (let dy = 0; dy < f.h; dy++) for (let dx = 0; dx < f.w; dx++) if (w.get(ox + dx, oy + dy)) w.set(ox + dx, oy + dy, 0);
     w.placeFurniture(ox, oy, id);
     if (t.key === 'quantum_beacon') { w.flags.beacons = w.flags.beacons || []; w.flags.beacons.push([ox, oy]); }
+    registerFurniture(this, t, ox, oy);
     return true;
   }
 
@@ -838,6 +858,7 @@ export class Game {
     }
     if (c.buff) { p.addBuff(c.buff, c.time); p.recalc(); this.audio.play('heal'); }
     if (c.maxLife) {
+      if (c.surgery && !this.nearbyStations().has('surgery')) { this.notify('Install Chassis Upgrades at a Surgery Bay.', '#ffcc33'); return false; }
       if (c.needs && p.maxLife < c.needs) { this.notify('Requires 400 max integrity first.', '#ffcc33'); return false; }
       if (p.maxLife >= c.cap) return false;
       p.maxLife = Math.min(c.cap, p.maxLife + c.maxLife); p.life += c.maxLife; p.recalc();
@@ -861,12 +882,12 @@ export class Game {
     if (key.startsWith('invasion_') || key.startsWith('event_')) return this.events.trigger(key);
     if (this.bosses.some((b) => !b.dead && (b.key === key || (key === 'twin_lancers' && b.key.startsWith('twin'))))) return false;
     const info = BOSS_INFO[key] || {};
+    const blocked = summonBlocked(w, key);
+    if (blocked) { this.notify(blocked, '#ffcc33'); return false; }
     if (info.night && w.isDay()) { this.notify('It can only be summoned at night.', '#ffcc33'); return false; }
     if (info.biome && this.biome !== info.biome && !(info.biome === 'core' && this.layer === 'core')) { this.notify('This must be used in the ' + ({ blight: 'Blight', jungle: 'Overgrowth', core: 'Reactor Core' }[info.biome]) + '.', '#ffcc33'); return false; }
-    if (key === 'gravity_golem') {
-      const t = w.temple;
-      if (!t || Math.hypot(this.player.cx / TILE - t.altar[0], this.player.cy / TILE - t.altar[1]) > 12) { this.notify('Use it at the Ancient Altar.', '#ffcc33'); return false; }
-    }
+    if (key === 'gravity_golem') { this.notify('The Gravity Golem wakes when the Precursor Altar has power.', '#ffcc33'); return false; }
+    if (SIEGE_BOSSES.includes(key) && w.flags.hardmode && !this.events.active) return startSiege(this, key);
     return !!summonBoss(this, key);
   }
 
@@ -892,7 +913,8 @@ export class Game {
     switch (t.interact) {
       case 'door': {
         if (t.locked && !w.flags.templeOpen) {
-          if (p.inv.some((s) => s && s.k === t.locked)) { const i = p.inv.findIndex((s) => s && s.k === t.locked); p.inv[i].n--; if (p.inv[i].n <= 0) p.inv[i] = null; w.flags.templeOpen = true; this.notify('The Ancient Door unlocks.', '#ffaa22'); }
+          const i = p.inv.findIndex((s) => s && (s.k === t.locked || s.k === 'temple_key'));
+          if (i >= 0) { p.inv[i].n--; if (p.inv[i].n <= 0) p.inv[i] = null; w.flags.templeOpen = true; this.notify('The Precursor Vault opens.', '#ffaa22'); }
           else { this.notify('It is locked. (' + ITEMS[t.locked].name + ')', '#ffaa22'); return true; }
         }
         const open = (w.data[w.idx(ox, oy)] & DOOR_OPEN) === 0;
@@ -923,6 +945,7 @@ export class Game {
         return true;
       }
       case 'beacon': {
+        w.flags.lastBeacon = [ox + 1, oy + 3];
         if (this.ui) this.ui.openBeacons([ox, oy]);
         return true;
       }
@@ -934,19 +957,21 @@ export class Game {
       }
       case 'archon': {
         if (w.flags.bosses.archon) { this.notify('The terminal is silent now.', '#66ccff'); return true; }
-        if (w.isDay()) { this.notify('ARCHON TERMINAL: "Return when the lights go out."', '#66ccff'); return true; }
+        const why = summonBlocked(w, 'archon');
+        if (why) { this.notify('ARCHON TERMINAL: "Credentials rejected." ' + why, '#66ccff'); return true; }
         if (this.bosses.some((b) => !b.dead && b.key === 'archon')) return true;
         summonBoss(this, 'archon');
         return true;
       }
       case 'altar': {
-        const i = p.inv.findIndex((s) => s && s.k === 'power_cell');
-        if (i < 0) { this.notify('The altar needs a Power Cell.', '#ffaa22'); return true; }
+        if (!poweredAt(this, ox + 1, oy + 1)) { this.notify('The Precursor Altar is dark. Place a generator nearby to give it power.', '#ffaa22'); return true; }
         if (this.bosses.some((b) => !b.dead)) return true;
-        p.inv[i].n--; if (p.inv[i].n <= 0) p.inv[i] = null;
         summonBoss(this, 'gravity_golem');
         return true;
       }
+      case 'dial': useTimeDial(this); return true;
+      case 'lift': useLift(this, t, ox, oy); return true;
+      case 'relay': startRelayHack(this, t.relay, ox, oy); return true;
     }
     return false;
   }

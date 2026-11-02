@@ -6,6 +6,8 @@ import { BOSS_INFO } from '../content/monsters.js';
 import { moveEntity } from './physics.js';
 import { countItem } from './inventory.js';
 import { DOOR_OPEN } from '../world/world.js';
+import { poweredAt } from './colony.js';
+import { W as WALL } from '../content/tiles.js';
 
 export const COLONISTS = {
   archivist: {
@@ -14,24 +16,28 @@ export const COLONISTS = {
     lines: ['I archive everything that falls from orbit. Ask me for a hint whenever you are lost.', 'These Strata were a terraforming engine once. Now they are... wild.', 'Tap a crafting station while standing near it to see what it can make.'],
   },
   trader: {
+    wish: { text: 'a storage container in the room', ok: (r) => r.container },
     title: 'Trader', names: ['Mirt', 'Sol', 'Dex', 'Pryce'], look: { chassis: '#e8d0b0', suit: '#8a5a3a', visor: '#ffcc33', hair: '#5a3a2a', style: 0 },
     cond: (g) => g.player.credits >= 1500,
     shop: (g) => ['glowstick', 'cable', 'fiber_rod', 'bio_worm', 'micro_stim', 'charge_cell', 'kinetic_round', 'seed_pod', 'grenade', 'nano_shuriken', 'recall_inj', 'depth_meter', 'tool_belt', ...(g.world.flags.hardmode ? ['stim_pack', 'magnet_module', 'nano_larva'] : [])],
     lines: ['Credits talk. Everything else walks.', 'Fresh glowsticks, barely used!', 'I buy anything shiny. At a discount, of course.'],
   },
   medic: {
+    wish: { text: 'a Faraday-shielded room (Faraday Mesh Walls behind at least half of it)', ok: (r) => r.faraday * 2 >= r.cells },
     title: 'Medic', names: ['Iris', 'Nova', 'Halley'], look: { chassis: '#ffffff', suit: '#e8e8f0', visor: '#ff3355', hair: '#ff5a8a', style: 2 },
     cond: (g) => g.player.maxLife > 100 && g.town.has('trader'),
     service: 'heal',
     lines: ['Hold still. This will only sting a lot.', 'Integrity is not a renewable resource. Well... it is, for a fee.'],
   },
   gunsmith: {
+    wish: { text: 'a Fabricator in the room', ok: (r) => r.stations.has('fabricator') },
     title: 'Gunsmith', names: ['Brask', 'Colt', 'Ripley'], look: { chassis: '#8a7a6a', suit: '#3a3d46', visor: '#ff8a3d', hair: '#222222', style: 1 },
     cond: (g) => g.player.inv.some((s) => s && (ITEMS[s.k].ammo || ITEMS[s.k].type === 'ammo')),
     shop: (g) => ['kinetic_round', 'cuprite_gun', 'ferrite_gun', 'scatter_cannon', 'grenade', ...(g.world.flags.bosses.overseer ? ['targeting_scope'] : []), ...(g.world.flags.hardmode ? ['rocket_i', 'rocket_launcher', 'neutron_round'] : [])],
     lines: ['Point the shiny end at the angry thing.', 'Kinetic rounds never go out of style.'],
   },
   botanist: {
+    wish: { text: 'a window to the sky (glass in the room\'s walls or ceiling)', ok: (r) => r.glass },
     title: 'Botanist', names: ['Fern', 'Moss', 'Ivy', 'Sylva'], look: { chassis: '#b4ff4a', suit: '#3a8a2a', visor: '#ffffff', hair: '#7dff5a', style: 2 },
     cond: (g) => Object.keys(g.world.flags.bosses).length > 0,
     shop: (g) => ['seed_pod', 'grass_seeds', 'glowmoss_seeds', 'nano_purifier', 'glowcap', 'bio_worm', 'glow_grub', ...(g.world.flags.hardmode ? ['purifier_cannon'] : [])],
@@ -39,12 +45,14 @@ export const COLONISTS = {
     hint: (g) => g.world.flags.hardmode ? 'Blight and Prism now spread on their own. My Purifier Cannon can push them back.' : 'There are ' + (g.world.flags.nodesSmashed || 0) + ' Blight Nodes smashed. Every third one wakes the Data Wyrm.',
   },
   engineer: {
+    wish: { text: 'a Tinker Station in the room', ok: (r) => r.stations.has('tinker') },
     title: 'Engineer', names: ['Gear', 'Tess', 'Bolt', 'Watt'], look: { chassis: '#aeb7c2', suit: '#5a6b8a', visor: '#ffcc33', hair: '#ff8a3d', style: 0 },
     cond: (g) => !!g.world.flags.bosses.archon,
     shop: (g) => ['tinker_station', 'grapple_hook', 'sentry_remote', 'demo_charge', 'radar', 'magnet_module', 'ferrite_remote', ...(g.world.flags.hardmode ? ['rocket_mining'] : [])],
     lines: ['Two accessories are better than one. Combine them at a Tinker Station.', 'The Archon kept me locked up for 300 years. Thanks for that.'],
   },
   hacker: {
+    wish: { text: 'Circuit Walls behind at least a third of the room', ok: (r) => r.circuit * 3 >= r.cells },
     title: 'Hacker', names: ['Null', 'Glitch', 'Cipher', 'Byte'], look: { chassis: '#2a2a3a', suit: '#111118', visor: '#3dff6a', hair: '#3dff6a', style: 1 },
     cond: (g) => g.world.flags.hardmode,
     service: 'reforge',
@@ -52,6 +60,7 @@ export const COLONISTS = {
     lines: ['I can rewrite your gear\'s firmware. For a price.', 'Every weapon has a hidden modifier. Mine are better.'],
   },
   ripperdoc: {
+    wish: { text: 'a Surgery Bay in the room', ok: (r) => r.stations.has('surgery') },
     title: 'Ripperdoc', names: ['Vik', 'Chrome', 'Dr. Lattice', 'Splice'], look: { chassis: '#aeb7c2', suit: '#1a1a22', visor: '#3dffb0', hair: '#3dffb0', style: 1 },
     cond: (g) => !!g.world.flags.bosses.overseer || !!g.world.flags.bosses.gel_sovereign,
     shop: (g) => ['surgery_bay', 'spring_legs', 'thermal_optics', 'ore_lens', 'synth_muscle', 'gorilla_arms', 'circuitry', 'battery', ...(g.world.flags.bosses.archon ? ['hack_uplink', 'exo_spine'] : []), ...(g.world.flags.hardmode ? ['bio_monitor', 'fusion_core'] : [])],
@@ -136,69 +145,80 @@ export class Town {
       if (this.has(key) || d.traveling) continue;
       if (!d.cond(g)) continue;
       if (d.noHouse) { this.arrive(key, null); continue; }
-      const home = this.findHouse();
+      const home = this.findHouse(d);
       if (home) { this.arrive(key, home); return; }
     }
   }
 
-  // Scan around the player for a valid, unoccupied room anchored on a chair.
-  findHouse() {
+  // Scan around the player for a valid, unoccupied room anchored on a Colony Terminal that also
+  // meets the colonist's own wish.
+  findHouse(d) {
     const g = this.game, w = g.world, p = g.player;
     const ptx = Math.floor(p.cx / TILE), pty = Math.floor(p.cy / TILE);
     const taken = new Set(this.npcs.filter((n) => n.home).map((n) => n.home[0] + ',' + n.home[1]));
     for (let y = pty - 40; y <= pty + 40; y++) for (let x = ptx - 70; x <= ptx + 70; x++) {
       const t = TILES[w.get(x, y)];
-      if (!t || !t.chair) continue;
+      if (!t || !t.terminal) continue;
       const [ox, oy] = w.origin(x, y);
       if (ox !== x || oy !== y) continue;
       if (taken.has(ox + ',' + oy)) continue;
-      if (this.validRoom(ox, oy + 1)) return [ox, oy];
+      const room = this.survey(ox, oy + 1);
+      if (!room.issue && (!d || !d.wish || d.wish.ok(room))) return [ox, oy];
     }
     return null;
   }
 
-  validRoom(sx, sy) { return this.roomIssue(sx, sy) === null; }
+  validRoom(sx, sy) { return this.survey(sx, sy).issue === null; }
+  roomIssue(sx, sy) { return this.survey(sx, sy).issue; }
 
-  // Explains why the room containing (sx, sy) is not a valid house (null when valid).
-  roomIssue(sx, sy, needChair = false) {
-    const w = this.game.world;
-    let chair = false;
+  // Floods the room containing (sx, sy): what it holds, and why it isn't a valid home (issue).
+  survey(sx, sy) {
+    const g = this.game, w = g.world;
+    const r = { issue: null, cells: 0, faraday: 0, circuit: 0, container: false, glass: false, terminal: false, light: false, entrance: false, powered: false, stations: new Set() };
     const seen = new Set(), stack = [[sx, sy]];
-    let light = false, table = false, entrance = false, cells = 0;
+    const fail = (msg) => { r.issue = msg; return r; };
     while (stack.length) {
       const [x, y] = stack.pop();
       const k = y * w.w + x;
       if (seen.has(k)) continue;
       seen.add(k);
-      if (!w.inb(x, y)) return 'The room is not enclosed.';
+      if (!w.inb(x, y)) return fail('The room is not enclosed.');
       const id = w.get(x, y), t = TILES[id];
-      if (t && t.door) { entrance = true; continue; }
-      if (t && t.platform) { entrance = true; continue; }
-      if (t && t.solid) continue;
-      cells++;
-      if (cells > 750) return 'Too big or not enclosed (max 750 tiles).';
-      if (!w.getWall(x, y)) return 'Missing background wall at some spot.';
-      if (t && (LIGHT_R[id] > 0.3 || LIGHT_G[id] > 0.3)) light = true;
-      if (t && t.table) table = true;
-      if (t && t.chair) chair = true;
+      if (t && t.door) { r.entrance = true; continue; }
+      if (t && t.platform) { r.entrance = true; continue; }
+      if (t && t.solid) { if (t.key === 'glass') r.glass = true; continue; }
+      r.cells++;
+      if (r.cells > 750) return fail('Too big or not enclosed (max 750 tiles).');
+      const wl = w.getWall(x, y);
+      if (!wl) return fail('Missing background wall at some spot.');
+      if (wl === WALL.faraday_wall) r.faraday++;
+      if (wl === WALL.circuit_wall) r.circuit++;
+      if (wl === WALL.glass_wall) r.glass = true;
+      if (t && (LIGHT_R[id] > 0.3 || LIGHT_G[id] > 0.3)) r.light = true;
+      if (t && t.terminal) r.terminal = true;
+      if (t && t.container) r.container = true;
+      if (t && t.station) r.stations.add(t.station);
+      if (!r.powered && poweredAt(g, x, y)) r.powered = true;
       stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
     }
-    if (cells < 50) return 'Too small (needs at least 50 tiles inside).';
-    if (!light) return 'Needs a light source (lamp or glowstick).';
-    if (!table) return 'Needs a table or bench.';
-    if (needChair && !chair) return 'Needs a chair.';
-    if (!entrance) return 'Needs a door or platform as an entrance.';
-    return null;
+    if (r.cells < 50) return fail('Too small (needs at least 50 tiles inside).');
+    if (!r.light) return fail('Needs a light source (lamp or glowstick).');
+    if (!r.terminal) return fail('Needs a Colony Terminal.');
+    if (!r.entrance) return fail('Needs a door or platform as an entrance.');
+    if (!r.powered) return fail('No power: place a Scrap Generator within range.');
+    return r;
   }
 
   diagnose() {
     const p = this.game.player, w = this.game.world;
     const x = Math.floor(p.cx / TILE), y = Math.floor((p.y + p.h - 2) / TILE);
     if (w.solidAt(x, y)) return 'Stand inside the room to check it.';
-    const issue = this.roomIssue(x, y, true);
-    if (issue) return 'Not valid housing: ' + issue;
+    const room = this.survey(x, y);
+    if (room.issue) return 'Not valid housing: ' + room.issue;
     const taken = this.npcs.some((n) => n.home && Math.abs(n.home[0] - x) < 12 && Math.abs(n.home[1] - y) < 8);
-    return taken ? 'Valid housing (occupied).' : 'Valid housing! A colonist can move in when their conditions are met.';
+    if (taken) return 'Valid housing (occupied).';
+    const fits = Object.values(COLONISTS).filter((d) => d.wish && d.wish.ok(room)).map((d) => d.title);
+    return 'Valid powered housing! ' + (fits.length ? 'Its extras would suit: ' + fits.join(', ') + '.' : 'Colonists also have wishes: the Medic wants Faraday shielding, the Ripperdoc a Surgery Bay, the Trader storage...');
   }
 
   update() {
@@ -239,7 +259,7 @@ export class Town {
       }
       if (n.home) {
         const t = TILES[w.get(n.home[0], n.home[1])];
-        if (!t || !t.chair) { n.home = null; }
+        if (!t || !(t.chair || t.terminal)) { n.home = null; }
       }
     }
     if (this.timer % 600 === 0) this.save();
@@ -258,7 +278,7 @@ export class Town {
     if (!discovered('assembly_bench')) return 'Craft an Assembly Bench from 10 Fiber, place it, and stand near it to unlock more recipes.';
     if (!discovered('smelter')) return 'Mine down to find Ferrocrete and ore veins. A Smelter needs 20 Ferrocrete, 4 Fiber and 3 Glowsticks (Nanogel from slimes + Fiber).';
     if (!discovered('fabricator')) return 'Smelt Ferrite Ore into bars at the Smelter. 5 Ferrite Bars make a Fabricator, where you can build metal tools and armor.';
-    if (this.npcs.length < 3 && !w.flags.bosses.overseer) return 'Colonists need housing: an enclosed room (at least 50 tiles) with background walls, a door or platform, a light, a table and a chair.';
+    if (this.npcs.length < 3 && !w.flags.bosses.overseer) return 'Colonists need a powered home: an enclosed room (at least 50 tiles) with background walls, a door, a light and a Colony Terminal, within range of a Scrap Generator. Each colonist also has a wish, so check a room with the Housing button.';
     if (!discovered('hoverbike') && !discovered('smart_pistol') && !f.overseer) return 'At the Fabricator you can build tech, not just tools: a Smart Pistol, a Monofilament Whip, or a Scrap Hoverbike (14 Ferrite Bars, 4 Battery Cells, 3 Circuitry). Circuitry is 2 Scrap + 1 Cuprite Bar.';
     if (p.maxLife < 160 && !f.overseer) return 'Vital Cores glow red deep underground. Smash them with your pick to permanently raise your max integrity.';
     if (!f.gel_sovereign && !f.overseer) return 'You could challenge the Gel Sovereign (craft a Gel Beacon from 30 Nanogel) or the Overseer (Optic Lure from 6 Optic Lenses, at night).';

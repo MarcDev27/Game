@@ -11,7 +11,9 @@ import { addItem, countItem, removeItem, sortInventory, maxStack, HOTBAR } from 
 import { COLONISTS } from '../game/town.js';
 import { WorldMap } from './map.js';
 import { ACHIEVEMENTS } from '../content/achievements.js';
+import { BOSS_INFO } from '../content/monsters.js';
 import { makeBackup, deliver } from '../core/backup.js';
+import { recipeUnlocked, SUBSYSTEMS, clearance, REACTOR_CLEARANCE, reactorOnline, alertLevel, overrideOf, pendingChoices, chooseOverride, SWITCH_COST } from '../game/progress.js';
 import { LORE } from '../content/lore.js';
 import { IMPLANT_SLOTS, IMPLANT_SLOT_NAMES } from '../content/items.js';
 import { capacity, usedCapacity, canInstall, activeImplant } from '../game/implants.js';
@@ -117,6 +119,11 @@ export class UI {
   update() {
     const g = this.game, p = g.player, s = p.s;
     this.frame++;
+    // after a guardian falls, offer its subsystem's override once the fight is over
+    if (this.frame % 60 === 0 && !this.panel && !g.bosses.some((b) => !b.dead) && !p.dead) {
+      const pend = pendingChoices(g.world).join(',');
+      if (pend && pend !== this.promptedChoices) { this.promptedChoices = pend; this.openEngine(); }
+    }
     if (this.frame % 3 === 0) {
       $('.bar.life .fill').style.width = Math.max(0, p.life / s.maxLife * 100) + '%';
       $('.bar.life span').textContent = `INTEGRITY ${Math.ceil(Math.max(0, p.life))}/${s.maxLife}`;
@@ -145,9 +152,12 @@ export class UI {
         bb.querySelector('.fill').style.width = (hp / max * 100) + '%';
       } else bb.classList.add('hidden');
       const ev = g.events.active, eb = $('#eventbar');
-      if (ev) {
+      const hk = g.relayHack;
+      if (hk || ev) {
         eb.classList.remove('hidden');
-        eb.textContent = ev === 'invasion' && g.events.invasion ? `DRONE INVASION ${Math.floor(g.events.invasion.done / g.events.invasion.need * 100)}%` : ev === 'redshift' ? 'RED SHIFT' : 'SOLAR FLARE';
+        eb.textContent = hk ? `RELAY HACK ${Math.floor(hk.t / hk.need * 100)}%${Math.hypot(p.cx / TILE - hk.x, p.cy / TILE - hk.y) >= 16 ? ' · get closer!' : ''}`
+          : ev === 'invasion' && g.events.invasion ? `SECURITY SWEEP ${Math.floor(g.events.invasion.done / g.events.invasion.need * 100)}%`
+          : { redshift: 'SIGNAL STORM', eclipse: 'CORONAL EJECTION', siege: 'ENGINE SIEGE' }[ev] || ev.toUpperCase();
       } else eb.classList.add('hidden');
       // touch extras
       const arm = p.equip.implants.arms && ITEMS[p.equip.implants.arms.k];
@@ -253,6 +263,7 @@ export class UI {
     if (this.panel === 'inv') this.renderInventory();
     else if (this.panel === 'npc') this.renderNpc();
     else if (this.panel === 'pause') this.renderPause();
+    else if (this.panel === 'engine') this.renderEngine();
     else if (this.panel === 'settings') this.renderSettings();
     else if (this.panel === 'help') this.renderHelp();
     else if (this.panel === 'ach') this.renderAchievements();
@@ -464,6 +475,7 @@ export class UI {
     const out = [];
     for (const r of RECIPES) {
       const it = ITEMS[r.out];
+      if (!recipeUnlocked(g.world, r)) continue;
       if (this.craftTab !== 'all' && tabOf(it) !== this.craftTab) continue;
       const stationOk = !r.at || st.has(r.at);
       const ingOk = r.ing.every(([k, n]) => countItem(p.inv, k) >= n);
@@ -518,7 +530,7 @@ export class UI {
   craft(times) {
     const g = this.game, p = g.player;
     const r = RECIPES[this.craftSel];
-    if (!r) return;
+    if (!r || !recipeUnlocked(g.world, r)) return;
     const st = stationsProvided(g.nearbyStations());
     let made = 0;
     for (let k = 0; k < times; k++) {
@@ -564,7 +576,9 @@ export class UI {
       case 'housing': this.toast(g.town.diagnose(), '#9dff3d'); return;
       case 'achievements': this.panel = 'ach'; this.renderAchievements(); return;
       case 'archive': this.panel = 'archive'; this.renderArchive(); return;
-      case 'warp': { const [x, y] = el.dataset.to.split(',').map(Number); this.closePanel(); g.teleportTo(x, y); return; }
+      case 'engine': this.openEngine(); return;
+      case 'override': { const [sub, opt] = el.dataset.v.split(':'); if (chooseOverride(g, sub, opt)) this.renderEngine(); else this.renderEngine(); return; }
+      case 'warp': { const [x, y] = el.dataset.to.split(',').map(Number); this.closePanel(); g.world.flags.lastBeacon = [x, y]; g.teleportTo(x, y); return; }
       case 'sort': sortInventory(p.inv); this.pick = null; this.refreshPanel(); return;
       case 'showall': this.showAll = !this.showAll; this.renderInventory(); return;
       case 'craft': this.craft(1); return;
@@ -677,8 +691,8 @@ export class UI {
     const g = this.game, p = g.player, w = g.world;
     const bosses = Object.keys(w.flags.bosses).length;
     const html = `<div class="win" style="width:min(360px,94vw)"><h2><span>PAUSED</span><button data-act="close">&times;</button></h2><div class="body">
-      <div class="help">${esc(p.name)} · ${p.maxLife} max integrity · ${bosses} bosses defeated${w.flags.hardmode ? ' · <b>Singularity</b>' : ''}<br>${esc(w.name)} · Day ${w.day}</div>
-      <div class="menu-buttons" style="margin:10px auto"><button class="primary" data-act="resume">Resume</button><button data-act="help">Field Guide</button><button data-act="archive">Archive (${p.lore.length}/${LORE.length})</button><button data-act="achievements">Achievements (${p.achievements.size}/${ACHIEVEMENTS.length})</button><button data-act="settings">Settings</button><button data-act="save">Save</button><button data-act="backup">Back up to iCloud / Files</button><button data-act="quit">Save &amp; Exit</button></div></div></div>`;
+      <div class="help">${esc(p.name)} · ${p.maxLife} max integrity · ${bosses} bosses defeated${w.flags.hardmode ? ' · <b>Reactor online, Alert ' + alertLevel(w) + '</b>' : ''}<br>${esc(w.name)} · Day ${w.day}</div>
+      <div class="menu-buttons" style="margin:10px auto"><button class="primary" data-act="resume">Resume</button><button data-act="help">Field Guide</button><button data-act="engine">Engine · Clearance ${clearance(w)}</button><button data-act="archive">Archive (${p.lore.length}/${LORE.length})</button><button data-act="achievements">Achievements (${p.achievements.size}/${ACHIEVEMENTS.length})</button><button data-act="settings">Settings</button><button data-act="save">Save</button><button data-act="backup">Back up to iCloud / Files</button><button data-act="quit">Save &amp; Exit</button></div></div></div>`;
     this.show(html); this.bindPanel();
   }
 
@@ -687,6 +701,28 @@ export class UI {
     const html = `<div class="win" style="width:min(460px,96vw)"><h2><span>SETTINGS</span><button data-act="back">Back</button></h2><div class="body">${settingsForm(s)}</div></div>`;
     this.show(html); this.bindPanel();
     bindSettingsForm($('#panel'), s, () => { this.env.applySettings(); this.applyLayout(); });
+  }
+
+  openEngine() { this.panel = 'engine'; this.renderEngine(); }
+
+  // Clearance, reactor and Alert Level, and the override chosen for each subsystem.
+  renderEngine() {
+    const g = this.game, w = g.world, c = clearance(w);
+    const rows = Object.entries(SUBSYSTEMS).map(([k, sub]) => {
+      const won = !!w.flags.bosses[sub.guardian], cur = overrideOf(w, k);
+      const opts = Object.entries(sub.options).map(([o, od]) => {
+        const on = cur === o;
+        const btn = !won ? '' : on ? '<span style="color:#3dff6a;font-size:11px">ACTIVE</span>' : `<button data-act="override" data-v="${k}:${o}" class="${cur ? '' : 'primary'}">${cur ? 'Switch (' + SWITCH_COST / 1000 + 'k cr)' : 'Choose'}</button>`;
+        return `<div class="shopitem" style="align-items:flex-start;${on ? 'border-color:#3dff6a' : ''}"><div style="flex:1"><b>${od.name}</b><div style="font-size:11px;color:#8aa0c0">${od.desc}</div></div>${btn}</div>`;
+      }).join('');
+      return `<div class="label">${sub.name} ${won ? '' : '· guarded by ' + esc(BOSS_INFO[sub.guardian].name)}</div>${opts}`;
+    }).join('');
+    const pend = pendingChoices(w).length;
+    const reactor = reactorOnline(w) ? `<b style="color:#ff8a3d">Reactor online · Alert Level ${alertLevel(w)}</b>` : c >= REACTOR_CLEARANCE ? '<b style="color:#ffcc33">Reactor unlocked: challenge the Core Warden</b>' : `Reactor locked (needs Clearance ${REACTOR_CLEARANCE})`;
+    const html = `<div class="win dialog" style="width:min(520px,96vw)"><h2><span>STRATA ENGINE</span><button data-act="close">&times;</button></h2><div class="body">
+      <div class="help">Clearance <b>${c}</b>/5 · ${reactor}<br>${w.flags.bosses.firewall ? '' : 'Hack the Firewall (Intrusion Key) to open the Engine\'s subsystems. '}${pend ? '<span style="color:#ffcc33">Choose an override for each subsystem you have taken. Choices are permanent; switching later costs ' + SWITCH_COST + ' credits.</span>' : 'Each subsystem guardian you defeat grants Clearance and an override.'}</div>
+      ${rows}</div></div>`;
+    this.show(html); this.bindPanel();
   }
 
   renderArchive() {

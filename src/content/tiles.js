@@ -48,7 +48,7 @@ tile('aerogel', { name: 'Aerogel', tex: { style: 'cloud', c: '#e9f2ff' }, map: '
 tile('swarmcomb', { name: 'Swarm Comb', hp: 1.2, tex: { style: 'hex', c: '#c29a2a' }, map: '#c29a2a', biome: 'hive' });
 tile('derelict_hull', { name: 'Derelict Hull', hp: 4, minPick: 65, tex: { style: 'plate', c: '#44607e' }, map: '#44607e', biome: 'dungeon' });
 tile('derelict_hull_g', { name: 'Derelict Hull (Green)', hp: 4, minPick: 65, tex: { style: 'plate', c: '#3f6e57' }, map: '#3f6e57', biome: 'dungeon', drop: 'derelict_hull' });
-tile('temple_brick', { name: 'Ancient Alloy Brick', hp: 5, minPick: 200, tex: { style: 'brick', c: '#8a6a2e' }, map: '#8a6a2e', biome: 'temple' });
+tile('temple_brick', { name: 'Precursor Alloy', hp: 5, minPick: 200, tex: { style: 'brick', c: '#8a6a2e' }, map: '#8a6a2e', biome: 'temple' });
 tile('laser_grid', { name: 'Laser Grid', hp: 3, minPick: 65, tex: { style: 'grid', c: '#30404a', glow: '#ff3355' }, map: '#ff3355', damage: 30, light: [0.35, 0.04, 0.06], biome: 'dungeon' });
 tile('temple_spikes', { name: 'Ancient Spikes', drop: null, hp: 5, minPick: 200, tex: { style: 'grid', c: '#5a4520', glow: '#ffcc33' }, map: '#ffaa22', damage: 60, light: [0.3, 0.2, 0.02], biome: 'temple' });
 
@@ -172,18 +172,31 @@ furniture('canister_ice', 'Supply Canister', 'canister', 2, 2, { smash: true, dr
 furniture('canister_jungle', 'Supply Canister', 'canister', 2, 2, { smash: true, drop: null, map: '#a8ff3a', tint: '#7dbf3a' });
 furniture('canister_core', 'Supply Canister', 'canister', 2, 2, { smash: true, drop: null, map: '#ff5a2a', tint: '#a03a2a' });
 furniture('canister_derelict', 'Supply Canister', 'canister', 2, 2, { smash: true, drop: null, map: '#66ccff', tint: '#44607e' });
-furniture('vital_core', 'Vital Core', 'heart', 2, 2, { smash: true, drop: 'vital_core', light: [0.7, 0.15, 0.25], map: '#ff3355' });
+furniture('vital_core', 'Chassis Cache', 'heart', 2, 2, { smash: true, drop: 'chassis_part', light: [0.7, 0.15, 0.25], map: '#ff3355' });
 furniture('blight_node', 'Blight Node', 'orb', 2, 2, { tool: 'hammer', smash: true, drop: null, light: [0.45, 0.2, 0.7], map: '#b06bff' });
 furniture('hive_pod', 'Hive Pod', 'larva', 3, 3, { smash: true, drop: null, light: [0.5, 0.35, 0.05], map: '#ffcc33' });
 furniture('bloom_bulb', 'Bloom Bulb', 'bulb', 2, 2, { smash: true, drop: null, light: [0.6, 0.2, 0.4], map: '#ff5aa8' });
 furniture('archon_terminal', 'Archon Terminal', 'archon', 2, 3, { tool: 'none', drop: null, interact: 'archon', light: [0.2, 0.5, 0.9], map: '#66ccff' });
-furniture('temple_altar', 'Ancient Altar', 'altar', 3, 2, { tool: 'none', drop: null, interact: 'altar', light: [0.6, 0.4, 0.1], map: '#ffaa22' });
+furniture('temple_altar', 'Precursor Altar', 'altar', 3, 2, { tool: 'none', drop: null, interact: 'altar', light: [0.6, 0.4, 0.1], map: '#ffaa22' });
 furniture('derelict_chest', 'Derelict Chest', 'chest', 2, 2, { mat: { color: '#c9a640', accent: '#ffe27a' }, container: true, interact: 'chest', map: '#c9a640', locked: 'access_key' });
 furniture('core_chest', 'Core Chest', 'chest', 2, 2, { mat: { color: '#3a2a4f', accent: '#ff3fa4' }, container: true, interact: 'chest', map: '#3a2a4f', locked: 'core_key' });
 furniture('cache_chest', 'Cache Chest', 'chest', 2, 2, { mat: { color: '#8a7a5a', accent: '#ffd27a' }, container: true, interact: 'chest', map: '#8a7a5a' });
-furniture('temple_door', 'Ancient Door', 'door', 1, 3, { mat: { color: '#8a6a2e', accent: '#ffcc33' }, solid: true, door: true, opaque: false, anchor: 'door', interact: 'door', tool: 'none', drop: null, locked: 'temple_key', map: '#8a6a2e' });
+furniture('temple_door', 'Vault Door', 'door', 1, 3, { mat: { color: '#8a6a2e', accent: '#ffcc33' }, solid: true, door: true, opaque: false, anchor: 'door', interact: 'door', tool: 'none', drop: null, locked: 'precursor_keycode', map: '#8a6a2e' });
 tile('lockdown_field', { name: 'Lockdown Field', tool: 'none', drop: null, hp: 99, opaque: false, light: [0.15, 0.4, 0.7], tex: { style: 'glass', c: '#66ccff' }, map: '#66ccff' });
 tile('faraday_plate', { name: 'Faraday Plate', hp: 2, tex: { style: 'plate', c: '#9a5f33' }, map: '#9a5f33' });
+// ---- progression: colony power, Engine subsystems and the orbital ring ----
+tile('station_deck', { name: 'Station Deck', hp: 3, minPick: 100, tex: { style: 'plate', c: '#5a6b7a' }, map: '#5a6b7a' });
+furniture('colony_terminal', 'Colony Terminal', 'terminal', 2, 2, { terminal: true, station: 'terminal', light: [0.15, 0.5, 0.6], map: '#2ef2ff' });
+furniture('scrap_generator', 'Scrap Generator', 'generator', 2, 2, { power: 26, tint: '#8a6b55', light: [0.5, 0.35, 0.1], map: '#c9a640' });
+furniture('fusion_generator', 'Fusion Generator', 'generator', 3, 3, { power: 60, tint: '#44607e', light: [0.3, 0.6, 0.9], map: '#66ccff' });
+furniture('security_turret', 'Security Turret', 'turret', 2, 2, { turret: true, light: [0.4, 0.1, 0.1], map: '#ff3355' });
+furniture('time_dial', 'Time Dial', 'dial', 2, 3, { interact: 'dial', light: [0.15, 0.5, 0.4], map: '#3dffb0' });
+furniture('orbital_lift', 'Orbital Lift', 'lift', 3, 4, { interact: 'lift', light: [0.35, 0.55, 0.9], map: '#66ccff' });
+furniture('lift_platform', 'Lift Platform', 'lift', 3, 4, { interact: 'lift', tool: 'none', drop: null, light: [0.35, 0.55, 0.9], map: '#66ccff' });
+for (const [k, n, c] of [['flux', 'Kinetic', '#ff8a3d'], ['volt', 'Arc', '#3dffb0'], ['nova', 'Photon', '#ff3ddc'], ['drift', 'Graviton', '#66ccff']]) {
+  furniture('relay_' + k, n + ' Relay', 'relay', 3, 4, { interact: 'relay', relay: k, tool: 'none', drop: null, tint: c, light: [0.4, 0.4, 0.5], map: c });
+}
+furniture('supply_pod', 'Supply Pod', 'pod', 2, 2, { container: true, interact: 'chest', tint: '#aeb7c2', map: '#aeb7c2' });
 
 // ---------- walls ----------
 wall('regolith_wall', { name: 'Regolith Wall', tex: { c: '#3b2c27' }, map: '#3b2c27', natural: true });
@@ -198,7 +211,7 @@ wall('prism_wall', { name: 'Prism Wall', tex: { c: '#5c4f78', style: 'crystal' }
 wall('slag_wall', { name: 'Slag Wall', tex: { c: '#2a1f1f', style: 'rock' }, map: '#2a1f1f', natural: true });
 wall('hive_wall', { name: 'Hive Wall', tex: { c: '#5e4a14', style: 'hex' }, map: '#5e4a14', natural: true });
 wall('derelict_wall', { name: 'Derelict Wall', tex: { c: '#1f2d3d', style: 'plate' }, map: '#1f2d3d' });
-wall('temple_wall', { name: 'Ancient Wall', tex: { c: '#46361a', style: 'brick' }, map: '#46361a', natural: true, unbreakableUntil: 'golem' });
+wall('temple_wall', { name: 'Precursor Wall', tex: { c: '#46361a', style: 'brick' }, map: '#46361a', natural: true, unbreakableUntil: 'golem' });
 for (const wd of WOODS) wall(wd.key + '_wall', { name: wd.name + ' Wall', tex: { c: wd.color, style: 'wood' }, map: wd.color });
 for (const m of METALS) wall(m.key + '_wall', { name: m.name + ' Plating Wall', tex: { c: m.color, style: 'plate' }, map: m.color });
 wall('glass_wall', { name: 'Glass Wall', tex: { c: '#5f8aa0', style: 'glass' }, map: '#5f8aa0' });
@@ -206,6 +219,7 @@ wall('carbon_wall', { name: 'Carbon Brick Wall', tex: { c: '#24262c', style: 'br
 wall('circuit_wall', { name: 'Circuit Wall', tex: { c: '#0e1e24', style: 'circuit' }, map: '#0e1e24' });
 wall('ferrocrete_brick_wall', { name: 'Ferrocrete Brick Wall', tex: { c: '#454b55', style: 'brick' }, map: '#454b55' });
 wall('faraday_wall', { name: 'Faraday Mesh Wall', tex: { c: '#5a3a22', style: 'grid' }, map: '#5a3a22' });
+wall('station_wall', { name: 'Station Wall', tex: { c: '#2a323c', style: 'plate' }, map: '#2a323c' });
 
 // ---------- lookup tables for hot loops ----------
 export const SOLID = new Uint8Array(TILES.length); // 1 solid, 2 platform, 3 door

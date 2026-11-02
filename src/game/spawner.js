@@ -2,6 +2,7 @@
 import { TILE, clamp } from '../core/util.js';
 import { MONSTERS } from '../content/monsters.js';
 import { TILES, W } from '../content/tiles.js';
+import { overrideOf, alertLevel } from './progress.js';
 
 export class Spawner {
   constructor(game) { this.game = game; this.timer = 0; }
@@ -43,6 +44,8 @@ export class Spawner {
         else if (env.layer === 'space') { if (!r.layers || !r.layers.includes('space')) continue; }
         else if (r.biomes && !r.biomes.includes(env.biome)) continue;
         let wt = r.weight;
+        if (r.biomes && r.biomes.includes('blight') && overrideOf(w, 'foundry') === 'purge') wt *= 0.5;
+        if (r.biomes && r.biomes.includes('jungle') && overrideOf(w, 'biodome') === 'climate') wt *= 0.7;
         if (r.event && env.event) wt *= 4;
         list.push({ key: k, weight: wt, flying: !d.gravity || d.ai === 'flyer' || d.ai === 'floater' || d.ai === 'worm', ground: r.ground });
         break;
@@ -65,7 +68,8 @@ export class Spawner {
     if (ev === 'redshift') { max *= 2; rate *= 3; }
     if (ev === 'invasion' || ev === 'eclipse') { if (layer === 'surface') { max = 14; rate = 0.6; } }
     if (g.biome === 'dungeon' || g.biome === 'temple') { max += 4; rate *= 1.5; }
-    if (g.biome === 'core' || w.flags.hardmode) rate *= 1.3;
+    if (g.biome === 'core' || w.flags.hardmode) rate *= 1.2 + 0.1 * alertLevel(w);
+    if (ev === 'siege') { max = 16; rate = 0.7; }
     rate *= Math.max(0.1, 1 + p.s.spawnRate);
     max = Math.round(max * Math.max(0.3, 1 + p.s.spawnRate * 0.5));
     if (g.bosses.some((b) => !b.dead)) { rate *= 0.3; max = Math.ceil(max / 2); }

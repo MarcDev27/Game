@@ -133,7 +133,7 @@ m('reaper_unit', { name: 'Reaper Unit', hp: 1800, dmg: 90, def: 30, kbRes: 0.8, 
   drops: [['berserker_core', 0.05, 1, 1], ['star_veil', 0.05, 1, 1], ['quantum_dust', 1, 3, 6]], spawn: [S(ANY, SURF, 'day', 3, { event: 'eclipse' })] });
 m('eclipse_eye', { name: 'Flare Eye', hp: 700, dmg: 70, def: 20, w: 36, h: 36, ai: 'flyer', sprite: 'eye', color: '#ffb12e', c2: '#222', speed: 3.4, gravity: false, credits: 1500,
   shoot: { proj: 'e_fireball', rate: 90, speed: 6, dmg: 50 }, drops: [['nano_mender', 0.04, 1, 1], ['terror_matrix', 0.3, 1, 2]], spawn: [S(ANY, SURF, 'day', 3, { event: 'eclipse' })] });
-for (const [k, n, c, frag] of [['flux_sentinel', 'Flux Sentinel', '#ff8a3d', 'fragment_flux'], ['volt_sentinel', 'Volt Sentinel', '#3dffb0', 'fragment_volt'], ['nova_sentinel', 'Nova Sentinel', '#ff3ddc', 'fragment_nova'], ['drift_sentinel', 'Drift Sentinel', '#66ccff', 'fragment_drift']]) {
+for (const [k, n, c, frag] of [['flux_sentinel', 'Kinetic Warden', '#ff8a3d', 'fragment_flux'], ['volt_sentinel', 'Arc Warden', '#3dffb0', 'fragment_volt'], ['nova_sentinel', 'Photon Warden', '#ff3ddc', 'fragment_nova'], ['drift_sentinel', 'Graviton Warden', '#66ccff', 'fragment_drift']]) {
   m(k, { name: n, hp: 1400, dmg: 80, def: 36, w: 28, h: 44, ai: 'caster', sprite: 'sentinel', color: c, c2: '#ffffff', speed: 0, credits: 2000, light: [0.4, 0.4, 0.4],
     shoot: { proj: 'e_beam', rate: 90, speed: 8, dmg: 60 }, drops: [[frag, 1, 2, 5]], spawn: [S(ANY, ['surface', 'space'], 'night', 2, { hard: true, after: 'gravity_golem' })] });
 }
@@ -150,9 +150,14 @@ m('cache_mimic', { name: 'Cache Mimic', hp: 260, dmg: 34, def: 14, w: 28, h: 24,
   drops: [['memory_shard', 0.12, 1, 1], ['battery', 0.6, 1, 3], ['stim_pack', 0.6, 2, 4], ['grapple_hook', 0.15, 1, 1], ['magnet_module', 0.15, 1, 1], ['jump_module', 0.15, 1, 1], ['regen_band', 0.15, 1, 1]],
   spawn: [S(ANY, UG, 'any', 0.35, { ground: true })] });
 m('tether_leech', { name: 'Tether Leech', hp: 90, dmg: 14, def: 4, w: 20, h: 20, ai: 'leech', sprite: 'leech', color: '#ff5a8a', c2: '#5b5770', speed: 1.5, gravity: false, tileCollide: false, credits: 90, hardScale: true,
-  drops: [['bio_spore', 0.3, 1, 2], ['vital_core', 0.01, 1, 1]], spawn: [S(['jungle', 'blight'], UG, 'any', 1.5), S(ANY, CAV, 'any', 0.6)] });
+  drops: [['bio_spore', 0.3, 1, 2], ['chassis_part', 0.02, 1, 1]], spawn: [S(['jungle', 'blight'], UG, 'any', 1.5), S(ANY, CAV, 'any', 0.6)] });
 m('sapper', { name: 'Sapper Unit', hp: 50, dmg: 45, def: 4, w: 18, h: 24, ai: 'sapper', sprite: 'sapper', color: '#c7854f', c2: '#ff3355', speed: 2.8, credits: 80, hardScale: true,
   drops: [['demo_charge', 0.6, 1, 3]], spawn: [S(['desert', 'plains'], SURF, 'night', 1), S(ANY, UG, 'any', 0.8), S(ANY, SURF, 'any', 2, { event: 'invasion' })], invader: 1 });
+m('patrol_drone', { name: 'Security Drone', hp: 600, dmg: 30, def: 20, w: 22, h: 18, ai: 'patrol', sprite: 'drone', color: '#66ccff', c2: '#3dff6a', speed: 3.4, gravity: false, tileCollide: false, credits: 0, light: [0.15, 0.35, 0.5], drops: [], spawn: [] });
+// Engine Siege: the defense grid's ground forces
+for (const k of ['sapper', 'assault_bot', 'swarm_drone', 'emp_drone', 'shield_bot']) MONSTERS[k].spawn.push(S(ANY, SURF, 'any', k === 'sapper' ? 4 : 3, { event: 'siege' }));
+// Sentinels only appear to defend the Architect's relays while you hack them
+for (const k of ['flux_sentinel', 'volt_sentinel', 'nova_sentinel', 'drift_sentinel']) MONSTERS[k].spawn = [];
 
 // ---------------- bosses ----------------
 const B = (key, d) => m(key, Object.assign({ boss: true, gravity: false, tileCollide: false, kbRes: 1, spawn: [] }, d));
@@ -178,7 +183,7 @@ B('prime_archon', { name: 'Prime Archon', hp: 28000, dmg: 50, def: 24, w: 80, h:
   drops: [['terror_matrix', 1, 20, 40], ['exalted_bar', 1, 15, 30]], music: 'boss3' });
 B('prime_hand', { name: 'Prime Arm', hp: 9000, dmg: 40, def: 24, w: 44, h: 44, ai: 'boss_hand', sprite: 'hand', color: '#aeb7c2', c2: '#ff3355', speed: 5, credits: 0, drops: [], prime: true });
 B('bloom_titan', { name: 'Bloom Titan', hp: 30000, dmg: 50, def: 14, w: 90, h: 90, ai: 'boss_bloom', sprite: 'bloom', color: '#ff5aa8', c2: '#3a8a2a', speed: 3, credits: 40000, light: [0.5, 0.2, 0.35],
-  drops: [['temple_key', 1, 1, 1], ['bloom_tissue', 1, 10, 20], ['bloom_glaive', 0.3, 1, 1], ['bloom_launcher', 0.3, 1, 1], ['grenade_launcher', 0.3, 1, 1], ['thorn_plating', 0.2, 1, 1]], music: 'boss3' });
+  drops: [['bloom_tissue', 1, 10, 20], ['bloom_glaive', 0.3, 1, 1], ['bloom_launcher', 0.3, 1, 1], ['grenade_launcher', 0.3, 1, 1], ['thorn_plating', 0.2, 1, 1]], music: 'boss3' });
 B('gravity_golem', { name: 'Gravity Golem', hp: 40000, dmg: 70, def: 26, w: 110, h: 110, ai: 'boss_golem', sprite: 'golem', color: '#8a6a2e', c2: '#ffaa22', speed: 3, gravity: true, tileCollide: true, credits: 60000, light: [0.5, 0.35, 0.1],
   drops: [['golem_core', 1, 1, 1], ['golem_fist', 0.35, 1, 1], ['golem_eye', 0.35, 1, 1], ['temple_brick', 1, 20, 40]], music: 'boss3' });
 B('golem_fist_e', { name: 'Golem Fist', hp: 9000, dmg: 60, def: 30, w: 40, h: 40, ai: 'boss_hand', sprite: 'fist', color: '#8a6a2e', c2: '#ffaa22', speed: 6, credits: 0, drops: [] });
@@ -205,8 +210,8 @@ export const BOSS_INFO = {
   gel_sovereign: { name: 'Gel Sovereign', summon: 'gel_beacon', hint: 'Craft a Gel Beacon from 30 Nanogel.' },
   data_wyrm: { name: 'Data Wyrm', summon: 'corrupt_datachip', biome: 'blight', hint: 'Smash 3 Blight Nodes in the Blight chasms or craft a Corrupted Datachip.' },
   swarm_mother: { name: 'Swarm Mother', summon: 'pheromone_chip', biome: 'jungle', hint: 'Break the Hive Pod inside the Overgrowth hive.' },
-  archon: { name: 'The Archon', summon: 'archon_key', night: true, hint: 'Activate the Archon Terminal outside the Derelict Station at night.' },
-  core_warden: { name: 'The Core Warden', summon: 'core_override', biome: 'core', hint: 'Use a Core Override Key in the Reactor Core. Defeating it begins the Singularity.' },
+  archon: { name: 'The Archon', summon: 'archon_key', hint: 'Override the Archon Terminal outside the Derelict Station. It guards the Security Grid.' },
+  core_warden: { name: 'The Core Warden', summon: 'core_override', biome: 'core', hint: 'With Clearance 3, use a Core Override Key in the Reactor Core. Defeating it brings the Reactor back online.' },
   twin_lancers: { name: 'Twin Lancers', summon: 'mech_optic', night: true, hard: true },
   leviathan: { name: 'The Leviathan', summon: 'mech_worm', night: true, hard: true },
   prime_archon: { name: 'Prime Archon', summon: 'mech_skull', night: true, hard: true },

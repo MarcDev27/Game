@@ -84,7 +84,7 @@ const result = await page.evaluate(async () => {
   // crafting: place all stations near player and craft every recipe
   for (let i = 0; i < p.inv.length; i++) p.inv[i] = null;
   const px = Math.floor(p.cx / 16), py = Math.floor(p.cy / 16);
-  const stations = ['assembly_bench', 'smelter', 'fabricator', 'synth_vat', 'textile_printer', 'tinker_station', 'plasma_forge', 'nano_forge', 'quantum_assembler', 'singularity_core', 'cryo_lathe', 'surgery_bay'];
+  const stations = ['assembly_bench', 'smelter', 'fabricator', 'synth_vat', 'textile_printer', 'tinker_station', 'plasma_forge', 'nano_forge', 'quantum_assembler', 'singularity_core', 'cryo_lathe', 'surgery_bay', 'colony_terminal'];
   // flatten an area
   for (let y = py - 12; y <= py + 1; y++) for (let x = px - 20; x <= px + 20; x++) g.world.set(x, y, 0);
   for (let x = px - 20; x <= px + 20; x++) g.world.set(x, py + 2, Tl.T.ferrocrete);
@@ -92,7 +92,10 @@ const result = await page.evaluate(async () => {
   let sx = px - 18;
   for (const s of stations) { const f = Tl.TILES[Tl.T[s]].furn; g.world.placeFurniture(sx, py + 2 - f.h, Tl.T[s]); sx += f.w; }
   // every station within reach (the row of stations is wider than the crafting radius)
-  g.nearbyStations = () => new Set(['bench', 'smelter', 'fabricator', 'vat', 'printer', 'tinker', 'plasmaforge', 'nanoforge', 'quantum', 'singularity', 'lathe', 'surgery']);
+  g.nearbyStations = () => new Set(['bench', 'smelter', 'fabricator', 'vat', 'printer', 'tinker', 'plasmaforge', 'nanoforge', 'quantum', 'singularity', 'lathe', 'surgery', 'terminal']);
+  // progression-gated recipes: pretend the reactor is online and the matching overrides are chosen
+  const hard0 = g.world.flags.hardmode;
+  g.world.flags.hardmode = true; g.world.flags.overrides = { security: 'turrets', chrono: 'dial' };
   const st = R.stationsProvided(g.nearbyStations());
   log.push('stations ' + [...st].join(','));
   const ui = g.ui;
@@ -109,6 +112,7 @@ const result = await page.evaluate(async () => {
     else fail.push('could not craft ' + r.out + ' at ' + r.at);
   }
   log.push('crafted ' + crafted + '/' + R.RECIPES.length);
+  g.world.flags.hardmode = hard0; g.world.flags.overrides = {};
   ui.closePanel();
   // house building + housing validation
   for (let i = 0; i < p.inv.length; i++) p.inv[i] = null;
@@ -118,8 +122,10 @@ const result = await page.evaluate(async () => {
   for (let y = hy - 8; y <= hy; y++) for (let x = hx + 1; x < hx + 11; x++) g.world.setWall(x, y, Tl.W.fiber_wall);
   for (let y = hy - 2; y <= hy; y++) g.world.set(hx, y, 0);
   g.world.placeFurniture(hx, hy - 2, Tl.T.fiber_door);
-  g.world.placeFurniture(hx + 2, hy - 1, Tl.T.fiber_chair);
-  g.world.placeFurniture(hx + 4, hy - 1, Tl.T.fiber_table);
+  g.world.placeFurniture(hx + 2, hy - 1, Tl.T.colony_terminal);
+  g.world.placeFurniture(hx + 14, hy - 1, Tl.T.scrap_generator); g.world.flags.generators = [[hx + 14, hy - 1]];
+  g.world.placeFurniture(hx + 5, hy - 1, Tl.T.fiber_table);
+  g.world.placeFurniture(hx + 8, hy - 1, Tl.T.fiber_chest); // the Trader's wish: storage
   g.world.set(hx + 8, hy - 5, Tl.T.glowstick);
   const home = g.town.findHouse();
   log.push('house found ' + JSON.stringify(home));

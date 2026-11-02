@@ -110,10 +110,10 @@ item('exalted_bar', { name: 'Exalted Alloy Bar', icon: { s: 'bar', c: '#ffe8a8',
 mat('phase_residue', 'Phase Residue', { s: 'gel', c: '#9ff4e8' }, 300, 6, 'Residue of digital ghosts');
 mat('bloom_tissue', 'Bloom Tissue', { s: 'leaf', c: '#ff5aa8', c2: '#3a8a2a' }, 500, 6);
 mat('golem_core', 'Gravity Golem Core', { s: 'core', c: '#ffaa22', c2: '#8a6a2e' }, 1000, 7);
-mat('fragment_flux', 'Flux Fragment', { s: 'fragment', c: '#ff8a3d' }, 500, 8);
-mat('fragment_volt', 'Volt Fragment', { s: 'fragment', c: '#3dffb0' }, 500, 8);
-mat('fragment_nova', 'Nova Fragment', { s: 'fragment', c: '#ff3ddc' }, 500, 8);
-mat('fragment_drift', 'Drift Fragment', { s: 'fragment', c: '#66ccff' }, 500, 8);
+mat('fragment_flux', 'Kinetic Shard', { s: 'fragment', c: '#ff8a3d' }, 500, 8);
+mat('fragment_volt', 'Arc Shard', { s: 'fragment', c: '#3dffb0' }, 500, 8);
+mat('fragment_nova', 'Photon Shard', { s: 'fragment', c: '#ff3ddc' }, 500, 8);
+mat('fragment_drift', 'Graviton Shard', { s: 'fragment', c: '#66ccff' }, 500, 8);
 item('singularity_bar', { name: 'Singularity Bar', icon: { s: 'bar', c: '#d0a0ff', c2: '#6a3aa8' }, value: 3000, rarity: 10, tip: 'Matter at the edge of comprehension' });
 mat('quantum_dust', 'Quantum Dust', { s: 'dust', c: '#d0a0ff' }, 50, 4, 'Scraped from hardmode machines');
 for (const h of HERBS) mat(h.key, h.name, { s: 'herb', c: h.color }, 20, 0, 'Alchemical ingredient');
@@ -122,7 +122,7 @@ mat('bio_mushroom', 'Bio Mushroom', { s: 'mushroom', c: '#ff5a8a' }, 25, 0);
 // ---------------- currency-like ----------------
 item('access_key', { name: 'Access Key', icon: { s: 'key', c: '#ffe27a' }, stack: 99, value: 0, rarity: 1, tip: 'Unlocks a Derelict Chest' });
 item('core_key', { name: 'Core Key', icon: { s: 'key', c: '#ff3fa4' }, stack: 1, value: 0, rarity: 3, tip: 'Unlocks a Core Chest' });
-item('temple_key', { name: 'Ancient Key', icon: { s: 'key', c: '#ffaa22' }, stack: 99, value: 0, rarity: 6, tip: 'Opens the Ancient Temple doors' });
+item('temple_key', { name: 'Old Vault Key', icon: { s: 'key', c: '#ffaa22' }, stack: 99, value: 0, rarity: 6, tip: 'Opens the Ancient Temple doors' });
 
 // ---------------- tools ----------------
 const tool = (key, d) => item(key, Object.assign({ type: 'tool', useStyle: 'swing', dmgType: 'melee', knock: 2, crit: 4 }, d));
@@ -344,7 +344,7 @@ const INJ = [
   ['calm', 'Dampener Signal', '#8fb8ff', 5], ['battle', 'Beacon Signal', '#ff8fa8', 7],
 ];
 for (const [b, n, c, min] of INJ) cons(b + '_inj', n, { buff: b, time: 60 * 60 * min }, { s: 'injector', c }, 400, 1, '');
-cons('vital_core', 'Vital Core', { maxLife: 20, cap: 400 }, { s: 'heart', c: '#ff3355' }, 7500, 2, 'Permanently +20 max integrity (up to 400)');
+cons('vital_core', 'Chassis Upgrade', { maxLife: 20, cap: 400, surgery: true }, { s: 'heart', c: '#ff3355' }, 7500, 2, 'Install at a Surgery Bay: permanently +20 max integrity (up to 400)');
 cons('energy_matrix', 'Energy Matrix', { maxEnergy: 20, cap: 200 }, { s: 'star', c: '#a46bff', c2: '#5a78ff' }, 5000, 2, 'Permanently +20 max energy (up to 200)');
 cons('overcharge_capsule', 'Overcharge Capsule', { maxLife: 5, cap: 500, needs: 400 }, { s: 'heart', c: '#ffcc33' }, 15000, 6, 'Permanently +5 max integrity (400 to 500)');
 cons('expansion_port', 'Expansion Port', { accSlot: 1 }, { s: 'chip', c: '#d0a0ff', c2: '#2ef2ff' }, 50000, 5, 'Permanently unlocks a 6th accessory slot', { stack: 1 });
@@ -360,10 +360,10 @@ sum('corrupt_datachip', 'Corrupted Datachip', 'data_wyrm', { s: 'chip', c: '#b06
 sum('pheromone_chip', 'Pheromone Chip', 'swarm_mother', { s: 'chip', c: '#ffcc33', c2: '#c29a2a' }, 3000, 2, 'Summons the Swarm Mother. Use in the Overgrowth.');
 sum('archon_key', 'Archon Override', 'archon', { s: 'key', c: '#66ccff' }, 4000, 2, 'Summons the Archon. Use at night.');
 sum('core_override', 'Core Override Key', 'core_warden', { s: 'key', c: '#ff5a2a' }, 8000, 3, 'Summons the Core Warden. Use in the Reactor Core.');
-sum('mech_optic', 'Mechanical Optic', 'twin_lancers', { s: 'lens', c: '#3dff6a', c2: '#aeb7c2' }, 20000, 5, 'Summons the Twin Lancers. Use at night.');
-sum('mech_worm', 'Mechanical Worm Chip', 'leviathan', { s: 'chip', c: '#ff3355', c2: '#aeb7c2' }, 20000, 5, 'Summons the Leviathan. Use at night.');
-sum('mech_skull', 'Mechanical Skull', 'prime_archon', { s: 'skull', c: '#aeb7c2', c2: '#ff3355' }, 20000, 5, 'Summons Prime Archon. Use at night.');
-sum('power_cell', 'Power Cell', 'gravity_golem', { s: 'cell', c: '#ffaa22', c2: '#8a6a2e' }, 30000, 7, 'Use at the Ancient Altar deep in the Overgrowth temple.');
+sum('mech_optic', 'Lancer Ping', 'twin_lancers', { s: 'lens', c: '#3dff6a', c2: '#aeb7c2' }, 20000, 5, 'Provokes the defense grid: the Twin Lancers besiege you now. Use at night.');
+sum('mech_worm', 'Leviathan Ping', 'leviathan', { s: 'chip', c: '#ff3355', c2: '#aeb7c2' }, 20000, 5, 'Provokes the defense grid: the Leviathan besieges you now. Use at night.');
+sum('mech_skull', 'Prime Ping', 'prime_archon', { s: 'skull', c: '#aeb7c2', c2: '#ff3355' }, 20000, 5, 'Provokes the defense grid: Prime Archon besieges you now. Use at night.');
+sum('power_cell', 'Precursor Cell', 'gravity_golem', { s: 'cell', c: '#ffaa22', c2: '#8a6a2e' }, 30000, 7, 'Old Precursor energy. Worth a lot to traders; the Vault altar itself needs a generator.');
 sum('architect_sigil', 'Architect Sigil', 'architect', { s: 'emblem', c: '#d0a0ff', c2: '#2ef2ff' }, 100000, 9, 'Summons the Architect. The end of all things.');
 sum('signal_flare', 'Signal Flare', 'invasion_drones', { s: 'flare', c: '#ff3355' }, 3000, 1, 'Calls a Drone Invasion');
 sum('red_shift_beacon', 'Red Shift Beacon', 'event_redshift', { s: 'flare', c: '#ff2244' }, 5000, 2, 'Starts a Red Shift at night');
@@ -506,4 +506,16 @@ techw('null_beam', { name: 'Null Beam', dmgType: 'energy', damage: 64, useTime: 
 // EMP shielding: a room backed by Faraday mesh walls, or a Faraday plate between you and the drone, blocks EMP pulses.
 blockItem('faraday_plate', { value: 60, tip: 'Copper-mesh plating. Blocks EMP pulses that would pass through it.' });
 wallItem('faraday_wall', { value: 20, tip: 'Background mesh wall. Stand in front of it (for example inside a house built with it) and EMP pulses can\'t reach you.' });
+// ---- progression ----
+mat('chassis_part', 'Chassis Part', { s: 'gear', c: '#ff5a8a', c2: '#aeb7c2' }, 1500, 2, 'Salvaged from Chassis Caches. Build Chassis Upgrades at a Surgery Bay.');
+mat('signal_fragment', 'Signal Fragment', { s: 'chip', c: '#ffcc33', c2: '#2ef2ff' }, 3000, 4, 'Part of a Precursor signal. Decode three at a Colony Terminal.');
+item('precursor_keycode', { name: 'Precursor Keycode', type: 'material', icon: { s: 'key', c: '#ffaa22', c2: '#2ef2ff' }, value: 20000, rarity: 6, tip: 'Opens the Precursor Vault in the Overgrowth caverns.' });
+blockItem('station_deck', { value: 30 });
+wallItem('station_wall', { value: 10 });
+furnItem('colony_terminal', { name: 'Colony Terminal', stack: 99, value: 600, tip: 'Colonists need a powered room with a Colony Terminal. Also decodes signals.' });
+furnItem('scrap_generator', { name: 'Scrap Generator', stack: 99, value: 900, tip: 'Powers rooms, turrets and machines within 26 tiles.' });
+furnItem('fusion_generator', { name: 'Fusion Generator', stack: 99, value: 20000, tip: 'Powers everything within 60 tiles.' });
+furnItem('security_turret', { name: 'Security Turret', stack: 99, value: 6000, tip: 'Shoots hostile creatures nearby while powered.' });
+furnItem('time_dial', { name: 'Time Dial', stack: 99, value: 12000, tip: 'Tap it to skip to the next dawn or dusk.' });
+furnItem('orbital_lift', { name: 'Orbital Lift', stack: 99, value: 40000, tip: 'Needs power. Tap it to ride up to the orbital ring.' });
 

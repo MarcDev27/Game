@@ -194,7 +194,7 @@ export const BOSS_AI = {
   },
 
   boss_archon(m, game, tgt) {
-    if (nightOnly(m, game, tgt)) return;
+    if (m.def.prime ? nightOnly(m, game, tgt) : !tgt) { if (!m.def.prime) { m.ai.leaving = 1; leave(m, game); } return; }
     const a = m.ai;
     a.t = (a.t || 0) + 1;
     const hands = game.monsters.filter((h) => h.owner === m && !h.dead);

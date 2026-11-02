@@ -113,6 +113,7 @@ export class Player {
     }
     for (const sl of IMPLANT_SLOTS) { const im = eq.implants[sl]; if (im && ITEMS[im.k]) addStats(ITEMS[im.k].stats); }
     if (this.vehicle) addStats(VEHICLES[this.vehicle.key].stats);
+    if (this.worldStats) addStats(this.worldStats);
     for (const [k] of this.buffs) {
       const b = BUFFS[k];
       if (!b) continue;

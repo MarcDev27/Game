@@ -169,7 +169,7 @@ export class Menus {
   async worlds() {
     const worlds = (await store.all('worlds')).sort((a, b) => (b.lastPlayed || 0) - (a.lastPlayed || 0));
     const sizeName = (w) => (Object.values(WORLD_SIZES).find((s) => s.w === w.w) || { label: w.w + 'w' }).label;
-    const rows = worlds.map((w) => `<div class="entry"><div class="meta"><div class="t">${esc(w.name)}${w.flags && w.flags.hardmode ? ' <span style="color:#d0a0ff;font-size:11px">SINGULARITY</span>' : ''}</div>
+    const rows = worlds.map((w) => `<div class="entry"><div class="meta"><div class="t">${esc(w.name)}${w.flags && w.flags.hardmode ? ' <span style="color:#ff8a3d;font-size:11px">REACTOR ONLINE</span>' : ''}</div>
       <div class="s">${sizeName(w)} · ${w.difficulty === 'expert' ? 'Expert' : 'Normal'} · Day ${w.day} · ${Object.keys((w.flags && w.flags.bosses) || {}).length} bosses</div></div>
       <button class="primary" data-play="${w.id}">Play</button><button class="danger" data-del="${w.id}">&times;</button></div>`).join('');
     $('#menu').innerHTML = `<div class="screen"><div class="card"><h3 style="margin:0 0 8px;color:#2ef2ff">Select World · ${esc(this.player.name)}</h3>

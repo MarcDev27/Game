@@ -4,6 +4,7 @@ import { TILE, clamp } from '../core/util.js';
 import { T, W, TILES, CONVERT } from '../content/tiles.js';
 import { Drop } from './entities.js';
 import { summonBoss } from './bosses.js';
+import { trySiege } from './colony.js';
 
 export class Events {
   constructor(game) {
@@ -38,6 +39,7 @@ export class Events {
     const g = this.game, w = g.world, p = g.player;
     if (this.active === 'eclipse') { this.active = null; g.notify('The Solar Flare subsides.', '#ffb12e'); }
     if (w.flags.meteorPending || (w.flags.bosses.data_wyrm && g.rng.chance(1 / 30))) { w.flags.meteorPending = false; this.orbitalDrop(); }
+    if (!this.active && trySiege(g)) return;
     if (!this.active && p.maxLife > 120 && g.rng.chance(1 / 9)) {
       this.active = 'redshift';
       g.notify('A Red Shift is rising...', '#ff2244'); g.audio.play('event');
@@ -48,6 +50,8 @@ export class Events {
     const g = this.game, w = g.world;
     w.day++;
     if (this.active === 'redshift') { this.active = null; }
+    if (this.active === 'siege') { this.active = null; g.notify('The siege withdraws at dawn.', '#aeb7c2'); }
+    w.flags.patrolDown = false;
     g.town.checkArrivals(true);
     g.town.smugglerRoll();
     if (!this.active && w.flags.bosses.overseer && !w.flags.invasionsDone && g.rng.chance(1 / 3)) this.trigger('invasion_drones');

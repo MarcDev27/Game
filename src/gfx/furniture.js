@@ -148,6 +148,42 @@ export function drawFurniture(t, open) {
       ctx.globalAlpha = 0.35; R('#66ccff', 6, 2, 20, 34); ctx.globalAlpha = 1;
       glow('#66ccff', 12, 4, 8, 8); R('#ffffff', 15, 20, 2, 2);
       break;
+    case 'generator': {
+      const big = W > 32;
+      R(shade(base, 0.5), 1, H - 6, W - 2, 6); R(base, 2, 4, W - 4, H - 10); R(light, 2, 4, W - 4, 1);
+      for (let x = 5; x < W - 5; x += 4) R(dark, x, 7, 2, H - 18);
+      glow(big ? '#66ccff' : '#ffcc33', W / 2 - 3, H / 2 - 4, 6, 6);
+      R('#2a2a33', W - 8, 0, 4, 5); R(acc, W - 8, 0, 4, 1);
+      break;
+    }
+    case 'turret':
+      R('#3a3d46', 4, 22, 24, 10); R('#59616c', 8, 14, 16, 9); R('#aeb7c2', 10, 16, 12, 5);
+      R('#2a2a33', 20, 16, 12, 3); glow('#ff3355', 13, 17, 3, 3);
+      break;
+    case 'dial':
+      R('#3a3d46', 6, 40, 20, 8); R('#59616c', 13, 30, 6, 10);
+      ctx.fillStyle = '#0a2a24'; ctx.beginPath(); ctx.arc(16, 16, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#3dffb0'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(16, 16, 12, 0, Math.PI * 2); ctx.stroke();
+      R('#e8f6ff', 15, 6, 2, 10); R('#e8f6ff', 16, 15, 7, 2); glow('#3dffb0', 15, 15, 2, 2);
+      break;
+    case 'lift':
+      R('#3a3d46', 0, H - 6, W, 6); R('#59616c', 2, H - 8, W - 4, 2);
+      R('#44607e', 2, 0, 4, H - 8); R('#44607e', W - 6, 0, 4, H - 8);
+      ctx.globalAlpha = 0.3; R('#66ccff', 6, 4, W - 12, H - 14); ctx.globalAlpha = 1;
+      for (let y = 6; y < H - 10; y += 8) R('#9fe8ff', 8, y, W - 16, 1);
+      glow('#66ccff', W / 2 - 2, 2, 4, 4);
+      break;
+    case 'relay': {
+      const col = t.tint || '#66ccff';
+      R('#2a2a33', 4, H - 8, W - 8, 8); R('#3a3d46', W / 2 - 5, 18, 10, H - 26);
+      R(shade(col, 0.5), W / 2 - 9, 10, 18, 10); glow(col, W / 2 - 4, 2, 8, 8);
+      for (const sx of [-1, 1]) R('#59616c', W / 2 + sx * 12 - 2, 14, 4, 20);
+      break;
+    }
+    case 'pod':
+      R('#4a5568', 2, 6, W - 4, H - 6); R(base, 3, 7, W - 6, H - 9); R('#ff8a3d', 3, H - 8, W - 6, 2);
+      R('#2a2a33', 6, 2, W - 12, 5); glow('#3dff6a', W / 2 - 2, 12, 4, 3);
+      break;
     default:
       R(base, 0, 0, W, H);
   }

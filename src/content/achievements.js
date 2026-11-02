@@ -23,7 +23,7 @@ export const ACHIEVEMENTS = [
   { key: 'b_swarm', name: 'Hive Mind', desc: 'Defeat the Swarm Mother', check: boss('swarm_mother') },
   { key: 'b_archon', name: 'Access Granted', desc: 'Defeat the Archon', check: boss('archon') },
   { key: 'b_warden', name: 'Meltdown', desc: 'Defeat the Core Warden', check: boss('core_warden') },
-  { key: 'hardmode', name: 'Event Horizon', desc: 'Begin the Singularity', check: (g) => g.world.flags.hardmode },
+  { key: 'hardmode', name: 'Power Restored', desc: 'Bring the Reactor back online', check: (g) => g.world.flags.hardmode },
   { key: 'b_twins', name: 'Double Vision', desc: 'Defeat the Twin Lancers', check: boss('twin_lancers') },
   { key: 'b_levi', name: 'Leviathan Breaker', desc: 'Defeat the Leviathan', check: boss('leviathan') },
   { key: 'b_prime', name: 'Prime Directive', desc: 'Defeat Prime Archon', check: boss('prime_archon') },

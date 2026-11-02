@@ -114,7 +114,7 @@ export function openCrate(game, tier) {
   out.push([pick(['micro_stim', 'stim_pack']), rng.int(2, 5)]);
   if (rng.chance(0.6)) out.push([pick(['bio_worm', 'glow_grub', 'nano_larva']), rng.int(2, 6)]);
   if (rng.chance(0.4)) out.push([pick(Object.keys(ITEMS).filter((k) => k.endsWith('_inj'))), rng.int(1, 3)]);
-  if (rng.chance(0.15 * tier)) out.push(['vital_core', 1]);
+  if (rng.chance(0.15 * tier)) out.push(['chassis_part', 1]);
   if (tier >= 2 && rng.chance(0.3)) out.push(['star_shard', rng.int(2, 5)]);
   for (const [k, n] of out) { const left = addItem(p.inv, k, n, null); if (left) game.dropItem(p.cx, p.cy, k, left); p.discovered.add(k); }
   game.dropCredits(p.cx, p.cy, rng.int(500, 1500) * tier * (w2(game) ? 3 : 1));

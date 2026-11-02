@@ -19,14 +19,15 @@ export const STATION_PROVIDES = {
 export const STATION_NAMES = {
   bench: 'Assembly Bench', smelter: 'Smelter', fabricator: 'Fabricator', vat: 'Synth Vat', printer: 'Textile Printer',
   tinker: 'Tinker Station', plasmaforge: 'Plasma Forge', nanoforge: 'Nano Forge', quantum: 'Quantum Assembler',
-  singularity: 'Singularity Core', lathe: 'Cryo Lathe', surgery: 'Surgery Bay',
+  singularity: 'Singularity Core', lathe: 'Cryo Lathe', surgery: 'Surgery Bay', terminal: 'Colony Terminal',
 };
 
 export const RECIPES = [];
-function r(out, n, ing, at = null) {
+// `req` gates a recipe on progression: 'reactor', or 'subsystem:option' for an override.
+function r(out, n, ing, at = null, req = null) {
   if (!ITEMS[out]) throw new Error('recipe output missing: ' + out);
   for (const [k] of ing) if (!ITEMS[k] && !GROUPS[k]) throw new Error('recipe ingredient missing: ' + k + ' for ' + out);
-  RECIPES.push({ out, n, ing, at, id: RECIPES.length });
+  RECIPES.push({ out, n, ing, at, req, id: RECIPES.length });
 }
 
 // ---- by hand ----
@@ -68,6 +69,14 @@ r('circuit_wall', 4, [['circuit_block', 1]], 'bench');
 r('ferrocrete_brick_wall', 4, [['ferrocrete_brick', 1]], 'bench');
 r('faraday_plate', 4, [['cuprite_bar', 1], ['ferrocrete', 2]], 'fabricator');
 r('faraday_wall', 4, [['faraday_plate', 1]], 'bench');
+r('colony_terminal', 1, [['ferrocrete', 8], ['fiber', 4], ['glowstick', 2]], 'bench');
+r('scrap_generator', 1, [['ferrocrete', 12], ['fiber', 6], ['glowstick', 3]], 'bench');
+r('fusion_generator', 1, [['plasmite_bar', 6], ['battery', 4], ['circuitry', 6]], 'plasmaforge');
+r('vital_core', 1, [['chassis_part', 3], ['circuitry', 1]], 'surgery');
+r('security_turret', 1, [['ferrite_bar', 6], ['circuitry', 3], ['battery', 1]], 'fabricator', 'security:turrets');
+r('time_dial', 1, [['chrono_shard', 4], ['circuitry', 4], ['glass', 6]], 'fabricator', 'chrono:dial');
+r('orbital_lift', 1, [['plasmite_bar', 10], ['circuitry', 10], ['battery', 6]], 'plasmaforge', 'reactor');
+r('precursor_keycode', 1, [['signal_fragment', 3]], 'terminal', 'reactor');
 r('glowstick_cyan', 3, [['glowstick', 3], ['glowcap', 1]], 'bench');
 r('glowstick_magenta', 3, [['glowstick', 3], ['gloomspore', 1]], 'bench');
 r('glowstick_lime', 3, [['glowstick', 3], ['voltleaf', 1]], 'bench');
