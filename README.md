@@ -112,6 +112,16 @@ Controls:
 
 Keyboard and mouse also work: WASD or arrows, Space, mouse, right-click to interact, 1–0 for the hotbar, E (inventory), M (map), F (hook), H (heal), J (energy), Shift (dash), R (ride) and Q (augment).
 
+## iPhone app (App Store)
+
+`ios/` holds a native iOS app that ships this game for the App Store, optimized for iPhone Duo:
+
+- it fills the display in every pose and follows the real hinge in book and laptop poses;
+- it keeps a safety copy of the saves in the app's own storage;
+- backups use the native share sheet, and the phone gives haptic feedback.
+
+See [ios/README.md](ios/README.md) for building, TestFlight and submission.
+
 ## Develop
 
 No build step and no dependencies. It is plain ES modules.

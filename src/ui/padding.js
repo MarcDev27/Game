@@ -6,6 +6,7 @@
 // so it matches the upper part of the edge, beside the status icons: the sky in daylight, the dark
 // of night or the underground otherwise.
 import { pageSize, screenSize } from './layout.js';
+import { isNative } from '../core/native.js';
 
 const ROWS = 64;
 
@@ -23,6 +24,7 @@ function dominant(data) {
 }
 
 export function startPadding(canvas, getState) {
+  if (isNative) return; // the iOS app draws edge to edge, so there is no strip to color
   const probe = document.createElement('canvas'); probe.width = 2; probe.height = ROWS;
   const pc = probe.getContext('2d', { willReadFrequently: true });
   const root = document.documentElement.style;

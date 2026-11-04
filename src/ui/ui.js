@@ -1,5 +1,6 @@
 // In-game DOM UI: HUD, hotbar, inventory/equipment, crafting, chests, colonists, map and pause menu.
 import { ITEMS } from '../content/items.js';
+import { isNative } from '../core/native.js';
 import { RECIPES, GROUPS, GROUP_NAMES, STATION_NAMES, stationsProvided } from '../content/recipes.js';
 import { BUFFS } from '../content/buffs.js';
 import { PREFIXES, rollPrefix, prefixValueMult } from '../content/prefixes.js';
@@ -809,9 +810,9 @@ export function settingsForm(s) {
     + `<div class="formrow"><span class="lbl">Resolution</span><div class="opt">${[[1, 'Low'], [1.5, 'Medium'], [2, 'High'], [3, 'Max']].map(([v, n]) => `<button data-res="${v}" class="${s.resolution === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>`
     + `<div class="formrow"><span class="lbl">Fold layout</span><div class="opt">${[['auto', 'Auto'], ['book', 'Book'], ['laptop', 'Laptop'], ['off', 'Off']].map(([v, n]) => `<button data-fold="${v}" class="${(s.foldMode || 'auto') === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>`
     + range('foldShift', 'Fold position', -120, 120, 2)
-    + `<div class="formrow" style="font-size:11px;color:#8aa0c0;margin-top:-4px">For iPhone Duo: Book keeps controls off a vertical fold; Laptop puts the game on top and controls below. Fold position nudges the split if it doesn't line up with the hinge. Auto needs Safari's Device Posture and Viewport Segments feature flags.</div>`
+    + `<div class="formrow" style="font-size:11px;color:#8aa0c0;margin-top:-4px">For iPhone Duo: Book keeps controls off a vertical fold; Laptop puts the game on top and controls below. Fold position nudges the split if it doesn't line up with the hinge. ${isNative ? 'Auto follows the hinge as iOS reports it.' : 'Auto needs Safari\'s Device Posture and Viewport Segments feature flags.'}</div>`
     + `<div class="formrow"><span class="lbl">Lighting</span><div class="opt"><button data-light="1" class="${s.lightQuality === 1 ? 'on' : ''}">Fast</button><button data-light="2" class="${s.lightQuality === 2 ? 'on' : ''}">Quality</button></div></div>`
-    + tog('smoothLight', 'Smooth light') + tog('minimap', 'Minimap') + tog('leftHanded', 'Left-handed') + tog('showFps', 'Show FPS') + tog('autoPause', 'Pause in menus')
+    + tog('smoothLight', 'Smooth light') + tog('minimap', 'Minimap') + tog('leftHanded', 'Left-handed') + tog('showFps', 'Show FPS') + tog('autoPause', 'Pause in menus') + (isNative ? tog('haptics', 'Haptics') : '')
     + `<div class="label">Display info</div><div class="tip" style="min-height:0;font-size:10px;line-height:14px;user-select:text;-webkit-user-select:text">${displayInfo()}</div>`;
 }
 

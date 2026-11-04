@@ -17,6 +17,8 @@ import { smartAim } from './game/smartaim.js';
 import { startPadding } from './ui/padding.js';
 import { toggleRide } from './game/vehicles.js';
 import { activateAug } from './game/implants.js';
+import { isNative, nativeInfo, initNative, restoreIfWiped } from './core/native.js';
+import { backupBase64, readBackup, restoreBackup } from './core/backup.js';
 
 const canvas = document.getElementById('game');
 const settings = loadSettings();
@@ -244,7 +246,14 @@ async function boot() {
   resize();
   menus.title();
   requestAnimationFrame(frame);
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  if (isNative) {
+    // The iOS app ships the game inside it, so there is no service worker or update check.
+    window.__neonBuild = nativeInfo.build || null;
+    initNative({ audio, settings, isPlaying: () => state === 'game', makeBackupBase64: backupBase64 });
+    restoreIfWiped(readBackup, restoreBackup).then((n) => {
+      if (n && state === 'menu') menus.saves('Your saves were restored from the app\'s safety copy.');
+    }).catch(() => {});
+  } else if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').then((reg) => reg.update()).catch(() => {});
     // A new version was installed: reload straight away on the title screen, otherwise say so.
     let reloading = false;

@@ -21,18 +21,20 @@ function chunk(type, data) {
   const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(td));
   return Buffer.concat([len, td, crc]);
 }
-function png(size, px) {
-  const raw = Buffer.alloc((size * 4 + 1) * size);
+// RGBA by default; opaque RGB (no alpha channel, as the App Store requires) when rgb is set.
+function png(size, px, rgb = false) {
+  const ch = rgb ? 3 : 4;
+  const raw = Buffer.alloc((size * ch + 1) * size);
   for (let y = 0; y < size; y++) {
-    raw[y * (size * 4 + 1)] = 0;
+    raw[y * (size * ch + 1)] = 0;
     for (let x = 0; x < size; x++) {
       const [r, g, b, a] = px(x, y);
-      const o = y * (size * 4 + 1) + 1 + x * 4;
-      raw[o] = r; raw[o + 1] = g; raw[o + 2] = b; raw[o + 3] = a;
+      const o = y * (size * ch + 1) + 1 + x * ch;
+      raw[o] = r; raw[o + 1] = g; raw[o + 2] = b; if (!rgb) raw[o + 3] = a;
     }
   }
   const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(size, 0); ihdr.writeUInt32BE(size, 4); ihdr[8] = 8; ihdr[9] = 6; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
+  ihdr.writeUInt32BE(size, 0); ihdr.writeUInt32BE(size, 4); ihdr[8] = 8; ihdr[9] = rgb ? 2 : 6; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
 }
 
@@ -59,4 +61,13 @@ for (const [name, size] of [['icon-192.png', 192], ['icon-512.png', 512], ['appl
   const buf = png(size, (x, y) => [...design(x / size, y / size), 255]);
   fs.writeFileSync(path.join(root, 'icons', name), buf);
   console.log('wrote', name, buf.length, 'bytes');
+}
+// The iOS app's icon: one 1024 × 1024 opaque image, from which Xcode makes every size.
+{
+  const dir = path.join(root, 'ios', 'Backup7105', 'Assets.xcassets', 'AppIcon.appiconset');
+  if (fs.existsSync(dir)) {
+    const buf = png(1024, (x, y) => design(x / 1024, y / 1024), true);
+    fs.writeFileSync(path.join(dir, 'AppIcon-1024.png'), buf);
+    console.log('wrote ios AppIcon-1024.png', buf.length, 'bytes');
+  }
 }

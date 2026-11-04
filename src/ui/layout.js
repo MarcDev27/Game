@@ -11,6 +11,8 @@
 // Without segment geometry the hinge is assumed to be at the middle of the physical screen, which
 // is not the middle of the page when the system keeps a bar (status bar, camera) outside it.
 
+import { isNative, nativeFold } from '../core/native.js';
+
 const mq = (q) => { try { return window.matchMedia(q); } catch (e) { return null; } };
 const MQ = {
   hseg: mq('(horizontal-viewport-segments: 2)'),
@@ -40,6 +42,8 @@ function homeScreenApp() {
 export function sideStrip(W, sw) { return sw - W > 2 && sw - W < sw * 0.2; }
 export function pageSize() {
   const p = probeSize();
+  // The iOS app's web view always has the size of the app's window: no Safari corrections.
+  if (isNative) return p;
   if (!homeScreenApp() || !window.screen) return p;
   const { sw, sh } = screenSize(p.W, p.H);
   return sideStrip(p.W, sw) && p.H !== sh ? { W: p.W, H: sh, corrected: p.H } : p;
@@ -90,6 +94,7 @@ export function screenSize(W, H) {
 }
 export function reportedScreen() { return window.screen ? `${screen.width} × ${screen.height}` : '?'; }
 function screenMiddle(W, H) {
+  if (isNative) return { x: W / 2, y: H / 2 };
   const { sw, sh } = screenSize(W, H);
   // Only trust a difference that looks like a system strip, not a desktop browser window.
   const ok = (d, s) => d > 2 && d < s * 0.2;
@@ -115,6 +120,13 @@ window.__neonDisplay = () => {
   if (posture === 'not available' && MQ.folded && MQ.folded.matches) posture = 'folded (CSS)';
   const segs = window.viewport && window.viewport.segments ? window.viewport.segments.length : (MQ.hseg && MQ.hseg.matches ? '2 side by side (CSS)' : MQ.vseg && MQ.vseg.matches ? '2 stacked (CSS)' : 'not available');
   const f = lastFold;
+  if (isNative) {
+    return {
+      App: `iOS app ${window.__b7105Native.version || ''}`, Build: window.__neonBuild || '?',
+      Window: `${W} × ${H}`, 'Pixel ratio': window.devicePixelRatio, 'Safe area (t/r/b/l)': ins,
+      Hinge: f.mode === 'book' ? `vertical at x=${Math.round(f.x)} (${Math.round(f.w)} wide)` : f.mode === 'laptop' ? `horizontal at y=${Math.round(f.y)} (${Math.round(f.h)} high)` : 'none (flat or single display)',
+    };
+  }
   return {
     Build: window.__neonBuild || '?',
     Page: `${W} × ${H}`, 'Page (Safari)': `probe ${probeSize().W} × ${probeSize().H}, inner ${window.innerWidth} × ${window.innerHeight}, visual ${window.visualViewport ? Math.round(visualViewport.width) + ' × ' + Math.round(visualViewport.height) : '?'}`, Screen: `${sw} × ${sh} (reported ${reportedScreen()})`, 'Pixel ratio': window.devicePixelRatio,
@@ -135,6 +147,13 @@ export function detectFold(settings) {
   const clampY = (y) => Math.round(Math.min(H * 0.7, Math.max(H * 0.3, y)));
   if (pref === 'book') return { mode: 'book', x: clampX(mid.x), w: 0 };
   if (pref === 'laptop') return { mode: 'laptop', y: clampY(mid.y), h: 0 };
+  // In the iOS app, UIKit reports exactly where the hinge is (and only while the phone is folded).
+  if (isNative) {
+    const f = nativeFold();
+    if (f.mode === 'book') return { mode: 'book', x: f.x + (settings.foldShift || 0), w: f.w };
+    if (f.mode === 'laptop') return { mode: 'laptop', y: f.y + (settings.foldShift || 0), h: f.h };
+    return { mode: 'none' };
+  }
   let segs = null;
   try { segs = window.viewport && window.viewport.segments; } catch (e) { segs = null; }
   if (segs && segs.length > 1) {
@@ -201,6 +220,7 @@ export function applyLayout(settings) {
 
 export function watchLayout(onChange) {
   window.addEventListener('resize', onChange);
+  window.addEventListener('nativefold', onChange);
   window.addEventListener('orientationchange', () => setTimeout(onChange, 150));
   try { if (window.visualViewport) window.visualViewport.addEventListener('resize', onChange); } catch (e) { /* ignore */ }
   try { if (navigator.devicePosture) navigator.devicePosture.addEventListener('change', onChange); } catch (e) { /* ignore */ }

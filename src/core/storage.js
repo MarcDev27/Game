@@ -106,7 +106,7 @@ export function deserializeWorld(o) {
 }
 
 const SETTINGS_KEY = 'neon-strata-settings'; // kept from the original name, like DB_NAME
-export const DEFAULT_SETTINGS = { foldMode: 'auto', foldShift: 0, layoutRev: 2, resolution: 2, sfx: 0.6, music: 0.35, zoom: 1, lightQuality: 2, smoothLight: true, minimap: true, leftHanded: false, showFps: false, autoPause: true, controlScale: 1 };
+export const DEFAULT_SETTINGS = { foldMode: 'auto', foldShift: 0, layoutRev: 2, resolution: 2, sfx: 0.6, music: 0.35, zoom: 1, lightQuality: 2, smoothLight: true, minimap: true, leftHanded: false, showFps: false, autoPause: true, controlScale: 1, haptics: true };
 export function loadSettings() {
   try {
     const s = Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'));

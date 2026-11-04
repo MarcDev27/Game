@@ -32,7 +32,7 @@ jobs:
       - name: Collect site files
         run: |
           mkdir -p _site
-          cp -r index.html styles.css manifest.webmanifest sw.js src icons _site/
+          cp -r index.html privacy.html styles.css manifest.webmanifest sw.js src icons _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

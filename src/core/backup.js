@@ -1,6 +1,7 @@
 // Backups of every character and world as a single file. On iPhone the file goes through the
 // share sheet, where "Save to Files" puts it in iCloud Drive; restoring picks it back up from Files.
 import { store } from './storage.js';
+import { isNative, nativeShare, toBase64 } from './native.js';
 
 const FORMAT = 'backup-7105-saves';
 const OLD_FORMATS = ['neon-strata-backup']; // backups made before the game was renamed
@@ -58,8 +59,15 @@ export async function makeBackup() {
   return { file, players: players.length, worlds: worlds.length };
 }
 
+// The whole save set as base64, for the iOS app's safety copy.
+export async function backupBase64() {
+  const { file } = await makeBackup();
+  return toBase64(new Uint8Array(await file.arrayBuffer()));
+}
+
 // Share sheet when available (iPhone: Save to Files → iCloud Drive), otherwise a download.
 export async function deliver(file) {
+  if (isNative) return nativeShare(file);
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try { await navigator.share({ files: [file], title: 'Backup 7105 saves' }); return 'shared'; } catch (e) {
       if (e && e.name === 'AbortError') return 'cancelled';
